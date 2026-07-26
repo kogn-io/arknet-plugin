@@ -25,13 +25,17 @@ idea or wish) and brownfield (attach an existing codebase and let the code
 raise questions).
 
 The same skill also runs a **full-set audit**: on a phrasing like "review the
-requirements relentlessly" or "are they complete/consistent", it walks the
-entire register (requirements, use cases, glossary) one item at a time against
-a fixed checklist -- the SOPHIST/Rupp linguistic-defect filter (passive voice
-without an actor, nominalisation, incomplete comparatives, universal
-quantifiers, underspecified conditions) plus the ISO/IEC/IEEE 29148 quality
-attributes (completeness, unambiguity, consistency, testability,
-dependencies) -- and interrogates the user on every gap it finds.
+requirements relentlessly" or "are they complete/consistent", it first runs
+`orphan_check`/`trace_matrix` as a mandatory automated pass -- surfacing
+dangling links and orphaned terms that a content read alone would miss --
+then walks the entire register (requirements, use cases, glossary) one item
+at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
+filter (passive voice without an actor, nominalisation, incomplete
+comparatives, universal quantifiers, underspecified conditions), the
+ISO/IEC/IEEE 29148 quality attributes (completeness, unambiguity,
+consistency, testability, dependencies, priority differentiation), and --
+for glossary terms -- implementation-free and config-free definitions. It
+interrogates the user on every gap it finds.
 
 ## Requirements
 
