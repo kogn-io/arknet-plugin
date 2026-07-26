@@ -24,6 +24,15 @@ shared, testable understanding is reached. Two entry points: greenfield (an
 idea or wish) and brownfield (attach an existing codebase and let the code
 raise questions).
 
+The same skill also runs a **full-set audit**: on a phrasing like "review the
+requirements relentlessly" or "are they complete/consistent", it walks the
+entire register (requirements, use cases, glossary) one item at a time against
+a fixed checklist -- the SOPHIST/Rupp linguistic-defect filter (passive voice
+without an actor, nominalisation, incomplete comparatives, universal
+quantifiers, underspecified conditions) plus the ISO/IEC/IEEE 29148 quality
+attributes (completeness, unambiguity, consistency, testability,
+dependencies) -- and interrogates the user on every gap it finds.
+
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)
@@ -61,6 +70,65 @@ arknet daemon over Streamable HTTP:
 The `X-Arknet-Workspace-Dir` header routes each call to the arknet workspace
 for your current session's start directory -- the daemon is shared across all
 projects on the machine, one workspace per repository.
+
+## MCP Tools
+
+arknet manages DDD architecture models -- requirements, use cases, a
+ubiquitous-language glossary, and bounded contexts -- as an RDF/SKOS store with
+SHACL write validation. All writes are validated against arknet's shapes;
+unknown or ambiguous references (e.g. an actor label that does not exist yet)
+are rejected with a didactic error rather than silently accepted.
+
+### Requirements
+
+- `req_add` -- register a functional/non-functional requirement (title,
+  normative "the system shall ..." description, type, at least one testable
+  acceptance criterion; optional MoSCoW priority, quality category, goal link).
+- `req_get` / `req_list` -- fetch one / list all requirements.
+- `req_set_status` -- change lifecycle status (`PROPOSED` -> `ACCEPTED`).
+- `req_link_term` -- link a requirement to a glossary term it uses.
+- `req_schema` -- describe the requirement vocabulary (types, statuses,
+  priorities) as data, so a client does not have to guess the accepted values.
+
+### Use cases
+
+- `uc_add` -- register a complete Cockburn-style use case in a single call
+  (goal-in-context, primary/supporting actors, ordered main flow, optional
+  precondition/postcondition/extensions); steps can reference the
+  requirements they realise.
+- `uc_get` / `uc_list` -- fetch one / list all use cases.
+
+### Glossary
+
+- `term_add` -- register a ubiquitous-language term as a SKOS concept;
+  optionally mark it as an actor (`HUMAN`/`SYSTEM`) so it can later be used as
+  a use case's primary or supporting actor.
+- `term_get` / `term_list` -- fetch one / list all glossary terms.
+
+### Bounded contexts
+
+- `bc_add` -- register a bounded context (name, one-sentence domain vision,
+  optional owning team and strategic classification --
+  core/supporting/generic domain).
+- `bc_get` / `bc_list` -- fetch one / list all bounded contexts.
+- `bc_link_term` -- link a bounded context to a glossary term of its
+  ubiquitous language.
+
+### Traceability and analysis
+
+- `trace_matrix` -- for every requirement: which glossary terms it uses and
+  which use case(s) realise it.
+- `impact_analysis` -- what is transitively affected if a given requirement,
+  term or use case changes.
+- `orphan_check` -- find requirements that no use case realises, and glossary
+  terms that are never referenced.
+
+### Generic store access
+
+- `store_overview` -- workspace-wide digest (resource/triple/type counts, one
+  line per resource) plus a self-contained HTML report written to disk.
+- `resource_get` -- fetch all statements (outgoing and incoming) of a single
+  resource.
 
 ## Contributing
 
