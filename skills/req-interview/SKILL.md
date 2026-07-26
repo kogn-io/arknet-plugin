@@ -70,7 +70,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 
 | Artifact | Create | Read | Change |
 |---|---|---|---|
-| Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term` |
+| Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
 | Use case | `uc_add` | `uc_get`, `uc_list` | (no update tool -- create anew) |
 | Glossary term | `term_add` | `term_get`, `term_list` | (no update tool -- create anew) |
 
@@ -89,13 +89,17 @@ the decision -- intentional / grown / accidental -- stays with the user.
 **Ordering consequence:** a use case references actors by label -- the actor
 terms must therefore exist **before** `uc_add`.
 
-### Requirements: `req_add(title, description, type, priority?, motivatedBy?, qualityCategory?)`
+### Requirements: `req_add(title, description, type, acceptanceCriteria, priority?, motivatedBy?, qualityCategory?)`
 
 - `title` (required) -- short summary.
 - `description` (required) -- the normative statement ("The system shall
-  ..."). Must be testable on its own (see checklist below) -- and, for now,
-  also carries the done-when, see the gap noted directly below.
+  ..."). Must be testable on its own (see checklist below).
 - `type` (required) -- `FUNCTIONAL` | `NON_FUNCTIONAL`.
+- `acceptanceCriteria` (required, at least one) -- testable "done when ..."
+  criteria as a list of strings. This is `arkreq:acceptanceCriterion` as a
+  first-class, SHACL-enforced field (`sh:minCount 1` / `sh:Violation`) --
+  do not fold it into `description` as a suffix sentence, it has its own
+  argument.
 - `priority` (optional, MoSCoW) -- `MUST_HAVE` | `SHOULD_HAVE` |
   `COULD_HAVE` | `WONT_HAVE`.
 - `motivatedBy` (optional) -- IRI of an `arkreq:Goal`.
@@ -111,15 +115,9 @@ terms must therefore exist **before** `uc_add`.
   (`arkreq:usesTerm`). After every new domain term in the requirement text,
   check: does a term already exist for it? If not, `term_add` first, then
   `req_link_term`.
-
-### Known gap: no dedicated done-when field (#91)
-
-The ontology defines `arkreq:acceptanceCriterion` ("testable criterion, done
-when ..."), but neither `req_add` nor the SHACL shape know it (yet) -- see
-issue #91. Until that is fixed: write the testable criterion as **part of
-`description`**, e.g. as a closing sentence "Done when: ...". Do not invent a
-separate field or a bespoke convention that #91 would later have to unpick --
-just carry it in the normative statement.
+- `req_update(id, ...)` -- patches fields of an existing requirement
+  (partial update, not replace-by-identity) -- use this to fix a requirement
+  found wanting during a full-set audit instead of leaving it inconsistent.
 
 ### Use cases: `uc_add(title, goal, primaryActor, steps, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?)`
 
@@ -158,11 +156,21 @@ entry points (see above), same protocol:
 - **Full-set audit** -- the user asks for a review of the whole register
   ("review the requirements", "review the glossary relentlessly", "are they
   complete/consistent"). This is the **default reading** of any
-  "review/check" phrasing -- do not collapse it into a quick summary. Walk
-  every requirement/use case/term systematically, one at a time, and
-  interrogate the user relentlessly on the gaps you find (missing
-  scenarios/actors/edge cases, conflicts, untestable descriptions,
-  unspecified failure behaviour).
+  "review/check" phrasing -- do not collapse it into a quick summary.
+  **First, automated pass:** run `orphan_check` (requirements no use case
+  realises, glossary terms never referenced) and `trace_matrix` (per
+  requirement: which terms it uses, which use case(s) realise it) *before*
+  any manual reading -- these two calls surface structural gaps
+  (dangling links, orphaned terms, unrealised requirements) that a
+  content read of the requirement text will not, no matter how careful.
+  Treat every finding they report as a mandatory interrogation point, not
+  an optional footnote. **Then** walk every requirement/use case/term
+  systematically, one at a time, and interrogate the user relentlessly on
+  the gaps you find (missing scenarios/actors/edge cases, conflicts,
+  untestable descriptions, unspecified failure behaviour). A full-set audit
+  that only reads content against source documents and never calls
+  `orphan_check`/`trace_matrix` has not audited the graph structure, only
+  the prose -- both are required.
 
 **Hold the whole set in view -- always.** "One at a time" governs *question
 sequencing*, never *analytical scope*. A requirement judged in isolation is
@@ -213,12 +221,17 @@ Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
   empty/failure/timeout paths?
 - **Unambiguity** -- can this be read in more than one way?
 - **Consistency** -- conflict with another requirement/use case/term?
-- **Testability** -- is there an objective "done when" in `description` (see
-  gap #91)? If you cannot write one, elicitation is not finished.
+- **Testability** -- does `acceptanceCriteria` hold at least one objective
+  "done when ..." criterion, not a restatement of `description`? If you
+  cannot write one, elicitation is not finished.
 - **Dependencies** -- what does it presuppose/affect (which other
   FRs/UCs/terms)?
 - **Non-functional aspects** -- performance, security, scalability,
   **failure behaviour** considered (check a new FR against existing NFRs)?
+- **Priority differentiation** -- does this genuinely differ from the rest
+  of the set, or is it a placeholder? For `MUST_HAVE` specifically: what
+  breaks if this is cut? A register where everything is `MUST_HAVE` has not
+  been interrogated on priority.
 
 ### Checklist per use case
 
@@ -242,6 +255,13 @@ Cockburn completeness:
 - Definition precise enough that two people understand the same thing?
 - Does the term need an actor facet (`actorKind`/`actorRole`) because it will
   later appear as an actor in a use case?
+- **Implementation-free** -- does the definition avoid naming the
+  system/software/storage technology (the same WHAT-not-HOW discipline
+  requirements are held to)?
+- **Config-free** -- does the definition avoid baking in a concrete,
+  dated value (amount, percentage, date) that a requirement elsewhere
+  declares configurable/changeable? If the value can change through the
+  system the requirement describes, the definition must not freeze it.
 
 ## Writing it in only happens after that
 
@@ -261,12 +281,15 @@ moving to the next item, check whether it ripples** into the rest of the
 set. Does the new wording now conflict with, duplicate, or leave a gap in
 another FR/NFR/UC/term?
 
-**Current state: manual.** The dedicated traversal tools
-(`trace_matrix`/`orphan_check`/`impact_analysis`) do not exist yet -- until
-then, ripple check means: re-read `req_list`/`uc_list`/`term_list` after
-writing and check against the set you are holding in your head. That works
-for a small register but weakens as the graph grows. Once those tools exist,
-use `impact_analysis` instead of manual re-reading.
+**Use `impact_analysis(resource)`** on the just-written/just-changed
+requirement/use-case/term as the first, automated step -- it walks
+references backwards and returns everything that transitively depends on
+it. Follow up with `orphan_check`/`trace_matrix` if the change touched
+links (`usesTerm`, `realises`, actor references). Only fall back to
+re-reading `req_list`/`uc_list`/`term_list` from memory for aspects these
+tools do not cover (e.g. wording conflicts between two requirements that
+share no explicit link) -- do not use manual re-reading as the primary
+method now that the tools exist.
 
 - **No ripple** -> state it in one line, continue the walk.
 - **Ripple found** -> name the affected codes and the nature of the impact,
