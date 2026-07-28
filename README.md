@@ -15,6 +15,23 @@ metamodel (`arkarch:ArchitectureDecisionRecord`). Keeps every ADR a record of
 a durable decision and its lasting consequences -- never a status report,
 never an implementation snapshot.
 
+**Accepted records are frozen.** From status `Accepted` on, the skill will not
+edit an ADR -- not to fold in an addendum, not to add a consequence that has
+since become clear, not to tighten wording. It reports the finding and offers a
+successor ADR instead. Only the status line still moves, to
+`Superseded by ADR-NNN` or `Deprecated`, so that a reader arriving from a code
+comment sees a dead decision as dead. Cross-references are written one-sidedly:
+the record making the claim carries it, the other one is never touched, because
+the metamodel derives the reverse direction.
+
+**It maintains an index**, `docs/adr/README.md`, from the first record on --
+number, title, status, date and the decision in one line. The index is a derived
+view: where it disagrees with a record's own status line, the record wins.
+
+The skill adapts to the project it runs in. Language, section names and file
+naming follow the existing corpus; only a project without any ADRs gets the
+English defaults.
+
 ### `/arknet:req-interview`
 
 A relentless requirements-interview skill. Elicits functional/non-functional
