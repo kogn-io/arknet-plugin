@@ -1,5 +1,5 @@
 ---
-description: "Write, review and maintain Architecture Decision Records in docs/adr/, against arknet's ADR metamodel (arkarch:ArchitectureDecisionRecord). Keeps ADRs durable decision records rather than status reports, and immutable from status Accepted on -- corrections go through a successor ADR, never through an addendum. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs'. NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
+description: "Write, review and maintain Architecture Decision Records in docs/adr/, against arknet's ADR metamodel (arkarch:ArchitectureDecisionRecord). Keeps ADRs durable decision records rather than status reports, one decision per record, free of implementation detail, and immutable from status Accepted on -- corrections go through a successor ADR, never through an addendum. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs'. NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
 ---
 
 # /arknet:adr -- Architecture Decision Records
@@ -35,9 +35,10 @@ project already does (`ls docs/adr/`, read one or two records) and match it:
 - **Numbering, file naming, character set.** Follow the corpus. Only when nothing exists
   yet, fall back to the defaults in "Template".
 
-What you do *not* adapt to is the substance: the slots, the litmus test, immutability and
-one-sided references hold in every project. A corpus that violates them is a finding, not a
-convention.
+What you do *not* adapt to is the substance: the slots, the litmus test, one decision per
+record, immutability and one-sided references hold in every project. A corpus that violates
+them is a finding, not a convention -- a corpus in which every record bundles three
+decisions has a habit, not a house style.
 
 ## The metamodel defines the ONLY allowed content
 
@@ -61,6 +62,53 @@ These are the slots `arkarch:ArchitectureDecisionRecord` permits. There are no o
 If you catch yourself writing an "Open points", "Implementation", "Status", "TODO",
 "Current state", "Addendum" or "Next steps" section -- **stop**. No such slot exists. That
 content belongs elsewhere (see below).
+
+## One decision per record
+
+A record holds exactly one decision. Before writing, and on every review, apply the
+**independence test** to each numbered point of the Decision section:
+
+> **Could this point have gone the other way without changing the point before it?**
+> Yes -> it is its own ADR.
+> No  -> it is a facet of the same reversal and stays.
+
+Numbering the parts of a decision is for facets of *one* reversal -- the pieces that all
+fall together if the decision is taken back. Two decisions that could each have gone the
+other way independently are two records, however closely together they were taken.
+
+Telltale signs, each of them a finding:
+
+- an "and" or a "+" in the title or the filename;
+- a point that decides a *different kind* of thing than the title announces -- a trust
+  boundary buried in a transport ADR is a decision nobody finds again;
+- a Consequences section whose entries sort into two disjoint groups.
+
+Why this is not cosmetics: **a bundled ADR cannot be superseded.** Reversing one half of it
+leaves only bad options -- edit a frozen record, or supersede a decision that is still in
+force. Granularity is what keeps "Immutability" workable at all.
+
+On review this branches on status like every other finding (see "Immutability"): at
+`Proposed`, split the record into one ADR per decision. From `Accepted` on, name the
+bundling and offer the successor ADRs that separate it -- the bundled record itself stays
+exactly as it is.
+
+## Length and implementation detail
+
+A record that grows has almost always taken on something that is not decision content.
+
+- **Length is a question, not a limit.** A Decision section beyond roughly 30 lines, or a
+  file beyond about two pages, obliges you to ask: is this two decisions (see "One decision
+  per record"), or is it implementation detail? Answer that question explicitly -- noting
+  the size and moving on is not enough.
+- **No implementation detail.** No class names, method signatures, constructor arguments or
+  literal parameter values in the decision text. `new ValidationOptions(true)` is not a
+  decision; "validation is on by default, callers opt out explicitly" is. Name the decision
+  and its rationale -- the code and the module docs carry the how, and unlike the ADR they
+  stay correct when the code moves.
+
+The distinction from the implementation *snapshot* (anti-pattern 1): a snapshot goes stale,
+a detail may well stay true -- and still does not belong here, because it drags the record
+down to a level at which every rename is a falsification.
 
 ## The litmus test (apply to every sentence)
 
@@ -89,23 +137,28 @@ Concretely, NEVER put these in an ADR:
 
 1. **Implementation snapshot** -- "currently pinned to X", "solved for now via a local
    override in the build file", "only one adapter wired so far". Wiring state, not decision.
-2. **Open-points / TODO list** -- open work is an issue, not an ADR section. (A *deliberately
+2. **Implementation detail** -- class names, method signatures, constructor arguments,
+   literal parameter values. Even where they are durably true, they pin the record to a
+   level at which every rename falsifies it. See "Length and implementation detail".
+3. **Two decisions in one record** -- independently reversible points bundled into one ADR,
+   often announced by an "and" in the title. See "One decision per record".
+4. **Open-points / TODO list** -- open work is an issue, not an ADR section. (A *deliberately
    deferred* consequence with a reason is allowed -- that is a result of the decision, not a
    worklist.)
-3. **Commit refs / PR numbers / file lines** -- "see commit fcfaf29", "in ModelLoader.java
+5. **Commit refs / PR numbers / file lines** -- "see commit fcfaf29", "in ModelLoader.java
    line 42". Transient; belongs in git or the tracker, not in the ADR.
-4. **Addendum / amendment / update section** -- a heading like
+6. **Addendum / amendment / update section** -- a heading like
    `## Addendum 2026-07-18: third consumer (issue #66, PR #133)` records that a decision was
    *applied again*. That is progress, not decision. Either it genuinely refines the decision
    -- then it is **its own ADR** superseding the old one -- or it belongs in the tracker.
    There is no third case. See "Immutability".
-5. **"Implementation" / "Status" / "Next steps" section** -- no metamodel slot.
-6. **The agent deciding by itself** -- an ADR records the decision of *the user*, not yours.
+7. **"Implementation" / "Status" / "Next steps" section** -- no metamodel slot.
+8. **The agent deciding by itself** -- an ADR records the decision of *the user*, not yours.
    If the decision has not been made yet: status `Proposed`, and name the openness in the
    context -- do not invent a decision to fill the slot.
-7. **Empty / dutiful alternatives** -- "no alternatives considered" is a smell. If there
+9. **Empty / dutiful alternatives** -- "no alternatives considered" is a smell. If there
    genuinely was no alternative, briefly justify *why* the option space was empty.
-8. **Marketing prose / filler** -- sober, dense, one thought per sentence.
+10. **Marketing prose / filler** -- sober, dense, one thought per sentence.
 
 ## Where the excluded content belongs
 
@@ -142,7 +195,9 @@ where applicable -- to the requirement addressed or the bounded context affected
 
 ## Decision
 
-The decision, precise and in the active voice. Number the parts if there are several.
+The decision, precise and in the active voice. One decision per record: number the parts
+only where they are facets of the same reversal (independence test, see "One decision per
+record"). No class names, no signatures, no literal parameter values.
 
 ## Consequences
 
@@ -162,6 +217,8 @@ Template rules:
   assigning a number: `ls docs/adr/` -- highest existing + 1.
 - Only the four `##` sections above. Do not invent further headings -- in particular no
   `## Addendum`, `## Amendment`, `## Update`.
+- **The title names one decision.** If it needs an "and" or a "+" to be accurate, you are
+  writing two records.
 
 A full worked record is shipped next to this skill: **`reference/adr-sample.md`**. Read it
 before writing your first ADR in a project that has none -- it shows what a real
@@ -230,6 +287,9 @@ stateDiagram-v2
   transition explicitly** ("becomes Accepted once the licence is settled"). A `Proposed`
   without a transition condition is a smell.
 - `Accepted` -- settled. From here "Immutability" applies.
+  **Shipped means `Accepted`:** a decision that is built and in production is not
+  `Proposed`, whatever the file still says. The status describes the decision, not the
+  attention the file has had since.
 - `Rejected` -- considered and turned down. Stays as documentation; that is the point of
   writing it down.
 - `Deprecated` -- obsolete with no concrete successor.
@@ -252,6 +312,14 @@ stateDiagram-v2
 `Deprecated -> Superseded` is the one late transition that is allowed: an obsolete decision
 that eventually does get a successor. It changes the status line only, which is the one edit
 the frozen box permits.
+
+**Status hygiene**, to be checked across the whole corpus and not just per record: shipped
+means `Accepted`; every `Proposed` names the condition under which it flips; a decision no
+longer in force reads `Deprecated` or `Superseded (date), superseded by ADR-NNN` instead of
+staying `Accepted` forever. A corpus in which nothing is ever deprecated is not a corpus
+without obsolete decisions -- it is one whose statuses have stopped being maintained. Status
+drift is a review finding; correcting a status line is the one repair a frozen record
+permits.
 
 ## The index -- `docs/adr/README.md`
 
@@ -314,7 +382,9 @@ Check:
    What remains: references must point at **existing** numbers. Dangling numbers are still
    a finding.
 5. **No duplication.** Two ADRs deciding the same thing are a smell -- merge them (only
-   while both are `Proposed`) or mark the older one `Superseded`.
+   while both are `Proposed`) or mark the older one `Superseded`. The opposite error is the
+   more common one and is checked per record, not across the corpus: one ADR holding two
+   decisions (see "One decision per record").
 
 On finding a contradiction: report which two ADRs collide and in what, and propose a
 resolution (supersede / correct / merge) -- do not guess.
@@ -325,30 +395,43 @@ resolution (supersede / correct / merge) -- do not guess.
 1. Look at the corpus and match its conventions (see "Adapt to the project").
 2. Determine the number (`ls docs/adr/`).
 3. Has the decision actually been made? If not -> `Proposed`, name the openness in the
-   context, do NOT invent it.
-4. Fill the template, apply the litmus test to every sentence.
-5. Link related ADRs -- **here only, one-sidedly**. The linked records stay untouched.
-6. Check cross-ADR consistency (see the section above): does it contradict or supersede an
+   context, do NOT invent it. If it is built and running -> `Accepted`.
+4. Apply the independence test *before* writing: is this one decision or several? Several
+   -> one record each (see "One decision per record").
+5. Fill the template, apply the litmus test to every sentence, and keep implementation
+   detail out (see "Length and implementation detail").
+6. Link related ADRs -- **here only, one-sidedly**. The linked records stay untouched.
+7. Check cross-ADR consistency (see the section above): does it contradict or supersede an
    existing ADR? If it supersedes, set **only the status line** of the old record to
    `Superseded (date), superseded by ADR-NNN` -- nothing else.
-7. Update `docs/adr/README.md`: add the new record's line, and adjust the status of any
+8. Update `docs/adr/README.md`: add the new record's line, and adjust the status of any
    record this one supersedes or deprecates (see "The index").
 
 **Reviewing an existing ADR.** Step 0 is always the same: **read the status.** It decides
 which repair is even on the table.
 
-- `Proposed` -> content is freely editable. Fix findings directly.
+- `Proposed` -> content is freely editable. Fix findings directly -- including splitting a
+  bundled record into one ADR per decision.
 - `Accepted` / `Superseded` / `Deprecated` / `Rejected` -> frozen. **Report findings, do not
-  repair them**; the fix is a successor ADR. The only permitted change to the file is its
-  status line. See "Immutability".
+  repair them**; the fix is a successor ADR -- for a bundled record, one per decision. The
+  only permitted change to the file is its status line. See "Immutability".
 
 Checklist:
 - [ ] Exactly the four sections, none invented (Open points / Implementation / Status /
       Addendum / Amendment)?
+- [ ] **One decision?** Could any numbered point have gone the other way on its own? If yes,
+      it is a second ADR. No "and"/"+" in the title, no point deciding a different kind of
+      thing than the title announces?
+- [ ] **Length:** Decision section under roughly 30 lines, file under two pages? If not, was
+      the question "two decisions or implementation detail?" actually answered?
+- [ ] **No implementation detail:** no class names, method signatures, constructor
+      arguments, literal parameter values in the decision text?
 - [ ] No trace of a post-acceptance edit: no addendum, no "update", no issue or PR number in
       the text? (failure class: progress instead of decision)
 - [ ] Does every sentence survive the litmus test (no snapshot, no commit ref)?
 - [ ] Status + date set, exactly one status?
+- [ ] **Status hygiene:** is a shipped decision `Accepted` rather than `Proposed`, and a
+      retired one `Deprecated`/`Superseded` rather than still `Accepted`?
 - [ ] At `Proposed`: is the condition for moving to `Accepted` named?
 - [ ] At `Superseded`: does the status line name the superseding ADR?
 - [ ] Does Consequences hold actual *consequences* (not a restatement of the decision)?
@@ -365,3 +448,13 @@ On a violation: never rewrite silently -- name the violation (which failure clas
 branch on status. At `Proposed`: propose or apply the fix and say where the removed content
 belongs. From `Accepted` on: say that the record stays as it is, and offer a successor ADR
 -- even when the fix would be a one-liner. Especially then.
+
+Two findings do not follow that branching, because neither touches frozen content:
+
+- **A wrong status** is corrected on the status line itself, at any status -- that is the
+  one edit the frozen box permits. But the status records *the user's* decision: report the
+  drift and offer the change, do not flip a record to `Accepted` on your own reading of
+  what is in production.
+- **A bundled record** is reported per decision, not per file. Say which points are
+  independent of each other and what the successor ADRs would decide -- one vague "this
+  should be split" is the finding the corpus has already survived.

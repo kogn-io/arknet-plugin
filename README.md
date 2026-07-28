@@ -15,6 +15,15 @@ metamodel (`arkarch:ArchitectureDecisionRecord`). Keeps every ADR a record of
 a durable decision and its lasting consequences -- never a status report,
 never an implementation snapshot.
 
+**One decision per record.** Every numbered point of a decision faces the
+independence test -- "could it have gone the other way without changing the
+point before it?" -- and a point that could becomes its own ADR. This is not
+tidiness: a record holding two decisions cannot be superseded, because reversing
+one half of it would mean editing a frozen file. Length is treated as a symptom
+of the same problem, and implementation detail -- class names, signatures,
+literal parameter values -- is kept out, so that a rename cannot falsify a
+decision.
+
 **Accepted records are frozen.** From status `Accepted` on, the skill will not
 edit an ADR -- not to fold in an addendum, not to add a consequence that has
 since become clear, not to tighten wording. It reports the finding and offers a

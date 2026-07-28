@@ -79,11 +79,11 @@ independent failure modes, order state as source of truth downstream -- and it s
 went wrong before in terms that stay true regardless of the current code. It does not say
 "we are currently on version 3.2 of the broker library".
 
-**The decision is one decision.** Outbox instead of inline publishing. The idempotency
-requirement is not a second decision smuggled in; it is a facet of the same reversal -- undo
-the outbox and the requirement goes with it. Had the record also decided *which* broker to
-use, that would have been a second ADR: the broker could have gone the other way without
-touching this one.
+**The decision is one decision** -- the independence test in `SKILL.md`, applied. Outbox
+instead of inline publishing. The idempotency requirement is not a second decision smuggled
+in; it is a facet of the same reversal -- undo the outbox and the requirement goes with it.
+Had the record also decided *which* broker to use, that would have been a second ADR: the
+broker could have gone the other way without touching this one.
 
 **The consequences are consequences.** They state what is durably true afterwards, positive
 and negative, rather than restating the decision in different words. The deferred point
