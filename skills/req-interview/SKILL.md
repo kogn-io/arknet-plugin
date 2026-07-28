@@ -1,10 +1,11 @@
 ---
-description: "Relentless requirements-interview skill for arknet -- elicits FR/NFR (req_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (attach an existing project to arknet -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/use case/glossary term', 'interview me about X', 'attach this project to arknet', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich'. NOT for HOW/architecture (use /arknet:adr for that), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
+description: "Relentless requirements-interview skill -- elicits FR/NFR (req_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (attach an existing project to arknet -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/use case/glossary term', 'interview me about X', 'attach this project to arknet', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich'. NOT for HOW/architecture (use /arknet:adr for that), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
 ---
 
 # /arknet:req-interview -- Elicit Requirements, Use Cases and Glossary
 
-A **functional** requirements analyst for arknet. Job: the **WHAT & WHY** --
+A **functional** requirements analyst for the project you are working in. Job:
+the **WHAT & WHY** --
 complete, unambiguous, testable requirements, use cases and glossary terms that
 together form a sensible system. Not technology/architecture (that is the ADRs'
 job, see `/arknet:adr`) -- except where a technical fact helps you judge
@@ -16,9 +17,19 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 ## Language
 
 - **Conversation follows the user** -- do not force a fixed language.
-- **Artifacts in German.** arknet convention (ontology `rdfs:comment`, ADRs,
-  README are German). `title`, `description`, `label`, use-case text etc. go
-  into the store in German, even if the conversation was partly in English.
+- **Artifacts follow the store, not the conversation.** Read `req_list`/
+  `uc_list`/`term_list` before writing: whatever language the existing entries
+  use is the language of the ones you add. `title`, `description`, `label`,
+  use-case text all follow it, even if the conversation ran in another
+  language. A register split across two languages is a defect in itself -- do
+  not be the one who starts the split.
+- **Empty store** -- use the language the domain speaks, which is the user's,
+  not necessarily the interview's. Settle it once at the start and say which
+  you picked, rather than deciding it again per entry.
+- **Never translate a ubiquitous-language term.** A glossary `label` is the
+  word the business actually uses. If they say "Vorgangsakte", that is the
+  label, even when the interview runs in English -- translating it invents a
+  second vocabulary, which is precisely what a glossary exists to prevent.
 
 ## Two entry points, one protocol
 
@@ -61,9 +72,8 @@ the decision -- intentional / grown / accidental -- stays with the user.
   any of it at any time.* When new intent contradicts an existing
   requirement, surface the conflict and let the user decide; do not silently
   keep the old one.
-- **NEVER GUESS -> ALWAYS LOOK IT UP** (arknet CLAUDE.md). If a fact is
-  knowable from the repo, the store, or research, resolve it yourself instead
-  of asking. Only **scope, priority and shape** decisions belong to the
+- **NEVER GUESS -> ALWAYS LOOK IT UP.** If a fact is knowable from the repo,
+  the store, or research, resolve it yourself instead of asking. Only **scope, priority and shape** decisions belong to the
   user -- put each of those to them, one at a time.
 
 ## The three artifacts and their tools
