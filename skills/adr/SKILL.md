@@ -255,9 +255,8 @@ the frozen box permits.
 
 ## The index -- `docs/adr/README.md`
 
-A project with ADRs carries an index, from the first record on. Not from the fifth: a
-threshold would be one more thing to evaluate, and it creates a moment where someone has to
-reconstruct the missing lines after the fact. Writing an ADR touches two files -- always.
+A project with ADRs carries an index, from the first record on. Writing an ADR touches two
+files -- always, with no size at which the obligation starts.
 
 One line per record: number, title, status, date, and the decision in a single sentence.
 
@@ -270,8 +269,8 @@ One line per record: number, title, status, date, and the decision in a single s
 
 **The index is a derived view, not a source.** The status line inside the record is
 authoritative. Where the two disagree, the record wins and the index gets corrected -- never
-the other way round. That rule is what keeps the index from becoming a second
-hand-maintained truth, which is exactly what this skill removed from cross-references.
+the other way round. That rule keeps the index from becoming a second hand-maintained truth
+about the same fact -- the same reason cross-references are written one-sidedly.
 
 Maintaining it:
 
