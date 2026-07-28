@@ -47,6 +47,13 @@ Things to raise in an issue first:
 - Keep pull requests **small and focused** -- one concern per PR. Split unrelated
   changes.
 - Follow existing patterns across the skills; look before you guess.
+- **Skills run in arbitrary projects -- do not encode one project's specifics.**
+  No paths into another repository, no citing its instruction files as
+  authority, no house conventions (artifact language, character set, section
+  names) presented as rules of the skill. Where a skill needs an example, ship
+  one beside it under `skills/<name>/reference/` rather than pointing at files
+  the reader does not have. Rules that must hold everywhere are the skill's;
+  everything else follows the project being worked on.
 - Bump the `version` in `.claude-plugin/plugin.json` when a skill's shipped text
   changes **and the version currently on `main` has already been released**.
   Claude Code caches skill content by version, so a bump only buys anything for
