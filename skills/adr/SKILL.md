@@ -202,17 +202,54 @@ not in a correction.
 
 ## Status lifecycle
 
-- New decision, not finally settled -> `Proposed`. Date = today. **Name the condition for
-  the transition explicitly** ("becomes Accepted once the licence is settled"). A `Proposed`
+The important line in this diagram is not between the states, it is around them: leaving
+`Proposed` is the moment the content freezes.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+
+    [*] --> Proposed
+
+    state "content frozen -- only the status line may still change" as Minuted {
+        Accepted
+        Rejected
+        Deprecated
+        Superseded
+    }
+
+    Proposed --> Accepted   : decision taken
+    Proposed --> Rejected   : considered, turned down
+    Accepted --> Superseded : a new ADR supersedes it
+    Accepted --> Deprecated : obsolete, no successor
+    Deprecated --> Superseded : a successor appears after all
+```
+
+- `Proposed` -- the only editable state. Date = today. **Name the condition for the
+  transition explicitly** ("becomes Accepted once the licence is settled"). A `Proposed`
   without a transition condition is a smell.
-- Settled -> `Accepted`. From here "Immutability" applies.
-- Replaced by a new ADR: the **new** ADR states `Supersedes: ADR-MMM`; in the old ADR
-  **only the status line** changes, to `Superseded (date), superseded by ADR-NNN`. No
-  addendum, no note, no entry in `Related:`.
-- `Rejected` = considered and rejected (stays as documentation).
-- `Deprecated` = obsolete with no concrete successor.
-- Never change a status silently backwards: a superseded ADR is not rewritten as though the
-  old decision had never been made.
+- `Accepted` -- settled. From here "Immutability" applies.
+- `Rejected` -- considered and turned down. Stays as documentation; that is the point of
+  writing it down.
+- `Deprecated` -- obsolete with no concrete successor.
+- `Superseded` -- replaced by a named successor. The **new** ADR states
+  `Supersedes: ADR-MMM`; in the old one **only the status line** changes, to
+  `Superseded (date), superseded by ADR-NNN`. No addendum, no note, no entry in `Related:`.
+
+**The arrows that are missing, and why:**
+
+- **Nothing leaves the frozen box.** No `Accepted -> Proposed` to reopen a decision, no
+  `Rejected -> Accepted` to change your mind. Both are a new ADR that supersedes the old
+  one. Reopening would rewrite the minutes.
+- **No `Proposed -> Superseded`.** Superseding is for records that were minuted. A
+  `Proposed` record overtaken by events is rewritten or dropped -- there is nothing to
+  preserve yet.
+- **No self-transition on `Accepted`.** "Accepted, refined" is not a state. It is the
+  addendum, wearing a different hat.
+
+`Deprecated -> Superseded` is the one late transition that is allowed: an obsolete decision
+that eventually does get a successor. It changes the status line only, which is the one edit
+the frozen box permits.
 
 ## Cross-ADR consistency
 
