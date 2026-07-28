@@ -90,16 +90,16 @@ arknet daemon over Streamable HTTP:
       "type": "http",
       "url": "http://127.0.0.1:47331/mcp",
       "headers": {
-        "X-Arknet-Workspace-Dir": "${PWD}"
+        "X-Arknet-Project-Anchor": "${PWD}"
       }
     }
   }
 }
 ```
 
-The `X-Arknet-Workspace-Dir` header routes each call to the arknet workspace
-for your current session's start directory -- the daemon is shared across all
-projects on the machine, one workspace per repository.
+The `X-Arknet-Project-Anchor` header routes each call to the arknet project
+anchored at your current session's start directory -- the daemon is shared
+across all projects on the machine, one project per repository.
 
 ## MCP Tools
 
