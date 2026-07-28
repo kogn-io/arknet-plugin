@@ -47,8 +47,11 @@ Things to raise in an issue first:
 - Keep pull requests **small and focused** -- one concern per PR. Split unrelated
   changes.
 - Follow existing patterns across the skills; look before you guess.
-- Bump the `version` in `.claude-plugin/plugin.json` when a skill's shipped
-  text changes -- Claude Code caches skill content by version.
+- Bump the `version` in `.claude-plugin/plugin.json` when a skill's shipped text
+  changes **and the version currently on `main` has already been released**.
+  Claude Code caches skill content by version, so a bump only buys anything for
+  a version that ships. While `main` carries an unreleased version, further
+  changes accumulate under it: one bump per release, not per pull request.
 
 ## Commit messages
 
