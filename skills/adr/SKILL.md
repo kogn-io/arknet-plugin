@@ -1,5 +1,5 @@
 ---
-description: "ADRs in docs/adr/ schreiben, reviewen und pflegen -- gegen das arknet-Metamodell (arknet-architecture.ttl). Haelt ADRs als dauerhafte Entscheidungssaetze, nicht als Statusberichte. Trigger: /arknet:adr, 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'ist das ein gutes ADR'. NICHT triggern bei: allgemeiner Doku (asciidoc-writer), Requirements (arkreq), Code-Kommentaren."
+description: "ADRs in docs/adr/ schreiben, reviewen und pflegen -- gegen das arknet-Metamodell (arknet-architecture.ttl). Haelt ADRs als dauerhafte Entscheidungssaetze, nicht als Statusberichte, und ab Status Accepted unveraenderlich -- Korrekturen laufen ueber ein Nachfolge-ADR, nie ueber einen Nachtrag. Trigger: /arknet:adr, 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'ist das ein gutes ADR'. NICHT triggern bei: allgemeiner Doku (asciidoc-writer), Requirements (arkreq), Code-Kommentaren."
 ---
 
 # /arknet:adr -- Architecture Decision Records pflegen
@@ -7,6 +7,15 @@ description: "ADRs in docs/adr/ schreiben, reviewen und pflegen -- gegen das ark
 You maintain arknet's Architecture Decision Records in `docs/adr/`. Your single job:
 keep every ADR a record of a **durable decision and its lasting consequences** -- never a
 status report, never an implementation snapshot.
+
+Two rules override everything else in this skill, and you apply them before any other
+judgement:
+
+1. **Ab `Accepted` ist ein ADR eingefroren.** Nicht editieren, nicht ergaenzen, nicht
+   nachbessern -- nur die Status-Zeile darf sich noch aendern. Ist etwas falsch oder neu:
+   ein neues ADR, das das alte abloest. Siehe "Immutability".
+2. **Querverweise werden einseitig geschrieben.** Nie ein zweites ADR anfassen, um einen
+   Rueckverweis zu pflegen -- das Metamodell leitet die Gegenrichtung ab.
 
 The authority is not taste. It is arknet's own metamodel:
 **`arknet-ontology/src/main/resources/arknet-architecture.ttl`**, class
@@ -27,13 +36,15 @@ These are the slots `arkarch:ArchitectureDecisionRecord` permits. There are no o
 | `arkarch:adrDecision` | "Die getroffene Entscheidung." | `## Entscheidung` |
 | `arkarch:adrConsequences` | "Positive und negative Folgen der Entscheidung." | `## Konsequenzen` |
 | `arkarch:adrAlternatives` | "Erwogene, aber verworfene Optionen mit Begruendung." | `## Alternativen` |
-| `arkarch:relatedTo` / `supersedes` / `supersededBy` | Querverweise zwischen ADRs | `- Verwandt:` Zeile |
+| `arkarch:relatedTo` | loser Querverweis -- **einseitig** geschrieben | `- Verwandt:` Zeile |
+| `arkarch:supersedes` | dieses ADR loest ein aelteres ab -- steht **nur hier**, im neuen ADR | `- Loest ab:` Zeile |
+| `arkarch:supersededBy` | Inverse von `supersedes`, wird **abgeleitet, nie gepflegt** | Status-Zeile des abgeloesten ADR |
 | `arkarch:addressesRequirement` | Traceability zu einem Requirement (#17) | optional in Kontext/Entscheidung |
 | `arkarch:affectsContext` | betroffener Bounded Context | optional in Kontext/Entscheidung |
 
 If you catch yourself writing an "Offene Punkte", "Umsetzung", "Status", "TODO", "Aktueller
-Stand" or "Naechste Schritte" section -- **stop**. No such slot exists. That content belongs
-elsewhere (see below).
+Stand", "Nachtrag", "Ergaenzung" or "Naechste Schritte" section -- **stop**. No such slot
+exists. That content belongs elsewhere (see below).
 
 ## The Litmus Test (apply to every sentence)
 
@@ -51,6 +62,10 @@ Worked example (this exact edit was made to ADR-001):
 Same decision, but one form is a decision record and the other is a status line pretending
 to be one.
 
+Der Test greift **beim Schreiben**, solange das ADR `Proposed` ist. Ab `Accepted` ist er nur
+noch ein Diagnose-, kein Reparaturwerkzeug: du benennst den Schnappschuss, aber du entfernst
+ihn nicht mehr aus dem Record. Siehe "Immutability".
+
 ## Anti-Patterns -- the failure class to guard against
 
 The recurring mistake is smuggling transient implementation state into a durable document.
@@ -63,13 +78,18 @@ Concretely, NEVER put these in an ADR:
    Entscheidung, kein Arbeitszettel.)
 3. **Commit-Refs / PR-Nummern / Datei-Zeilen** -- "siehe Commit fcfaf29", "in
    ModelLoader.java Zeile 42". Fluechtig; gehoert in Git/Issue, nicht ins ADR.
-4. **"Umsetzung" / "Status" / "Naechste Schritte"-Sektion** -- kein Metamodell-Slot.
-5. **Der Agent entscheidet selbst** -- ein ADR haelt die Entscheidung *des Nutzers* fest, nicht deine.
+4. **Nachtrag / Ergaenzung / Update-Abschnitt** -- `## Nachtrag 2026-07-18: dritter Konsument
+   (Issue #66, PR #133)` haelt fest, dass eine Entscheidung *erneut angewendet* wurde. Das
+   ist Fortschritt, nicht Entscheidung. Entweder praezisiert es die Entscheidung wirklich
+   -- dann ist es ein **eigenes ADR**, das das alte abloest -- oder es gehoert in den
+   Tracker. Ein drittes Fach gibt es nicht. Siehe "Immutability".
+5. **"Umsetzung" / "Status" / "Naechste Schritte"-Sektion** -- kein Metamodell-Slot.
+6. **Der Agent entscheidet selbst** -- ein ADR haelt die Entscheidung *des Nutzers* fest, nicht deine.
    Ist die Entscheidung noch nicht getroffen: Status `Proposed` und im Kontext offen benennen
    -- nicht eine Entscheidung erfinden, um den Slot zu fuellen.
-6. **Leere / Pflicht-Alternativen** -- "Keine Alternativen erwogen" ist ein Geruch. Wenn
+7. **Leere / Pflicht-Alternativen** -- "Keine Alternativen erwogen" ist ein Geruch. Wenn
    wirklich alternativlos, kurz begruenden *warum* der Moeglichkeitsraum leer war.
-7. **Marketing-Prosa / Fuellwoerter** -- nuechtern, dicht, ein Gedanke pro Satz.
+8. **Marketing-Prosa / Fuellwoerter** -- nuechtern, dicht, ein Gedanke pro Satz.
 
 ## Wohin der ausgeschlossene Inhalt gehoert
 
@@ -79,9 +99,12 @@ Schnappschuss rausnehmen heisst nicht Information wegwerfen -- nur am richtigen 
 - **Offene Arbeit** -> der Issue-Tracker des Projekts.
 - **Projekt-Fortschritt / "erledigt in Commit X"** -> Git-Historie, Release Notes, projekteigene
   Notizen (z.B. `CLAUDE.md`).
+- **"Entscheidung jetzt auch auf Y angewendet"** -> der Issue/PR, der es getan hat. Eine
+  Entscheidung, die greift, braucht keinen Beleg im ADR -- sie greift ja.
 
-Wenn du einen Schnappschuss aus einem ADR entfernst, pruefe kurz, ob er anderswo schon
-festgehalten ist; wenn nicht, weise darauf hin (nicht stillschweigend loeschen).
+Wenn du einen Schnappschuss aus einem `Proposed` ADR entfernst, pruefe kurz, ob er anderswo
+schon festgehalten ist; wenn nicht, weise darauf hin (nicht stillschweigend loeschen). Aus
+einem `Accepted` ADR entfernst du nichts mehr -- dort nennst du nur den Zielort.
 
 ## Template (Hausstil, deckt sich mit ADR-001..004)
 
@@ -89,7 +112,8 @@ festgehalten ist; wenn nicht, weise darauf hin (nicht stillschweigend loeschen).
 # ADR-NNN: <praegnanter Entscheidungstitel>
 
 - Status: <Proposed|Accepted|Rejected|Deprecated|Superseded> (JJJJ-MM-TT)
-- Verwandt: ADR-XXX, ADR-YYY        # weglassen, wenn keine
+- Verwandt: ADR-XXX, ADR-YYY        # weglassen, wenn keine; einseitig, kein Gegeneintrag drueben
+- Loest ab: ADR-MMM                 # nur wenn dieses ADR ein aelteres abloest
 
 ## Kontext
 
@@ -118,19 +142,58 @@ Regeln zum Template:
   Vergabe der Nummer: `ls docs/adr/` -- hoechste vorhandene + 1.
 - **ASCII only**, keine Unicode-Sonderzeichen (Projekt-Konvention).
 - **Sprache Deutsch** (die bestehenden ADRs sind Deutsch).
-- Nur die vier `##`-Abschnitte oben. Keine weiteren Ueberschriften erfinden.
+- Nur die vier `##`-Abschnitte oben. Keine weiteren Ueberschriften erfinden -- insbesondere
+  kein `## Nachtrag`, `## Ergaenzung`, `## Update`.
+
+## Immutability -- ein `Accepted` ADR wird nicht mehr angefasst
+
+Das ist eine harte Regel, keine Empfehlung. Mit `Accepted` ist der Inhalt
+eingefroren: `## Kontext`, `## Entscheidung`, `## Konsequenzen`, `## Alternativen` werden
+danach **nie wieder** editiert -- nicht praezisiert, nicht ergaenzt, nicht "kurz
+klargestellt", nicht umformuliert. Ein ADR haelt fest, was damals entschieden wurde und
+warum; wer es nachtraeglich glaettet, faelscht das Protokoll.
+
+**Die einzige erlaubte Aenderung ist die Status-Zeile**, und nur in diese Richtungen:
+
+```
+- Status: Superseded (2026-07-28), abgeloest durch ADR-042
+- Status: Deprecated (2026-07-28)
+```
+
+Warum die Status-Zeile beweglich bleibt, obwohl alles andere friert: ADRs werden aus dem
+Code heraus referenziert (im arknet-Korpus hunderte Male aus Javadoc). Wer aus einer
+Java-Datei in `adr-006-*.md` springt, muss dort sehen, dass die Entscheidung tot ist --
+ohne vorher einen Index zu befragen. Eine tote Entscheidung, die sich unveraendert
+`Accepted` nennt, ist gefaehrlicher als jeder Formatverstoss.
+
+Was das fuer dich als Reviewer heisst -- diese Reparaturen darfst du bei einem `Accepted`
+ADR **nicht** vorschlagen und nicht anwenden:
+
+- "Nachtrag zurueck in den Entscheidungssatz falten"
+- "Konsequenz X noch ergaenzen, die ist inzwischen klar geworden"
+- "Formulierung praezisieren / Schnappschuss rausnehmen"
+
+Der Fix ist in allen drei Faellen derselbe: **ein neues ADR**, das das alte abloest. Benenne
+den Verstoss, sag dass das alte Record so stehen bleibt, und biete das Nachfolge-ADR an.
+
+Nur bei `Proposed` ist der Inhalt frei editierbar -- da ist noch nichts protokolliert.
+Findest du einen Verstoss in einem `Accepted` ADR, ist der Befund trotzdem wertvoll: er
+gehoert in das Nachfolge-ADR, nicht in eine Korrektur.
 
 ## Status-Lifecycle
 
-- Neue Entscheidung, noch nicht final beschlossen -> `Proposed`. Datum = heute.
-- Beschlossen -> `Accepted`. (Beispiel ADR-002: "Proposed ... wird Accepted, sobald die
-  OSS-Lizenz festgelegt ist" -- Bedingung fuer den Uebergang explizit machen.)
-- Wird von einem neuen ADR abgeloest: altes ADR -> `Superseded`, `- Verwandt:` bzw. eine
-  "abgeloest durch ADR-NNN"-Notiz; neues ADR nennt "loest ADR-MMM ab" (`supersedes`).
+- Neue Entscheidung, noch nicht final beschlossen -> `Proposed`. Datum = heute. **Die
+  Bedingung fuer den Uebergang explizit nennen** (Beispiel ADR-002: "wird Accepted, sobald
+  die OSS-Lizenz festgelegt ist"). Ein `Proposed` ohne Uebergangsbedingung ist ein Geruch.
+- Beschlossen -> `Accepted`. Ab hier gilt "Immutability" (Abschnitt oben).
+- Wird von einem neuen ADR abgeloest: das **neue** ADR nennt "loest ADR-MMM ab"
+  (`supersedes`); im alten ADR aendert sich **ausschliesslich die Status-Zeile** auf
+  `Superseded (Datum), abgeloest durch ADR-NNN`. Kein Nachtrag, keine Notiz, kein Eintrag
+  in `- Verwandt:`.
 - `Rejected` = erwogen und verworfen (bleibt als Dokumentation stehen).
 - `Deprecated` = ueberholt ohne konkreten Nachfolger.
-- **Status nie ruecklos aendern** -- ein `Accepted` ADR wird nicht editiert, als waere die
-  alte Entscheidung nie getroffen worden; es wird superseded.
+- Status nie ruecklos aendern: ein abgeloestes ADR wird nicht so umgeschrieben, als waere
+  die alte Entscheidung nie getroffen worden.
 
 ## Cross-ADR-Konsistenz
 
@@ -142,16 +205,27 @@ eines neuen und beim Reviewen eines bestehenden ADR die *anderen* ADRs gegenlese
    `Accepted`/`Proposed` ADR widerspricht? Wenn ja: nicht stillschweigend beides
    stehenlassen -- den Konflikt benennen. Entweder loest das neue das alte ab (Superseded,
    siehe unten) oder einer der beiden ist falsch.
-2. **Superseding sauber gepaart.** Loest dieses ADR ein aelteres ab? Dann: neues ADR nennt
-   "loest ADR-MMM ab", altes ADR bekommt Status `Superseded` + Rueckverweis. Nie nur eine
-   Seite. Keine verwaisten `supersededBy`-Verweise auf nicht existierende Nummern.
+2. **Superseding steht im neuen ADR.** Loest dieses ADR ein aelteres ab? Dann nennt das
+   **neue** ADR "loest ADR-MMM ab"; im alten aendert sich nur die Status-Zeile (siehe
+   "Immutability"). Das ist die ganze Pflicht -- kein Rueckverweis, keine Notiz im alten
+   Record.
 3. **Superseded/Deprecated ADRs sagen nichts mehr als gueltig.** Ein abgeloestes ADR bleibt
    als Historie stehen, darf aber nicht so klingen, als sei seine Entscheidung noch in Kraft
-   -- Status-Zeile muss das klarstellen.
-4. **`- Verwandt:`-Verweise sind beidseitig** und zeigen auf existierende Nummern. Nennt
-   ADR-A "Verwandt: ADR-B", muss ADR-B auch ADR-A nennen.
+   -- die Status-Zeile muss das klarstellen. Sie ist dafuer auch das einzige Mittel: der
+   Fliesstext bleibt unveraendert stehen und redet weiter im Praesens.
+4. **Verweise sind einseitig.** Ein Querverweis wird genau einmal geschrieben -- in dem
+   Record, der die Aussage macht. Das *zitierende* ADR nennt das verwandte unter
+   `- Verwandt:`; das genannte ADR bekommt **keinen** Gegeneintrag. Ein fehlender
+   Rueckverweis ist kein Befund.
+   Warum: das Metamodell leitet die Gegenrichtung selbst ab -- `arkarch:supersededBy` ist
+   `owl:inverseOf arkarch:supersedes`, `arkarch:relatedTo` ist eine `owl:SymmetricProperty`.
+   Ein handgepflegter Rueckverweis waere also redundant, und er wuerde erzwingen, was
+   "Immutability" verbietet: das Editieren eines eingefrorenen Records.
+   Was bleibt: Verweise muessen auf **existierende** Nummern zeigen. Verwaiste Nummern sind
+   weiterhin ein Befund.
 5. **Keine Doppelung.** Zwei ADRs, die dieselbe Entscheidung treffen, sind ein Geruch --
-   zusammenfuehren oder eines als `Superseded` markieren.
+   zusammenfuehren (nur solange beide `Proposed` sind) oder das aeltere als `Superseded`
+   markieren.
 
 Bei einem gefundenen Widerspruch: melden, welche zwei ADRs kollidieren und worin, und einen
 Aufloesungsvorschlag machen (ablosen / korrigieren / zusammenfuehren) -- nicht raten.
@@ -163,23 +237,42 @@ Aufloesungsvorschlag machen (ablosen / korrigieren / zusammenfuehren) -- nicht r
 2. Ist die Entscheidung wirklich getroffen? Wenn nein -> `Proposed`, Offenheit im Kontext
    benennen, NICHT erfinden.
 3. Template fuellen, Litmus-Test auf jeden Satz anwenden.
-4. Verwandte ADRs verlinken (und dort ggf. den Rueckverweis ergaenzen).
+4. Verwandte ADRs verlinken -- **nur hier, einseitig**. Die verlinkten Records bleiben
+   unangetastet.
 5. Cross-ADR-Konsistenz pruefen (siehe Abschnitt oben): widerspricht/abloest es ein
-   bestehendes ADR? Wenn ja, die andere Seite mitpflegen.
+   bestehendes ADR? Loest es ab, dann am alten Record **ausschliesslich die Status-Zeile**
+   auf `Superseded (Datum), abgeloest durch ADR-NNN` setzen -- sonst nichts.
 
-**Bestehendes ADR reviewen (Checkliste):**
-- [ ] Genau die vier Abschnitte, keine erfundenen (Offene Punkte / Umsetzung / Status)?
+**Bestehendes ADR reviewen.** Schritt 0 ist immer derselbe: **Status lesen.** Er entscheidet,
+welche Reparatur ueberhaupt zur Debatte steht.
+
+- `Proposed` -> Inhalt ist frei editierbar. Befunde direkt fixen.
+- `Accepted` / `Superseded` / `Deprecated` / `Rejected` -> eingefroren. Befunde **melden,
+  nicht reparieren**; der Fix ist ein Nachfolge-ADR. Einzige erlaubte Aenderung an der Datei
+  ist die Status-Zeile. Siehe "Immutability".
+
+Checkliste:
+- [ ] Genau die vier Abschnitte, keine erfundenen (Offene Punkte / Umsetzung / Status /
+      Nachtrag / Ergaenzung)?
+- [ ] Keine Spur einer Nach-Accepted-Bearbeitung: kein Nachtrag, kein "Update", keine
+      Issue-/PR-Nummer im Text? (Fehlerklasse: Fortschritt statt Entscheidung)
 - [ ] Jeder Satz uebersteht den Litmus-Test (kein Schnappschuss, keine Commit-Ref)?
 - [ ] Status + Datum gesetzt, genau ein Status?
+- [ ] Bei `Proposed`: ist die Bedingung fuer den Uebergang nach `Accepted` benannt?
+- [ ] Bei `Superseded`: nennt die Status-Zeile das abloesende ADR?
 - [ ] Enthaelt `## Konsequenzen` echte *Folgen* (nicht Wiederholung der Entscheidung)?
 - [ ] Sind `## Alternativen` substanziell (nicht "keine erwogen")?
 - [ ] Nummer eindeutig, Dateiname `adr-NNN-<kebab>.md`, ASCII, Deutsch?
-- [ ] Querverweise beidseitig und auf existierende Nummern?
-- [ ] Cross-ADR-Konsistenz: kein Widerspruch zu anderen ADRs, Superseding sauber gepaart,
-      keine Doppelung (siehe Abschnitt "Cross-ADR-Konsistenz")?
+- [ ] Querverweise auf existierende Nummern -- und *einseitig*, also ohne handgepflegten
+      Rueckverweis im anderen Record?
+- [ ] Cross-ADR-Konsistenz: kein Widerspruch zu anderen ADRs, Superseding im neuen Record
+      benannt, keine Doppelung (siehe Abschnitt "Cross-ADR-Konsistenz")?
 
-Bei Verstoss: nicht kommentarlos umschreiben -- den Verstoss benennen (welche Fehlerklasse),
-den Fix vorschlagen bzw. anwenden, und sagen, wohin der entfernte Inhalt gehoert.
+Bei Verstoss: nie kommentarlos umschreiben -- den Verstoss benennen (welche Fehlerklasse),
+und dann nach Status verzweigen. Bei `Proposed`: Fix vorschlagen bzw. anwenden und sagen,
+wohin der entfernte Inhalt gehoert. Bei allem ab `Accepted`: sagen, dass das Record so
+stehen bleibt, und ein Nachfolge-ADR anbieten -- auch dann, wenn der Fix ein Einzeiler
+waere. Gerade dann.
 
 ## Referenz -- Gold-Beispiele
 
