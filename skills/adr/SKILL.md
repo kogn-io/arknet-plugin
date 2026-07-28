@@ -183,7 +183,8 @@ and why; smoothing it over after the fact falsifies the minutes.
 
 Why the status line stays mobile while everything else freezes: ADRs get referenced from
 the code, typically from doc comments. Someone arriving in the file from there must see
-that the decision is dead without consulting an index first. A dead decision that still
+that the decision is dead without consulting the index first (see "The index"). A dead
+decision that still
 calls itself `Accepted` is more dangerous than any formatting violation.
 
 What this means for you as a reviewer -- these repairs you may **not** propose and may not
@@ -235,6 +236,7 @@ stateDiagram-v2
 - `Superseded` -- replaced by a named successor. The **new** ADR states
   `Supersedes: ADR-MMM`; in the old one **only the status line** changes, to
   `Superseded (date), superseded by ADR-NNN`. No addendum, no note, no entry in `Related:`.
+  The index gets both lines updated (see "The index").
 
 **The arrows that are missing, and why:**
 
@@ -250,6 +252,41 @@ stateDiagram-v2
 `Deprecated -> Superseded` is the one late transition that is allowed: an obsolete decision
 that eventually does get a successor. It changes the status line only, which is the one edit
 the frozen box permits.
+
+## The index -- `docs/adr/README.md`
+
+A project with ADRs carries an index, from the first record on. Not from the fifth: a
+threshold would be one more thing to evaluate, and it creates a moment where someone has to
+reconstruct the missing lines after the fact. Writing an ADR touches two files -- always.
+
+One line per record: number, title, status, date, and the decision in a single sentence.
+
+```markdown
+| #   | Title                          | Status                  | Date       | Decision |
+|-----|--------------------------------|-------------------------|------------|----------|
+| 001 | <title>                        | Accepted                | 2026-01-14 | <one sentence> |
+| 002 | <title>                        | Superseded by ADR-007   | 2026-02-03 | <one sentence> |
+```
+
+**The index is a derived view, not a source.** The status line inside the record is
+authoritative. Where the two disagree, the record wins and the index gets corrected -- never
+the other way round. That rule is what keeps the index from becoming a second
+hand-maintained truth, which is exactly what this skill removed from cross-references.
+
+Maintaining it:
+
+- **Writing a new ADR** -> add its line, in the same step. An ADR without an index line is
+  half-written.
+- **Superseding or deprecating** -> the new record gets its line, and the old record's line
+  gets the new status. Both are index edits; the frozen record itself only ever sees its
+  status line change (see "Immutability").
+- **Reviewing** -> you do not silently create or rewrite the index. A missing index, a
+  missing line, or a status that disagrees with its record is a finding: report it, and
+  offer to build it.
+
+What the index does *not* do is carry the deadness of a decision on its own. A reader
+arriving in a record from a code comment must see the status there. The index makes drift
+visible across the corpus; it does not replace the status line.
 
 ## Cross-ADR consistency
 
@@ -295,6 +332,8 @@ resolution (supersede / correct / merge) -- do not guess.
 6. Check cross-ADR consistency (see the section above): does it contradict or supersede an
    existing ADR? If it supersedes, set **only the status line** of the old record to
    `Superseded (date), superseded by ADR-NNN` -- nothing else.
+7. Update `docs/adr/README.md`: add the new record's line, and adjust the status of any
+   record this one supersedes or deprecates (see "The index").
 
 **Reviewing an existing ADR.** Step 0 is always the same: **read the status.** It decides
 which repair is even on the table.
@@ -320,6 +359,8 @@ Checklist:
       hand-maintained back-reference in the other record?
 - [ ] Cross-ADR consistency: no contradiction with other ADRs, superseding stated in the new
       record, no duplication (see "Cross-ADR consistency")?
+- [ ] Does `docs/adr/README.md` exist, does this record have a line in it, and does that
+      line's status match the record's own status line? (report, do not fix silently)
 
 On a violation: never rewrite silently -- name the violation (which failure class), then
 branch on status. At `Proposed`: propose or apply the fix and say where the removed content
