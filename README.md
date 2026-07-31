@@ -10,36 +10,41 @@ its own release cycle.
 
 ### `/arknet:adr`
 
-Maintains Architecture Decision Records in `docs/adr/` against arknet's own
-metamodel (`arkarch:ArchitectureDecisionRecord`). Keeps every ADR a record of
-a durable decision and its lasting consequences -- never a status report,
-never an implementation snapshot.
+Maintains Architecture Decision Records as first-class resources in the arknet
+store (`arkarch:ArchitectureDecisionRecord`), via arknet's `adr_add`/
+`adr_list`/`adr_get`/`adr_set_status`/`adr_supersede` MCP tools -- not
+Markdown files. Keeps every ADR a record of a durable decision and its
+lasting consequences -- never a status report, never an implementation
+snapshot.
 
-**One decision per record.** Every numbered point of a decision faces the
-independence test -- "could it have gone the other way without changing the
-point before it?" -- and a point that could becomes its own ADR. This is not
-tidiness: a record holding two decisions cannot be superseded, because reversing
-one half of it would mean editing a frozen file. Length is treated as a symptom
-of the same problem, and implementation detail -- class names, signatures,
-literal parameter values -- is kept out, so that a rename cannot falsify a
-decision.
+**One decision per record**, still enforced by discipline rather than the
+store: the independence test -- "could a point have gone the other way
+without changing the point before it?" -- decides whether it is its own ADR.
+`adr_supersede` points at the whole record, so a bundled decision cannot be
+superseded in part. Implementation detail -- class names, signatures, literal
+parameter values -- is kept out of `decision`/`consequences` for the same
+reason files were kept clean of it: a rename should never falsify a decision.
 
-**Accepted records are frozen.** From status `Accepted` on, the skill will not
-edit an ADR -- not to fold in an addendum, not to add a consequence that has
-since become clear, not to tighten wording. It reports the finding and offers a
-successor ADR instead. Only the status line still moves, to
-`Superseded by ADR-NNN` or `Deprecated`, so that a reader arriving from a code
-comment sees a dead decision as dead. Cross-references are written one-sidedly:
-the record making the claim carries it, the other one is never touched, because
-the metamodel derives the reverse direction.
+**The lifecycle the tools implement is narrower than the ontology.**
+`adr_set_status` only supports `PROPOSED -> ACCEPTED`; there is no tool call
+for `Rejected`/`Deprecated`, and `adr_supersede` records the relation without
+touching the superseded decision's status (tracked as
+[kogn-io/arknet#91](https://github.com/kogn-io/arknet/issues/91)). Judging
+whether a decision is still in force therefore means checking the
+`supersedes`/`superseded by` fields, not the status alone.
 
-**It maintains an index**, `docs/adr/README.md`, from the first record on --
-number, title, status, date and the decision in one line. The index is a derived
-view: where it disagrees with a record's own status line, the record wins.
+**No correction path.** There is no update or delete tool -- a `PROPOSED`
+decision entered with the wrong text stays as it is. The skill confirms
+content with the user before writing, rather than writing speculatively.
 
-The skill adapts to the project it runs in. Language, section names and file
-naming follow the existing corpus; only a project without any ADRs gets the
-English defaults.
+### `/arknet:legacy-adr`
+
+The file-based predecessor of `/arknet:adr`, kept for projects that still
+maintain their ADRs as Markdown under `docs/adr/` and have not migrated to
+the store yet. Same durable-decision discipline (one decision per record,
+immutability from `Accepted` on, an index at `docs/adr/README.md`), applied
+to files instead of store resources. New projects should use `/arknet:adr`;
+this skill exists only for backward compatibility during the transition.
 
 ### `/arknet:req-interview`
 
