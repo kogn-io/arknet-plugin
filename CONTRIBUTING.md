@@ -54,6 +54,14 @@ Things to raise in an issue first:
   one beside it under `skills/<name>/reference/` rather than pointing at files
   the reader does not have. Rules that must hold everywhere are the skill's;
   everything else follows the project being worked on.
+- **If a skill defines a subagent that needs arknet MCP tools, reference the
+  existing `arknet` server entry from the root `.mcp.json` by name -- never
+  redefine it inline.** In particular, never give the subagent its own
+  `stdio` entry that launches a local server process. arknet runs as a single
+  shared, long-lived HTTP daemon (`127.0.0.1:47331`) precisely because two
+  processes opening the same on-disk RDF store directory collide on its file
+  lock and crash; an inline definition that spawns a second local instance
+  reproduces that crash.
 - Bump the `version` in `.claude-plugin/plugin.json` when a skill's shipped text
   changes **and the version currently on `main` has already been released**.
   Claude Code caches skill content by version, so a bump only buys anything for
