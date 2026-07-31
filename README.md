@@ -149,12 +149,22 @@ are rejected with a didactic error rather than silently accepted.
 - `bc_link_term` -- link a bounded context to a glossary term of its
   ubiquitous language.
 
+### Architecture decisions
+
+- `adr_add` -- record a new architecture decision (context, decision,
+  consequences, considered options); always starts `PROPOSED`.
+- `adr_get` / `adr_list` -- fetch one / list all decisions, with both
+  directions of the `supersedes` relation.
+- `adr_set_status` -- change lifecycle status; today only
+  `PROPOSED` -> `ACCEPTED`.
+- `adr_supersede` -- record that one decision replaces an older one.
+
 ### Traceability and analysis
 
 - `trace_matrix` -- for every requirement: which glossary terms it uses and
   which use case(s) realise it.
 - `impact_analysis` -- what is transitively affected if a given requirement,
-  term or use case changes.
+  term, use case or architecture decision changes.
 - `orphan_check` -- find requirements that no use case realises, and glossary
   terms that are never referenced.
 
