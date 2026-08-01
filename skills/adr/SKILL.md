@@ -25,7 +25,7 @@ model the project is actually on before writing anything.
 | `adr_add` | Record a new decision. Always starts `PROPOSED`; takes no status parameter. |
 | `adr_list` | One compact line per decision: code, status, title, addresses/affects/supersedes/superseded-by. |
 | `adr_get` | A single decision's full text, plus both directions of `supersedes`. |
-| `adr_set_status` | The only supported transition: `PROPOSED -> ACCEPTED`. |
+| `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. |
 | `adr_supersede` | Records that one decision replaces an older one (relation only -- see "Lifecycle" below). |
 
 `adr_add(name, adrContext, decision, consequences?, alternatives?, decisionDate?, addressesRequirements?, affectsContexts?)`:
@@ -81,21 +81,21 @@ not validate decision *quality*. That is still yours to enforce:
 ## Lifecycle -- narrower than the ontology
 
 The ADR ontology defines five statuses (`Proposed`, `Accepted`, `Rejected`, `Deprecated`,
-`Superseded`). The tool surface today implements only two: `adr_set_status` accepts nothing but
-`PROPOSED -> ACCEPTED`, and will error on anything else. There is currently **no tool call that
-marks a decision `Rejected` or `Deprecated`**, and `adr_supersede` does **not** change the
-superseded decision's status -- it only records the `supersedes` relation. An old ADR keeps
-whatever status it had (typically `ACCEPTED`) forever; the fact that it has been superseded is
-visible only through the `supersedes`/`superseded by` fields `adr_get`/`adr_list` render, never
-through the status line. This gap is tracked in kogn-io/arknet#91 -- do not invent a
-workaround for it (there is no unsupported status value that will silently work).
+`Superseded`). The tool surface implements four of them: `adr_set_status` supports
+`PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, and `ACCEPTED -> DEPRECATED` -- any other
+transition errors. `Superseded` is still not a settable status: `adr_supersede` does **not**
+change the superseded decision's status, it only records the `supersedes` relation. An old ADR
+keeps whatever status it had (typically `ACCEPTED`) forever; the fact that it has been
+superseded is visible only through the `supersedes`/`superseded by` fields `adr_get`/`adr_list`
+render, never through the status line.
 
 What this means in practice:
 
-- **Rejecting a proposal.** There is no clean way to record "rejected" in the store today. Say
-  so to the user and let them choose: leave it `PROPOSED` with the rejection and its reason
-  noted in `consequences`/`decision` until the tool supports the status, or don't add it to the
-  store at all and record the rejection elsewhere. Don't decide silently.
+- **Rejecting a proposal.** Call `adr_set_status(id, "REJECTED")` -- do not fold the rejection
+  into `consequences`/`decision` text as a workaround.
+- **Deprecating a decision that became obsolete without a successor.** Call
+  `adr_set_status(id, "DEPRECATED")`. If a newer decision replaces it instead, use
+  `adr_supersede` (see below), not `DEPRECATED`.
 - **Judging whether a decision is still in force.** Never read only the status. After an
   `adr_supersede` call, the superseded decision still reads `ACCEPTED` -- check its
   `superseded by` field (via `adr_get`, or the inline annotation `adr_list` already shows) before
@@ -131,9 +131,10 @@ freely editable, not even at `Proposed`.
   `addressesRequirements`/`affectsContexts` still resolve to requirements/contexts that
   actually exist (`req_get`/`bc_get` -- the store does not re-validate references on read, only
   on write); a shipped decision reads `ACCEPTED`, not still `PROPOSED`.
-- What you cannot check: staleness beyond `Accepted` (no `Deprecated`/`Rejected` to look for --
-  see "Lifecycle"). Don't report its absence as a per-record finding; it's a tool-surface gap,
-  already tracked.
+- A decision that is `ACCEPTED` but no longer actually followed -- and not superseded by
+  another ADR -- should be flagged to the user for `adr_set_status` to `DEPRECATED`, not left
+  stale. What you still cannot check from status alone: `Superseded` is never written as a
+  status (see "Lifecycle") -- always cross-check `superseded by` before trusting `ACCEPTED`.
 
 ## Scope boundary
 
