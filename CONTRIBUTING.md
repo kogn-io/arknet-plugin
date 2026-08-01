@@ -67,6 +67,15 @@ Things to raise in an issue first:
   Claude Code caches skill content by version, so a bump only buys anything for
   a version that ships. While `main` carries an unreleased version, further
   changes accumulate under it: one bump per release, not per pull request.
+- **A skill that starts calling an arknet MCP tool not already covered in
+  `hooks/required-tools.json`:** add it there (`"plugin:skill": ["tool", ...]`).
+  This is a process reflex, not an automated check -- nothing enforces that the
+  list stays accurate, the same tradeoff already made for the mirror-image
+  problem on the `arknet` side (its issue tracker: does a changed MCP tool
+  layer touch a plugin skill? -- no contract test, a reminder in the review
+  path instead, because both repos are small enough to mostly be maintained
+  together). Keep it in mind at the same points: when touching a skill's tool
+  table, and at a `/wrapup`-style session close.
 
 ## Commit messages
 
