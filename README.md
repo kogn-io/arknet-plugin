@@ -68,6 +68,28 @@ consistency, testability, dependencies, priority differentiation), and --
 for glossary terms -- implementation-free and config-free definitions. It
 interrogates the user on every gap it finds.
 
+### `/arknet:bc-audit`
+
+Audits an already-filled requirements/use-case/glossary register for
+emergent Bounded Context candidates -- it is an **audit**, never a
+greenfield "which contexts does your system need" interview. Bounded
+Context boundaries are meant to emerge from language collisions already
+present in a filled register, not be drawn on a blank whiteboard before
+the domain vocabulary exists.
+
+Reads `actor_usecase_matrix` (which use cases share an actor) and
+`term_cooccurrence` (which glossary terms are named together, and which
+never are) as raw, unclustered data -- the same "facts in, judgement stays
+with the agent and the user" discipline `orphan_check`/`trace_matrix`
+already apply in `/arknet:req-interview`. Presents each candidate
+collision one at a time, own assessment first, then asks whether it is a
+deliberate boundary or a coincidental clustering; only on confirmation
+does it write a Bounded Context (`bc_add`) and link its glossary terms
+(`bc_link_term`), followed by an `impact_analysis` ripple check. Out of
+scope: tactical design (Aggregate/Entity/Value Object/Domain Event) and
+context-map relationship types (Partnership/Anti-Corruption Layer/...) --
+neither has a tool surface yet.
+
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)
@@ -229,6 +251,12 @@ are rejected with a didactic error rather than silently accepted.
   term, use case or architecture decision changes.
 - `orphan_check` -- find requirements that no use case realises, and glossary
   terms that are never referenced.
+- `actor_usecase_matrix` -- raw bipartite view: which use cases each actor
+  appears in (`primaryActor`/`supportingActor`), and which actors each use
+  case names. No clustering or judgement -- data for `/arknet:bc-audit`.
+- `term_cooccurrence` -- which glossary terms are named together in the same
+  requirement/use-case text, and which never are -- raw data for spotting a
+  homonym (same term, different meaning per context) vs. a true duplicate.
 
 ### Generic store access
 
