@@ -26,12 +26,11 @@ parameter values -- is kept out of `decision`/`consequences` for the same
 reason files were kept clean of it: a rename should never falsify a decision.
 
 **The lifecycle the tools implement is narrower than the ontology.**
-`adr_set_status` only supports `PROPOSED -> ACCEPTED`; there is no tool call
-for `Rejected`/`Deprecated`, and `adr_supersede` records the relation without
-touching the superseded decision's status (tracked as
-[kogn-io/arknet#91](https://github.com/kogn-io/arknet/issues/91)). Judging
-whether a decision is still in force therefore means checking the
-`supersedes`/`superseded by` fields, not the status alone.
+`adr_set_status` supports `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, and
+`ACCEPTED -> DEPRECATED`; `Superseded` is still not a settable status --
+`adr_supersede` records the relation without touching the superseded
+decision's status. Judging whether a decision is still in force therefore
+means checking the `supersedes`/`superseded by` fields, not the status alone.
 
 **No correction path.** There is no update or delete tool -- a `PROPOSED`
 decision entered with the wrong text stays as it is. The skill confirms
@@ -253,8 +252,9 @@ are rejected with a didactic error rather than silently accepted.
   consequences, considered options); always starts `PROPOSED`.
 - `adr_get` / `adr_list` -- fetch one / list all decisions, with both
   directions of the `supersedes` relation.
-- `adr_set_status` -- change lifecycle status; today only
-  `PROPOSED` -> `ACCEPTED`.
+- `adr_set_status` -- change lifecycle status; supports
+  `PROPOSED` -> `ACCEPTED`, `PROPOSED` -> `REJECTED`, and
+  `ACCEPTED` -> `DEPRECATED`.
 - `adr_supersede` -- record that one decision replaces an older one.
 
 ### Traceability and analysis
