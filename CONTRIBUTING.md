@@ -67,21 +67,6 @@ Things to raise in an issue first:
   Claude Code caches skill content by version, so a bump only buys anything for
   a version that ships. While `main` carries an unreleased version, further
   changes accumulate under it: one bump per release, not per pull request.
-- **A skill that calls a newer MCP tool must not let a mismatched server
-  surface as a raw "unknown tool" error.** The plugin and the `arknet`
-  server release independently, and Claude Code has no channel that lets a
-  skill actively query which server version it is talking to (the MCP
-  `initialize` handshake's `serverInfo.version` is client-level, not
-  something a tool call can read) -- so there is nothing to check
-  proactively, only a failure to catch reactively. Where a skill relies on a
-  tool younger than the rest of its toolset, say so in prose next to the
-  tool (no version number or issue reference -- both go stale the moment
-  they ship or get renumbered; the fact that it is newer is what matters,
-  not when), and add a protocol step that catches the resulting unknown-tool
-  error and tells the user plainly that their connected `arknet` server is
-  missing a tool this skill needs -- instead of relaying the raw MCP error
-  or failing silently. See `/arknet:bc-audit`'s `actor_usecase_matrix`/
-  `term_cooccurrence` entries for the pattern.
 
 ## Commit messages
 
