@@ -71,6 +71,12 @@ not validate decision *quality*. That is still yours to enforce:
   `decision`/`consequences`.
 - **Substantive alternatives.** "No alternatives considered" is a smell, not an answer -- if the
   option space genuinely was empty, say briefly why.
+- **Role-based language, not personal names.** Check `adrContext`/`decision`/`consequences`/
+  `alternatives` for named individuals (e.g. "Fred uses...") and replace with the store's
+  existing convention of role-based language ("the user", "the operator"), matching how
+  requirements and bounded contexts already phrase this. There is no `adr_update` tool to fix
+  this after the fact, so a personalized ADR is a permanent blemish on an otherwise-correct
+  record -- catch it before writing.
 
 ## Lifecycle -- narrower than the ontology
 
