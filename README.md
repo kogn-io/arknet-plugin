@@ -180,7 +180,7 @@ returns a compact digest plus the path to a self-contained HTML report
 (requirements with their acceptance criteria, use cases with their flow, the
 glossary, bounded contexts).
 
-Later, two more entry points build on the same register:
+Later, three more entry points build on the same register:
 
 - `/arknet:adr` -- once a HOW decision needs recording (which store/library/
   pattern, and why), not part of the requirements interview.
@@ -189,6 +189,10 @@ Later, two more entry points build on the same register:
   intake: it checks structural gaps (`orphan_check`/`trace_matrix`) and then
   every item against a fixed linguistic and ISO 29148 quality checklist --
   useful once the register has grown past a handful of entries.
+- `/arknet:bc-audit` -- once the register holds enough requirements/use
+  cases/terms for language collisions to emerge, audits it for Bounded
+  Context candidates instead of asking you to draw boundaries on a blank
+  whiteboard. See below for the full protocol.
 
 ## MCP Tools
 
