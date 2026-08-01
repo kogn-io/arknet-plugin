@@ -36,13 +36,13 @@ themselves, matching how `orphan_check`/`trace_matrix` already work in
 `/arknet:req-interview`: facts in, judgement stays with the interviewing
 agent and the user.
 
-**Version note.** Both tools were merged via `kogn-io/arknet#114` and ship
-starting with `arknet` `0.5.0` -- they will not exist on an older connected
-server. If either call fails with an unknown-tool/method-not-found error,
-that is a version gap, not a bug: say so plainly ("your connected arknet
-server predates the `0.5.0` release this audit needs -- update the arknet-mcp
-daemon and try again") instead of relaying the raw MCP error or treating it
-as an empty register.
+**Version note.** These two tools are newer than the rest of this skill's
+toolset and may not exist yet on an older connected server. If either call
+fails with an unknown-tool/method-not-found error, that is a version gap,
+not a bug: say so plainly ("your connected arknet server does not have the
+`actor_usecase_matrix`/`term_cooccurrence` tools this audit needs yet --
+update the arknet-mcp daemon and try again") instead of relaying the raw MCP
+error or treating it as an empty register.
 
 ## Protocol
 
@@ -55,9 +55,9 @@ as an empty register.
    that always appear together and might be the same concept named twice.
    These tools hand you structure, not a verdict -- the boundary judgement
    is yours to draw, then the user's to confirm. If either call errors as
-   unknown-tool, stop and tell the user their arknet server predates `0.5.0`
-   (see the version note above) rather than continuing as if the register
-   were empty.
+   unknown-tool, stop and tell the user their arknet server is missing a
+   required tool (see the version note above) rather than continuing as if
+   the register were empty.
 3. **Present each candidate, one at a time.** Give your own assessment
    first ("these use cases split along actor X, which reads as two
    contexts to me because ..."), then ask the user directly: is this a
