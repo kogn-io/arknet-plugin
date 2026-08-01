@@ -106,6 +106,68 @@ The `X-Arknet-Project-Anchor` header routes each call to the arknet project
 anchored at your current session's start directory -- the daemon is shared
 across all projects on the machine, one project per repository.
 
+## Getting started
+
+Once the daemon is running and the plugin is installed and configured (see
+above), start Claude Code from your project's directory -- that directory
+becomes the project's anchor.
+
+**Register the project, once:**
+
+```
+project_add(label: "my-project")
+```
+
+Then start the actual work with the skill, not with the raw tools:
+
+```
+/arknet:req-interview
+```
+
+Tell it what you want to build, in a sentence. It interviews you -- one
+question at a time, always with its own suggested answer attached so you are
+deciding from a position, not a blank prompt -- until a requirement, use case
+or glossary term is testable and unambiguous. Only then does it write
+anything (`req_add`/`uc_add`/`term_add` behind the scenes; you see the
+resulting codes, e.g. `FR-1`, `TERM-3`, `UC1`, not the raw calls). A
+shortened example:
+
+```
+> /arknet:req-interview
+> I want librarians to be able to check a book back in.
+
+Skill: Before "check in" -- is "loan" already a term in your glossary, or
+  should this interview define it? [...]
+You:   Define it: a loan is ...
+Skill: Got it -- TERM-1 "Loan". Now, "check in": what should happen if the
+  book is returned damaged, or after the due date? [...]
+[... interview continues, one question at a time ...]
+Skill: Written: FR-1 "Close a loan when its book is returned" (done-when:
+  loan marked returned with a condition, or a named failure reason), UC1
+  "Check in a book" realising FR-1. No ripple into the existing set.
+```
+
+Once something is in the store, see it rendered as a model rather than as
+triples:
+
+```
+store_overview
+```
+
+returns a compact digest plus the path to a self-contained HTML report
+(requirements with their acceptance criteria, use cases with their flow, the
+glossary, bounded contexts).
+
+Later, two more entry points build on the same register:
+
+- `/arknet:adr` -- once a HOW decision needs recording (which store/library/
+  pattern, and why), not part of the requirements interview.
+- Asking the req-interview skill to **"review the requirements/use cases/
+  glossary relentlessly"** re-runs it as a full-set audit instead of an
+  intake: it checks structural gaps (`orphan_check`/`trace_matrix`) and then
+  every item against a fixed linguistic and ISO 29148 quality checklist --
+  useful once the register has grown past a handful of entries.
+
 ## MCP Tools
 
 arknet manages DDD architecture models -- requirements, use cases, a
