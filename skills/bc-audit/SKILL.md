@@ -47,12 +47,29 @@ agent and the user.
    that always appear together and might be the same concept named twice.
    These tools hand you structure, not a verdict -- the boundary judgement
    is yours to draw, then the user's to confirm.
-3. **Present each candidate, one at a time.** Give your own assessment
-   first ("these use cases split along actor X, which reads as two
-   contexts to me because ..."), then ask the user directly: is this a
-   deliberate boundary, or a coincidental clustering that doesn't warrant
-   a context split? Same pacing discipline as `/arknet:req-interview`:
-   one candidate, one question, wait for the answer.
+3. **Present each candidate, one at a time.** Before presenting a
+   candidate's name, run a short naming self-check:
+   - Where does this name come from -- the collision just found in step 2,
+     or old context/memory from an earlier session? If the latter,
+     re-derive it from what step 2 actually shows instead of reusing it;
+     a name that was only ever a discussion suggestion is not a finding.
+   - Does the name fit the project's own architecture/domain premises,
+     where documented (e.g. a project-local `CLAUDE.md`)? A name that
+     contradicts a stated principle -- e.g. "this app only mediates, it
+     owns no data" ruling out a "Verwaltung"/"management" name -- needs to
+     be revised before it reaches the user.
+   - If this run presents more than one candidate: do their names follow
+     the same pattern/category, or is a deviation substantively
+     justified? Inconsistent naming across candidates from the same run
+     (e.g. one "-assistenz", one "-verwaltung" with no reason for the
+     difference) is a signal to fix before presenting, not after.
+
+   Then give your own assessment first ("these use cases split along
+   actor X, which reads as two contexts to me because ..."), and ask the
+   user directly: is this a deliberate boundary, or a coincidental
+   clustering that doesn't warrant a context split? Same pacing
+   discipline as `/arknet:req-interview`: one candidate, one question,
+   wait for the answer.
 4. **On confirmation, write it in.** `bc_add` with a `domainVision`
    phrased from what the user just said, not invented to satisfy the
    field's minimum length. Then `bc_link_term` for every glossary term the
