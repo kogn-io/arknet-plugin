@@ -128,6 +128,16 @@ The `X-Arknet-Project-Anchor` header routes each call to the arknet project
 anchored at your current session's start directory -- the daemon is shared
 across all projects on the machine, one project per repository.
 
+## Compatibility check
+
+This plugin and the arknet MCP server release independently, so a skill can
+occasionally expect a tool an older connected server doesn't have yet. A
+`SessionStart` hook checks the live tool set against what the shipped skills
+need and, once per session, warns if something's missing -- naming the
+affected skill so you know to update the arknet-mcp daemon rather than
+wonder why a skill is failing. The check is silent otherwise: no server
+reachable, or everything present, produces no extra output.
+
 ## Getting started
 
 Once the daemon is running and the plugin is installed and configured (see
