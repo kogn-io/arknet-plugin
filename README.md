@@ -6,6 +6,29 @@ Claude Code integration (skills + distribution MCP config) only; the model
 store and its tools live in the `arknet` MCP server, a separate project with
 its own release cycle.
 
+## Table of Contents
+
+- [Skills](#skills)
+  - [`/arknet:adr`](#arknetadr)
+  - [`/arknet:legacy-adr`](#arknetlegacy-adr)
+  - [`/arknet:req-interview`](#arknetreq-interview)
+  - [`/arknet:bc-audit`](#arknetbc-audit)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Compatibility check](#compatibility-check)
+- [Getting started](#getting-started)
+- [MCP Tools](#mcp-tools)
+  - [Requirements](#requirements-1)
+  - [Use cases](#use-cases)
+  - [Glossary](#glossary)
+  - [Bounded contexts](#bounded-contexts)
+  - [Architecture decisions](#architecture-decisions)
+  - [Traceability and analysis](#traceability-and-analysis)
+  - [Generic store access](#generic-store-access)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Skills
 
 ### `/arknet:adr`
