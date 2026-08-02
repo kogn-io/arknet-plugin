@@ -87,7 +87,8 @@ filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the
 ISO/IEC/IEEE 29148 quality attributes (completeness, unambiguity,
 consistency, testability, dependencies, priority differentiation), and --
-for glossary terms -- implementation-free and config-free definitions. It
+for glossary terms -- implementation-free, architecture-decision-free and
+config-free definitions. It
 interrogates the user on every gap it finds.
 
 ### `/arknet:bc-audit`
