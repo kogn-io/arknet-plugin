@@ -1,3 +1,4 @@
 {
-  "arknet:bc-audit": ["actor_usecase_matrix", "term_cooccurrence"]
+  "arknet:bc-audit": ["actor_usecase_matrix", "term_cooccurrence"],
+  "arknet:context-map": ["bc_link_context"]
 }
