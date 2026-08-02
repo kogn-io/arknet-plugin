@@ -268,6 +268,16 @@ Cockburn completeness:
 - **Implementation-free** -- does the definition avoid naming the
   system/software/storage technology (the same WHAT-not-HOW discipline
   requirements are held to)?
+- **Architecture-decision-free** -- does the definition stick to domain
+  *meaning* only, without smuggling in an architecture/design decision --
+  source-of-record, persistence choice, tenancy/multi-user model, who
+  triggers or owns an action? Those decisions belong in an ADR (`adr_add`),
+  not in what a term *means*. Give-away pattern: a definition sentence
+  reads like a system-behaviour statement ("X is the authoritative source
+  for Y", "the system holds no own record of Z", "X is triggered by Y, not
+  by the system") instead of "X is a ...". Catch this even when no
+  concrete technology is named -- that's what makes it distinct from
+  Implementation-free above.
 - **Config-free** -- does the definition avoid baking in a concrete,
   dated value (amount, percentage, date) that a requirement elsewhere
   declares configurable/changeable? If the value can change through the
