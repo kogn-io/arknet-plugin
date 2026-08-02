@@ -14,6 +14,7 @@ its own release cycle.
   - [`/arknet:req-interview`](#arknetreq-interview)
   - [`/arknet:bc-audit`](#arknetbc-audit)
   - [`/arknet:context-map`](#arknetcontext-map)
+  - [`/arknet:health-check`](#arknethealth-check)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -140,6 +141,31 @@ Out of scope: drawing or judging where a Bounded Context boundary sits
 (`/arknet:bc-audit`'s job) and tactical design, which has no tool surface
 yet.
 
+### `/arknet:health-check`
+
+A **read-only triage layer** for vague overall-status questions -- "is
+everything okay?", "is the model consistent?", "anything left to do?" -- that
+name no specific concern and therefore match none of the skills above by
+name. It never writes to the store and never runs an interrogation dialogue
+itself; it reads the existing fact-tools and routes to the skill that
+actually resolves each finding.
+
+Reports two kinds of finding, always visibly separated: **hard facts** --
+`orphan_check`/`trace_matrix` (dangling links, orphaned terms, untraced
+requirements) and `adr_list` filtered to `PROPOSED` (decisions still waiting
+on accept/reject) -- stated plainly, no judgement needed; and **hints** -- a
+Bounded Context with no `bc_link_context` edge recorded (`bc_list` against
+`resource_get`), phrased as a question ("worth a look with
+`/arknet:context-map`?"), never as a defect on par with an orphaned
+requirement. Each finding names the specialist skill that would resolve it
+(`/arknet:req-interview` full-set-audit mode, `/arknet:adr`,
+`/arknet:context-map`) rather than starting that skill's dialogue itself.
+
+Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
+(reading `actor_usecase_matrix`/`term_cooccurrence` for collisions that
+emerged "since the last audit run") -- neither tool carries a timestamp, and
+a register-size heuristic would fake a precision the store cannot back up.
+
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)
@@ -257,6 +283,11 @@ Later, three more entry points build on the same register:
   how they relate (Partnership, Customer-Supplier, Anti-Corruption Layer,
   ...) and records the confirmed relationship. See below for the full
   protocol.
+- `/arknet:health-check` -- for a vague "is everything okay?"/"what's the
+  status?" question that names none of the above by itself. Reads the same
+  fact-tools (`orphan_check`, `trace_matrix`, `adr_list`, `bc_list`) and
+  routes to whichever of the skills above resolves each finding, instead of
+  making you know which one to pick first.
 
 ## MCP Tools
 
