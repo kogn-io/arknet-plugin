@@ -82,7 +82,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
 | Use case | `uc_add` | `uc_get`, `uc_list` | (no update tool -- create anew) |
-| Glossary term | `term_add` | `term_get`, `term_list` | (no update tool -- create anew) |
+| Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 
 ### Glossary terms: `term_add(label, definition, actorKind?, actorRole?)`
 
@@ -98,6 +98,13 @@ the decision -- intentional / grown / accidental -- stays with the user.
 
 **Ordering consequence:** a use case references actors by label -- the actor
 terms must therefore exist **before** `uc_add`.
+
+- `term_update(id, label?, definition?, actorKind?, actorRole?)` -- corrects
+  an already-created term's label/definition/actor facette in place, keeping
+  its identity and every existing link into it (e.g. `arkreq:usesTerm`)
+  unchanged. Every argument but `id` is optional and an omitted one leaves
+  that field unchanged -- use this to fix a term found wanting during a
+  full-set audit instead of creating a duplicate.
 
 ### Requirements: `req_add(title, description, type, acceptanceCriteria, priority?, motivatedBy?, qualityCategory?)`
 
