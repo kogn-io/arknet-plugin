@@ -1,5 +1,5 @@
 ---
-description: "Audits an already-filled arknet register (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads actor_usecase_matrix/term_cooccurrence as raw data, presents each candidate collision to the user with its own assessment first, then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term register is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) or context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- neither exists as a tool surface yet."
+description: "Audits an already-filled arknet register (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads actor_usecase_matrix/term_cooccurrence as raw data, presents each candidate collision to the user with its own assessment first, then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term register is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
 ---
 
 # /arknet:bc-audit -- Bounded Context Candidates from the Existing Register
@@ -90,5 +90,5 @@ agent and the user.
   Layer, Shared Kernel, and the rest of the classic context-map vocabulary
   are not modelled by `bc_link_term`, which only carries the
   context-to-term edge. Do not invent a relationship type in prose to fill
-  the gap -- if the user wants a BC-to-BC relationship recorded, say the
-  tool doesn't exist yet rather than approximating it.
+  the gap -- if the user wants a BC-to-BC relationship recorded, point them
+  at `/arknet:context-map` instead of approximating it here.

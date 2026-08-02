@@ -13,6 +13,7 @@ its own release cycle.
   - [`/arknet:legacy-adr`](#arknetlegacy-adr)
   - [`/arknet:req-interview`](#arknetreq-interview)
   - [`/arknet:bc-audit`](#arknetbc-audit)
+  - [`/arknet:context-map`](#arknetcontext-map)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -109,9 +110,35 @@ collision one at a time, own assessment first, then asks whether it is a
 deliberate boundary or a coincidental clustering; only on confirmation
 does it write a Bounded Context (`bc_add`) and link its glossary terms
 (`bc_link_term`), followed by an `impact_analysis` ripple check. Out of
-scope: tactical design (Aggregate/Entity/Value Object/Domain Event) and
-context-map relationship types (Partnership/Anti-Corruption Layer/...) --
-neither has a tool surface yet.
+scope: tactical design (Aggregate/Entity/Value Object/Domain Event), which
+has no tool surface yet, and context-map relationship types
+(Partnership/Anti-Corruption Layer/...), which `/arknet:context-map` covers
+instead.
+
+### `/arknet:context-map`
+
+Elicits the DDD context-map relationship (Partnership, Shared Kernel,
+Customer-Supplier, Conformist, Anti-Corruption Layer, Open Host Service,
+Published Language, Separate Ways) between two **already-existing** Bounded
+Contexts and records confirmed ones via `bc_link_context`. Companion to
+`/arknet:bc-audit`: that skill decides *where* a boundary sits, this one
+decides *how* two already-drawn boundaries relate.
+
+Reads `bc_list` and `resource_get` as facts -- the pool of contexts to pair,
+and any relationship already recorded for a pair -- before proposing
+anything; the classification judgement stays with the user, same discipline
+as `/arknet:bc-audit`. For the five asymmetric relationship types
+(`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`,
+`OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`) it also confirms which context is
+upstream and which is downstream before writing; for the three symmetric
+ones (`PARTNERSHIP`, `SHARED_KERNEL`, `SEPARATE_WAYS`) it says plainly that
+the tool's upstream/downstream fields are bookkeeping only, not a real
+asymmetry. `bc_link_context` is not idempotent -- calling it twice for the
+same pair creates a second edge rather than updating the first -- so the
+skill checks for an existing relationship before writing rather than after.
+Out of scope: drawing or judging where a Bounded Context boundary sits
+(`/arknet:bc-audit`'s job) and tactical design, which has no tool surface
+yet.
 
 ## Requirements
 
@@ -226,6 +253,10 @@ Later, three more entry points build on the same register:
   cases/terms for language collisions to emerge, audits it for Bounded
   Context candidates instead of asking you to draw boundaries on a blank
   whiteboard. See below for the full protocol.
+- `/arknet:context-map` -- once at least two Bounded Contexts exist, elicits
+  how they relate (Partnership, Customer-Supplier, Anti-Corruption Layer,
+  ...) and records the confirmed relationship. See below for the full
+  protocol.
 
 ## MCP Tools
 
@@ -269,6 +300,10 @@ are rejected with a didactic error rather than silently accepted.
 - `bc_get` / `bc_list` -- fetch one / list all bounded contexts.
 - `bc_link_term` -- link a bounded context to a glossary term of its
   ubiquitous language.
+- `bc_link_context` -- record a directed context-map relationship
+  (Partnership, Shared Kernel, Customer-Supplier, Conformist,
+  Anti-Corruption Layer, Open Host Service, Published Language, or
+  Separate Ways) between two existing bounded contexts.
 
 ### Architecture decisions
 
