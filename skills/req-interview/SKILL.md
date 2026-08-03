@@ -1,18 +1,18 @@
 ---
-description: "Relentless requirements-interview skill -- elicits FR/NFR (req_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (attach an existing project to arknet -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/use case/glossary term', 'interview me about X', 'attach this project to arknet', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich'. NOT for HOW/architecture (use /arknet:adr for that), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
+description: "Relentless requirements-interview skill -- elicits FR/NFR/Constraint (req_add/constraint_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (attach an existing project to arknet -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/constraint/use case/glossary term', 'interview me about X', 'attach this project to arknet', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich'. NOT for HOW/architecture (use /arknet:adr for that), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
 ---
 
 # /arknet:req-interview -- Elicit Requirements, Use Cases and Glossary
 
 A **functional** requirements analyst for the project you are working in. Job:
 the **WHAT & WHY** --
-complete, unambiguous, testable requirements, use cases and glossary terms that
-together form a sensible system. Not technology/architecture (that is the ADRs'
-job, see `/arknet:adr`) -- except where a technical fact helps you judge
-**functional intent**.
+complete, unambiguous, testable requirements, constraints, use cases and
+glossary terms that together form a sensible system. Not technology/architecture
+(that is the ADRs' job, see `/arknet:adr`) -- except where a technical fact
+helps you judge **functional intent**.
 
 Writes against arknet's store tools, not against markdown tables -- `req_add`/
-`uc_add`/`term_add` instead of lines in a file.
+`constraint_add`/`uc_add`/`term_add` instead of lines in a file.
 
 ## Language
 
@@ -67,10 +67,12 @@ signals conflict, trust this order:
    in advance. Check every candidate against the load-bearing bar (used
    in more than one place) before writing it in; a term that only echoes
    a single class name is not yet earned.
-5. **FRs/NFRs last and thin.** Weakest signal; a requirement derived
-   from code is always just a conversation starter, never a finished
-   answer. Constraints (`arkreq:Constraint`) have no dedicated tool type
-   yet -- treat them as NFR with `qualityCategory` until that changes.
+5. **FRs/NFRs/Constraints last and thin.** Weakest signal; a requirement
+   or constraint derived from code is always just a conversation starter,
+   never a finished answer. Externally-imposed, non-negotiable code
+   behaviour (a specific law/norm/contract clause baked into the
+   implementation) is a `Constraint` candidate, not an NFR -- see "Deciding
+   FR vs. NFR vs. Constraint" below.
 
 ### Brownfield: code delivers questions, never answers (core rule)
 
@@ -99,11 +101,12 @@ the decision -- intentional / grown / accidental -- stays with the user.
   the store, or research, resolve it yourself instead of asking. Only **scope, priority and shape** decisions belong to the
   user -- put each of those to them, one at a time.
 
-## The three artifacts and their tools
+## The artifacts and their tools
 
 | Artifact | Create | Read | Change |
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
+| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | (no update tool -- immutable, create anew) |
 | Use case | `uc_add` | `uc_get`, `uc_list` | (no update tool -- create anew) |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 
@@ -170,6 +173,40 @@ terms must therefore exist **before** `uc_add`.
   (partial update, not replace-by-identity) -- use this to fix a requirement
   found wanting during a full-set audit instead of leaving it inconsistent.
 
+### Deciding FR vs. NFR vs. Constraint
+
+Every candidate requirement needs a type decision before `req_add`/
+`constraint_add`. The decision test: **is the underlying claim itself
+negotiable?**
+
+- **FR** -- a functional behaviour the system must exhibit.
+- **NFR** -- a gradual quality property ("how well" -- performance, security,
+  ...), verhandelbar/priorisierbar via `priority`.
+- **Constraint** -- a non-negotiable, externally imposed requirement (law,
+  norm, contract) -- `TECHNICAL` | `BUSINESS` | `REGULATORY`.
+
+**Pitfall:** a binary-formulated acceptance criterion is *not* a reliable
+signal for Constraint -- self-set NFRs are frequently phrased binary too, for
+testability's sake. What decides is whether the underlying claim itself is
+negotiable, not the shape of its done-when. Ask directly: "if we
+dropped/relaxed this, would that be a business tradeoff (NFR), or a rule
+violation (Constraint)?"
+
+### Constraints: `constraint_add(title, statement, type)`
+
+- `title` (required) -- short summary.
+- `statement` (required) -- the normative constraint text.
+- `type` (required) -- `TECHNICAL` | `BUSINESS` | `REGULATORY`.
+- Result: `TCON-n`/`BCON-n`/`RCON-n` code (one counter per subtype --
+  deliberately not `TC-n`/`BC-n`/`RC-n`, which would collide with the
+  existing Bounded Context abbreviation used throughout this ecosystem).
+- **Immutable once created** -- no update or status-change tool exists
+  (matches the ontology: a Constraint carries no status field). Get it right
+  at intake; a wrong one needs a fresh `constraint_add`, not a patch.
+- `req_link_constraint(reqId, constraintId)` -- links a requirement to the
+  constraint that binds it (`oslc_rm:constrainedBy`), analogous to
+  `req_link_term`. Idempotent no-op if already linked.
+
 ### Use cases: `uc_add(title, goal, primaryActor, steps, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?)`
 
 Coarse-grained write: **one** `uc_add` call creates the complete use case
@@ -209,7 +246,8 @@ entry points (see above), same protocol:
   complete/consistent"). This is the **default reading** of any
   "review/check" phrasing -- do not collapse it into a quick summary.
   **First, automated pass:** run `orphan_check` (requirements no use case
-  realises, glossary terms never referenced) and `trace_matrix` (per
+  realises, glossary terms never referenced, constraints no requirement is
+  bound by) and `trace_matrix` (per
   requirement: which terms it uses, which use case(s) realise it) *before*
   any manual reading -- these two calls surface structural gaps
   (dangling links, orphaned terms, unrealised requirements) that a
@@ -283,6 +321,9 @@ Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
   of the set, or is it a placeholder? For `MUST_HAVE` specifically: what
   breaks if this is cut? A register where everything is `MUST_HAVE` has not
   been interrogated on priority.
+- **Type classification** -- correctly FR vs. NFR vs. Constraint (see
+  "Deciding FR vs. NFR vs. Constraint" above)? A non-negotiable, externally
+  imposed rule filed as NFR under-signals that it cannot be traded off.
 
 ### Checklist per use case
 
