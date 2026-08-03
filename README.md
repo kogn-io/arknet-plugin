@@ -73,11 +73,11 @@ this skill exists only for backward compatibility during the transition.
 ### `/arknet:req-interview`
 
 A relentless requirements-interview skill. Elicits functional/non-functional
-requirements, use cases, and glossary terms in dialogue -- against arknet's
-store tools (`req_add`/`uc_add`/`term_add`), not markdown tables -- until a
-shared, testable understanding is reached. Two entry points: greenfield (an
-idea or wish) and brownfield (attach an existing codebase and let the code
-raise questions).
+requirements, constraints, use cases, and glossary terms in dialogue --
+against arknet's store tools (`req_add`/`constraint_add`/`uc_add`/`term_add`),
+not markdown tables -- until a shared, testable understanding is reached. Two
+entry points: greenfield (an idea or wish) and brownfield (attach an existing
+codebase and let the code raise questions).
 
 The same skill also runs a **full-set audit**: on a phrasing like "review the
 requirements relentlessly" or "are they complete/consistent", it first runs
@@ -234,11 +234,11 @@ Then start the actual work with the skill, not with the raw tools:
 
 Tell it what you want to build, in a sentence. It interviews you -- one
 question at a time, always with its own suggested answer attached so you are
-deciding from a position, not a blank prompt -- until a requirement, use case
-or glossary term is testable and unambiguous. Only then does it write
-anything (`req_add`/`uc_add`/`term_add` behind the scenes; you see the
-resulting codes, e.g. `FR-1`, `TERM-3`, `UC1`, not the raw calls). A
-shortened example:
+deciding from a position, not a blank prompt -- until a requirement, constraint,
+use case or glossary term is testable and unambiguous. Only then does it write
+anything (`req_add`/`constraint_add`/`uc_add`/`term_add` behind the scenes;
+you see the resulting codes, e.g. `FR-1`, `TERM-3`, `UC1`, not the raw calls).
+A shortened example:
 
 ```
 > /arknet:req-interview
@@ -308,6 +308,15 @@ are rejected with a didactic error rather than silently accepted.
 - `req_schema` -- describe the requirement vocabulary (types, statuses,
   priorities) as data, so a client does not have to guess the accepted values.
 
+### Constraints
+
+- `constraint_add` -- register a non-negotiable, externally imposed
+  requirement (title, normative statement, type -- `TECHNICAL`, `BUSINESS`
+  or `REGULATORY`). Immutable once created -- no update or status tool.
+- `constraint_get` / `constraint_list` -- fetch one / list all constraints.
+- `req_link_constraint` -- link a requirement to the constraint that binds
+  it.
+
 ### Use cases
 
 - `uc_add` -- register a complete Cockburn-style use case in a single call
@@ -353,8 +362,9 @@ are rejected with a didactic error rather than silently accepted.
   which use case(s) realise it.
 - `impact_analysis` -- what is transitively affected if a given requirement,
   term, use case or architecture decision changes.
-- `orphan_check` -- find requirements that no use case realises, and glossary
-  terms that are never referenced.
+- `orphan_check` -- find requirements that no use case realises, glossary
+  terms that are never referenced, and constraints that no requirement is
+  bound by.
 - `actor_usecase_matrix` -- raw bipartite view: which use cases each actor
   appears in (`primaryActor`/`supportingActor`), and which actors each use
   case names. No clustering or judgement -- data for `/arknet:bc-audit`.
