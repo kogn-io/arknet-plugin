@@ -40,14 +40,37 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 
 ### Brownfield: order (signal strength, not artifact hierarchy)
 
-1. **Glossary first.** Class names/packages/aggregates ARE the ubiquitous
-   language of the codebase -- directly comparable to what the business side
-   says. Actor candidates (roles, external systems) also surface here
-   (`term_add` with `actorKind`).
-2. **Use cases next.** Controllers/MCP tools/CLI commands are actor entry
-   points -- the second-strongest signal.
-3. **FRs last and thin.** Weakest signal; an FR derived from code is always
-   just a conversation starter, never a finished answer.
+Analysis priority, not a phase gate -- items can surface together, but when
+signals conflict, trust this order:
+
+1. **Entry points + inner documentation first.** Walk the actual entry
+   points (controllers, MCP tools, CLI commands, message handlers --
+   whatever the language/framework's dispatch mechanism is; recognising
+   them is general programming knowledge, not something this skill needs
+   to spell out per framework), together with documentation that states
+   intent explicitly (module-level docs, package-level docs, ADRs,
+   README) -- a stronger signal than a name alone, because someone wrote
+   a sentence about *why*, not just picked a word.
+2. **Filter noise before treating a hit as a use-case candidate.** Not
+   every entry point is a business use case -- health checks,
+   metrics/actuator endpoints, generated CRUD boilerplate, admin/ops
+   utility routes are technical, not actor-triggered domain flows. This
+   filter is framework-independent; do not skip it.
+3. **Use case and actor surface together.** Who calls an entry point is
+   usually visible right there (caller, auth context, trigger) --
+   recognise both in the same pass. The *write* order stays unchanged
+   though: `term_add` with `actorKind` before `uc_add`, because the tool
+   resolves `primaryActor`/`supportingActors` by label (see "Ordering
+   consequence" below).
+4. **Vocabulary beyond actors surfaces in context**, as terms appear in a
+   use case's goal/steps -- not mined wholesale from class/package names
+   in advance. Check every candidate against the load-bearing bar (used
+   in more than one place) before writing it in; a term that only echoes
+   a single class name is not yet earned.
+5. **FRs/NFRs last and thin.** Weakest signal; a requirement derived
+   from code is always just a conversation starter, never a finished
+   answer. Constraints (`arkreq:Constraint`) have no dedicated tool type
+   yet -- treat them as NFR with `qualityCategory` until that changes.
 
 ### Brownfield: code delivers questions, never answers (core rule)
 
