@@ -107,10 +107,14 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Use case | `uc_add` | `uc_get`, `uc_list` | (no update tool -- create anew) |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 
-### Glossary terms: `term_add(label, definition, actorKind?, actorRole?)`
+### Glossary terms: `term_add(label, definition, language?, actorKind?, actorRole?)`
 
 - `label` (required) -- `skos:prefLabel`.
 - `definition` (required).
+- `language` (optional) -- BCP-47 tag (e.g. `de`) the label/definition are
+  written in; omitted writes a plain, untagged literal. Never defaulted from
+  the project's configured default language -- that default only affects
+  display (`term_get`), never what gets written.
 - `actorKind` (optional) -- `HUMAN` | `SYSTEM`. Sets the actor facet (the same
   concept additionally becomes `arkproc:HumanActor`/`SystemActor`) -- needed
   if the term is later going to appear as `primaryActor`/`supportingActors`
@@ -122,12 +126,19 @@ the decision -- intentional / grown / accidental -- stays with the user.
 **Ordering consequence:** a use case references actors by label -- the actor
 terms must therefore exist **before** `uc_add`.
 
-- `term_update(id, label?, definition?, actorKind?, actorRole?)` -- corrects
-  an already-created term's label/definition/actor facette in place, keeping
-  its identity and every existing link into it (e.g. `arkreq:usesTerm`)
-  unchanged. Every argument but `id` is optional and an omitted one leaves
-  that field unchanged -- use this to fix a term found wanting during a
-  full-set audit instead of creating a duplicate.
+- `term_update(id, label?, definition?, language?, actorKind?, actorRole?)` --
+  corrects an already-created term's label/definition/actor facette in place,
+  keeping its identity and every existing link into it (e.g.
+  `arkreq:usesTerm`) unchanged. Every argument but `id` is optional and an
+  omitted one leaves that field unchanged -- use this to fix a term found
+  wanting during a full-set audit instead of creating a duplicate.
+  `language` behaves as in `term_add`: it replaces only the literal carrying
+  that same tag, every other language variant survives untouched.
+- `term_get(id, displayLocale?)` -- `displayLocale` (optional) overrides the
+  project's configured default language for this one read, choosing which
+  language variant of label/definition comes back. Falls back to the
+  project default, then to the server's own default, then to an untagged
+  literal, then deterministically to any literal the term carries.
 
 ### Requirements: `req_add(title, description, type, acceptanceCriteria, priority?, motivatedBy?, qualityCategory?)`
 
