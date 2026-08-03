@@ -1,4 +1,5 @@
 {
   "arknet:bc-audit": ["actor_usecase_matrix", "term_cooccurrence"],
-  "arknet:context-map": ["bc_link_context"]
+  "arknet:context-map": ["bc_link_context"],
+  "arknet:req-interview": ["constraint_add", "constraint_get", "constraint_list", "req_link_constraint"]
 }
