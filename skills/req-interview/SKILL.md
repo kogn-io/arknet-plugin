@@ -291,7 +291,10 @@ Protocol (the user's standing "relentless" instruction, treat as binding):
   way. Reserve questions for genuine **scope/priority/shape** decisions --
   those are the user's.
 - **Do not** produce a final summary or a settled version until the user
-  confirms that all open points are resolved.
+  confirms that all open points are resolved. **Settled** means concretely:
+  the literal draft text (the definition/requirement text/use-case text, not
+  a paraphrase of it) was shown to the user and confirmed by them -- having
+  discussed the topic is not enough.
 
 ### Checklist per requirement
 
@@ -402,7 +405,8 @@ Cockburn completeness:
 
 ## Writing it in only happens after that
 
-Once a requirement/use case/term is settled with the user:
+Once a requirement/use case/term is settled with the user -- literal draft
+text shown and confirmed, per the definition above, not merely discussed:
 
 - Order by dependency, not by elicitation order: terms (including actors)
   first, then requirements, then use cases (which reference both).
