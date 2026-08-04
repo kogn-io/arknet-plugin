@@ -98,7 +98,9 @@ the decision -- intentional / grown / accidental -- stays with the user.
   requirement, surface the conflict and let the user decide; do not silently
   keep the old one.
 - **NEVER GUESS -> ALWAYS LOOK IT UP.** If a fact is knowable from the repo,
-  the store, or research, resolve it yourself instead of asking. Only **scope, priority and shape** decisions belong to the
+  the store, research, or the project's own already-documented ubiquitous
+  language (e.g. a "Ubiquitous Language" section in its `CLAUDE.md`), resolve
+  it yourself instead of asking. Only **scope, priority and shape** decisions belong to the
   user -- put each of those to them, one at a time.
 
 ## The artifacts and their tools
@@ -126,8 +128,15 @@ the decision -- intentional / grown / accidental -- stays with the user.
   `actorKind`.
 - Result: `TERM-n` code.
 
-**Ordering consequence:** a use case references actors by label -- the actor
-terms must therefore exist **before** `uc_add`.
+**Ordering consequence:** generalises beyond actors. Any reference a draft
+makes to another resource -- an actor/term by label, a requirement by code,
+or another use case by its capability (e.g. a step reading "checks against
+the register -- uses UC 'look up'") -- must exist **before** the draft that
+depends on it is presented. Actor terms before `uc_add` is the case the tool
+itself enforces (see below); a use-case step presupposing a *different* use
+case's capability is not resolved or validated by any tool argument, so that
+existence check is on you -- verify via `uc_list`/`uc_get` before presenting
+the draft, not after.
 
 - `term_update(id, label?, definition?, language?, actorKind?, actorRole?)` --
   corrects an already-created term's label/definition/actor facette in place,
