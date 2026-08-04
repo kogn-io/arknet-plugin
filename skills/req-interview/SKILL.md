@@ -43,14 +43,22 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 Analysis priority, not a phase gate -- items can surface together, but when
 signals conflict, trust this order:
 
-1. **Entry points + inner documentation first.** Walk the actual entry
-   points (controllers, MCP tools, CLI commands, message handlers --
-   whatever the language/framework's dispatch mechanism is; recognising
-   them is general programming knowledge, not something this skill needs
-   to spell out per framework), together with documentation that states
-   intent explicitly (module-level docs, package-level docs, ADRs,
-   README) -- a stronger signal than a name alone, because someone wrote
-   a sentence about *why*, not just picked a word.
+1. **Entry points, inner documentation, and formal domain schemas
+   first.** Walk the actual entry points (controllers, MCP tools, CLI
+   commands, message handlers -- whatever the language/framework's
+   dispatch mechanism is; recognising them is general programming
+   knowledge, not something this skill needs to spell out per
+   framework); documentation that states intent explicitly
+   (module-level docs, package-level docs, ADRs, README); and any
+   formal, machine-readable domain schema the project carries
+   (ontologies, e.g. `*.ttl`; JSON Schema; OpenAPI/Protobuf
+   definitions; a domain model with Javadoc) -- three co-equal
+   sources, read routinely together, not a schema consulted only once
+   a stress-test forces the question. A formal schema outranks prose
+   about it, because it *is* the specification, not just a text
+   describing one; entry points and documentation in turn outrank a
+   bare name, because someone wrote a sentence about *why*, not just
+   picked a word.
 2. **Filter noise before treating a hit as a use-case candidate.** Not
    every entry point is a business use case -- health checks,
    metrics/actuator endpoints, generated CRUD boilerplate, admin/ops
