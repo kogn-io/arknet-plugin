@@ -339,6 +339,13 @@ Cockburn completeness:
 - **`realises` link** -- does at least one step fulfil an existing FR/NFR?
   If the link is entirely missing, ask whether a requirement is missing or
   the use case stands on its own.
+- **Title differentiation** -- does the use case's title read as a
+  distinguishable actor goal/process, or was the realised requirement's
+  title just carried over? A requirement title names a narrow system
+  capability; a use-case title names the broader actor goal it serves. An
+  identical title against a linked FR/NFR/Constraint is a signal the
+  goal-in-context was never actually restated -- go back and ask what the
+  actor is really trying to accomplish.
 
 ### Checklist per glossary term
 
