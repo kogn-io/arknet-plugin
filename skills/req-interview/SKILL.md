@@ -344,9 +344,31 @@ Cockburn completeness:
 
 - Unambiguous against existing terms (read `term_list` first) -- no hidden
   synonym or homonym?
+- **Unambiguous against established external meaning** -- does the
+  candidate label collide with a widely-established industry/domain
+  meaning outside this project, even when `term_list` has no local hit? A
+  label can be locally novel and still contradict what practitioners
+  already read into it -- e.g. "AI Agent" carries an industry-standard
+  "acts autonomously, no human approval needed" connotation that a
+  human-in-the-loop domain concept would silently contradict. A local
+  `term_list` check alone cannot catch this; it takes deliberately asking
+  "what does this label already mean out there?"
 - Definition precise enough that two people understand the same thing?
 - Does the term need an actor facet (`actorKind`/`actorRole`) because it will
   later appear as an actor in a use case?
+- **Before discarding a category/classification candidate as "not
+  load-bearing"** -- check the actual ontology/schema (grep the vocabulary
+  source, not just judge from prose mentions) for whether it is already a
+  modelled class that other terms parametrize against. A candidate that
+  looks like idle prose ("just a category") may already be an implemented
+  supertype (e.g. an `Actor` class with `HumanActor`/`SystemActor`
+  subclasses) that every actor term's classification field maps onto --
+  discarding it would leave that mapping without a defined domain concept.
+- **Duplication against related terms** -- does this term restate content
+  (a list of resource types, a set of responsibilities) that already lives
+  in another existing, or concurrently-drafted, related term definition?
+  Cross-reference instead of re-enumerating -- two lists of the same facts
+  are two places that must be kept in sync by hand.
 - **Implementation-free** -- does the definition avoid naming the
   system/software/storage technology (the same WHAT-not-HOW discipline
   requirements are held to)?
@@ -359,7 +381,12 @@ Cockburn completeness:
   for Y", "the system holds no own record of Z", "X is triggered by Y, not
   by the system") instead of "X is a ...". Catch this even when no
   concrete technology is named -- that's what makes it distinct from
-  Implementation-free above.
+  Implementation-free above. Negative example: a definition that reads
+  "... within a project ..." smuggles in an unconfirmed container/scoping
+  term -- "project" here is not yet an established domain concept but a
+  stand-in for a tenancy/multi-user boundary that was actually decided in
+  an ADR. The leak is in the unconfirmed container word itself, not in a
+  named technology.
 - **Config-free** -- does the definition avoid baking in a concrete,
   dated value (amount, percentage, date) that a requirement elsewhere
   declares configurable/changeable? If the value can change through the
