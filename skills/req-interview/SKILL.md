@@ -117,7 +117,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | (no update tool -- immutable, create anew) |
-| Use case | `uc_add` | `uc_get`, `uc_list` | (no update tool -- create anew) |
+| Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position -- not `realises`/actors/step structure) |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 
 ### Glossary terms: `term_add(label, definition, language?, actorKind?, actorRole?)`
@@ -226,9 +226,7 @@ violation (Constraint)?"
 
 ### Use cases: `uc_add(title, goal, primaryActor, steps, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?)`
 
-Coarse-grained write: **one** `uc_add` call creates the complete use case
-(unlike requirements, there is no update tool -- a changed use case is
-created anew).
+Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
 - `title`, `goal` (required) -- goal-in-context.
 - `primaryActor` (required) -- **label** of an existing actor term (see
@@ -242,6 +240,19 @@ created anew).
   `precondition`, `postcondition`, `extensions` (list of free-text
   alternative/exception-flow lines) -- all optional.
 - Result: `UCn` code.
+
+- `uc_update(id, title?, goal?, scope?, trigger?, precondition?,
+  postcondition?, extensions?, stepTextPatches?, language?)` -- corrects an
+  already-created use case's title/goal/scope/trigger/pre-/postcondition in
+  place; `extensions` replaces the alternative/exception flows wholesale
+  (omitted leaves them unchanged); `stepTextPatches` (list of
+  `{position, text}`) corrects the *text* of individual existing main-flow
+  steps by their position. Every argument but `id` is optional and an
+  omitted one leaves that field unchanged -- use this to fix a use case
+  found wanting during a full-set audit instead of creating a duplicate.
+  It does **not** touch a step's `realises` links, `primaryActor`,
+  `supportingActors`, or the step list's structure (add/remove/reorder) --
+  those still require a fresh `uc_add`.
 
 arknet already resolves `primaryActor`/`supportingActors` and
 `steps[].realises` **schema-independently and with didactic rejection of
