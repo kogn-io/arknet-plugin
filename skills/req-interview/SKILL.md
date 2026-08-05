@@ -128,10 +128,12 @@ the decision -- intentional / grown / accidental -- stays with the user.
   written in; omitted writes a plain, untagged literal. Never defaulted from
   the project's configured default language -- that default only affects
   display (`term_get`), never what gets written.
-- `actorKind` (optional) -- `HUMAN` | `SYSTEM`. Sets the actor facet (the same
-  concept additionally becomes `arkproc:HumanActor`/`SystemActor`) -- needed
-  if the term is later going to appear as `primaryActor`/`supportingActors`
-  in a use case.
+- `actorKind` (optional) -- `HUMAN` | `SYSTEM` | `LEGAL`. Sets the actor facet
+  (the same concept additionally becomes
+  `arkproc:HumanActor`/`SystemActor`/`LegalActor` -- `LEGAL` for a legal
+  person, e.g. an organization, company or association, as opposed to a
+  natural person acting on its behalf) -- needed if the term is later going
+  to appear as `primaryActor`/`supportingActors` in a use case.
 - `actorRole` (optional) -- free text, only meaningful together with
   `actorKind`.
 - Result: `TERM-n` code.
@@ -399,9 +401,10 @@ Cockburn completeness:
   source, not just judge from prose mentions) for whether it is already a
   modelled class that other terms parametrize against. A candidate that
   looks like idle prose ("just a category") may already be an implemented
-  supertype (e.g. an `Actor` class with `HumanActor`/`SystemActor`
-  subclasses) that every actor term's classification field maps onto --
-  discarding it would leave that mapping without a defined domain concept.
+  supertype (e.g. an `Actor` class with `HumanActor`/`SystemActor`/
+  `LegalActor` subclasses) that every actor term's classification field
+  maps onto -- discarding it would leave that mapping without a defined
+  domain concept.
 - **Duplication against related terms** -- does this term restate content
   (a list of resource types, a set of responsibilities) that already lives
   in another existing, or concurrently-drafted, related term definition?
