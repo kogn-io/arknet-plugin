@@ -125,9 +125,9 @@ the decision -- intentional / grown / accidental -- stays with the user.
 - `label` (required) -- `skos:prefLabel`.
 - `definition` (required).
 - `language` (optional) -- BCP-47 tag (e.g. `de`) the label/definition are
-  written in; omitted writes a plain, untagged literal. Never defaulted from
-  the project's configured default language -- that default only affects
-  display (`term_get`), never what gets written.
+  written in. Omitted, it falls back to the project's configured default
+  language (`project_update`); if the project has no default either, the
+  call is rejected rather than writing an untagged literal.
 - `actorKind` (optional) -- `HUMAN` | `SYSTEM` | `LEGAL`. Sets the actor facet
   (the same concept additionally becomes
   `arkproc:HumanActor`/`SystemActor`/`LegalActor` -- `LEGAL` for a legal
@@ -154,8 +154,11 @@ the draft, not after.
   `arkreq:usesTerm`) unchanged. Every argument but `id` is optional and an
   omitted one leaves that field unchanged -- use this to fix a term found
   wanting during a full-set audit instead of creating a duplicate.
-  `language` behaves as in `term_add`: it replaces only the literal carrying
-  that same tag, every other language variant survives untouched.
+  `language` behaves as in `term_add` (falls back to the project's default,
+  rejects if neither is set): it replaces only the literal carrying the
+  resolved tag, every other language variant survives untouched -- except a
+  stale untagged one, swept away once the resolved tag equals the project's
+  default.
 - `term_get(id, displayLocale?)` -- `displayLocale` (optional) overrides the
   project's configured default language for this one read, choosing which
   language variant of label/definition comes back. Falls back to the
