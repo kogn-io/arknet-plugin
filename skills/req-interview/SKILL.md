@@ -21,7 +21,7 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   `uc_list`/`term_list` before writing: whatever language the existing entries
   use is the language of the ones you add. `title`, `description`, `label`,
   use-case text all follow it, even if the conversation ran in another
-  language. A register split across two languages is a defect in itself -- do
+  language. A store split across two languages is a defect in itself -- do
   not be the one who starts the split.
 - **Empty store** -- use the language the domain speaks, which is the user's,
   not necessarily the interview's. Settle it once at the start and say which
@@ -274,7 +274,7 @@ entry points (see above), same protocol:
 
 - **Intake** -- a new requirement/use case/term arrives. Interrogate *it*,
   then integrate.
-- **Full-set audit** -- the user asks for a review of the whole register
+- **Full-set audit** -- the user asks for a review of the whole store
   ("review the requirements", "review the glossary relentlessly", "are they
   complete/consistent"). This is the **default reading** of any
   "review/check" phrasing -- do not collapse it into a quick summary.
@@ -355,7 +355,7 @@ Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
   **failure behaviour** considered (check a new FR against existing NFRs)?
 - **Priority differentiation** -- does this genuinely differ from the rest
   of the set, or is it a placeholder? For `MUST_HAVE` specifically: what
-  breaks if this is cut? A register where everything is `MUST_HAVE` has not
+  breaks if this is cut? A store where everything is `MUST_HAVE` has not
   been interrogated on priority.
 - **Type classification** -- correctly FR vs. NFR vs. Constraint (see
   "Deciding FR vs. NFR vs. Constraint" above)? A non-negotiable, externally
@@ -481,7 +481,7 @@ method now that the tools exist.
 A brownfield interview can surface "nobody remembers why this is the way it
 is". This is **not** modelled as its own requirement status -- a requirement
 without a testable done-when would fail every full-set audit, which would be
-a permanent special case in the register (and `RequirementStatus` only knows
+a permanent special case in the store (and `RequirementStatus` only knows
 `PROPOSED`/`ACCEPTED` anyway, see above). Instead it stays an interview
 **interim state** (conversation/todo, not in the store) until it reaches one
 of two outcomes:

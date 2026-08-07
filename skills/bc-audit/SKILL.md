@@ -1,21 +1,21 @@
 ---
-description: "Audits an already-filled arknet register (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads actor_usecase_matrix/term_cooccurrence as raw data, presents each candidate collision to the user with its own assessment first, then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term register is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
+description: "Audits an already-filled arknet store (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads actor_usecase_matrix/term_cooccurrence as raw data, presents each candidate collision to the user with its own assessment first, then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term store is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
 ---
 
-# /arknet:bc-audit -- Bounded Context Candidates from the Existing Register
+# /arknet:bc-audit -- Bounded Context Candidates from the Existing Store
 
 An **audit**, not an interview. Bounded Context boundaries are supposed to
 emerge from language collisions already present in a filled requirements/
-use-case/glossary register -- not be drawn on a blank whiteboard before the
+use-case/glossary store -- not be drawn on a blank whiteboard before the
 domain vocabulary exists (anti-BDUF). This skill therefore never asks
 "which Bounded Contexts does your system need" from nothing; it reads the
-register that already exists and finds candidates in it.
+store that already exists and finds candidates in it.
 
-## Precondition: a filled register, not a blank slate
+## Precondition: a filled store, not a blank slate
 
 Run `term_list`, `req_list`, `uc_list` first. If the store is empty or
 sparse, stop here and point the user at `/arknet:req-interview` instead --
-there is no meaningful collision to find in an empty register, and drawing
+there is no meaningful collision to find in an empty store, and drawing
 context boundaries before any requirement/use-case/term exists is exactly
 the greenfield BDUF this skill is designed not to do.
 
@@ -23,7 +23,7 @@ the greenfield BDUF this skill is designed not to do.
 
 | Tool | Role |
 |---|---|
-| `term_list`, `req_list`, `uc_list` | Read the whole register before anything else. |
+| `term_list`, `req_list`, `uc_list` | Read the whole store before anything else. |
 | `actor_usecase_matrix` | Raw bipartite data: which use cases each actor appears in (`primaryActor`/`supportingActor`), and vice versa. No clustering, no judgement -- that stays with you and the user. |
 | `term_cooccurrence` | Raw data: which glossary terms are named together in the same requirement/use-case text, and which never co-occur -- the material for "is this one term or a homonym with two meanings per context?". |
 | `bc_add(name, domainVision, subdomain?, ownedBy?)` | Register a confirmed Bounded Context. `domainVision` must come out of the discussion with the user, never be invented to fill the field. |
@@ -38,7 +38,7 @@ agent and the user.
 
 ## Protocol
 
-1. **Read the register.** `term_list`, `req_list`, `uc_list`, in full --
+1. **Read the store.** `term_list`, `req_list`, `uc_list`, in full --
    this is the baseline every candidate gets checked against.
 2. **Find candidate collisions.** Call `actor_usecase_matrix` and
    `term_cooccurrence` and look for language that clusters or splits: an

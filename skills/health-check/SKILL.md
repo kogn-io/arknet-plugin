@@ -1,12 +1,12 @@
 ---
-description: "Read-only triage layer for vague overall-status questions ('is everything okay?', 'is the model consistent?', 'anything left to do?') that match no specific skill by name. Bundles orphan_check/trace_matrix (structural facts), open PROPOSED ADRs (adr_list), and Bounded Contexts with no recorded context-map relationship (bc_list vs bc_link_context edges) into one report, clearly split into hard facts vs. judgement candidates, then points at the matching specialist skill (/arknet:req-interview full-set-audit mode, /arknet:bc-audit, /arknet:context-map, /arknet:adr) instead of duplicating its dialogue. Trigger (also DE, since the user may phrase it in German): /arknet:health-check, 'is everything okay', 'is the model/register consistent', 'anything left to do', 'give me a status overview', 'what's the state of the architecture model'; DE: 'ist alles in Ordnung', 'ist das Modell konsistent', 'gibt es noch was zu tun', 'wie ist der Stand', 'Statusuebersicht'. NOT a replacement for the interactive audits themselves (/arknet:bc-audit, /arknet:context-map, /arknet:req-interview full-set-audit mode) -- overview and routing only, this skill never writes and never runs an interrogation dialogue. NOT for a request that already names a specific concern (a BC boundary, a context relationship, one requirement) -- go straight to the matching skill instead."
+description: "Read-only triage layer for vague overall-status questions ('is everything okay?', 'is the model consistent?', 'anything left to do?') that match no specific skill by name. Bundles orphan_check/trace_matrix (structural facts), open PROPOSED ADRs (adr_list), and Bounded Contexts with no recorded context-map relationship (bc_list vs bc_link_context edges) into one report, clearly split into hard facts vs. judgement candidates, then points at the matching specialist skill (/arknet:req-interview full-set-audit mode, /arknet:bc-audit, /arknet:context-map, /arknet:adr) instead of duplicating its dialogue. Trigger (also DE, since the user may phrase it in German): /arknet:health-check, 'is everything okay', 'is the model/store consistent', 'anything left to do', 'give me a status overview', 'what's the state of the architecture model'; DE: 'ist alles in Ordnung', 'ist das Modell konsistent', 'gibt es noch was zu tun', 'wie ist der Stand', 'Statusuebersicht'. NOT a replacement for the interactive audits themselves (/arknet:bc-audit, /arknet:context-map, /arknet:req-interview full-set-audit mode) -- overview and routing only, this skill never writes and never runs an interrogation dialogue. NOT for a request that already names a specific concern (a BC boundary, a context relationship, one requirement) -- go straight to the matching skill instead."
 ---
 
 # /arknet:health-check -- Read-Only Status Overview and Routing
 
 A **triage layer**, not an audit. When the user's question is vague enough that
 it does not name which specific concern they mean -- consistency of the whole
-register, an open architecture decision, a missing Bounded Context boundary --
+store, an open architecture decision, a missing Bounded Context boundary --
 this skill reads the existing fact-tools, reports what they show, and routes
 the user to the specialist skill that actually resolves each finding. It never
 writes to the store and never runs an interrogation dialogue itself; the
@@ -69,7 +69,7 @@ already use them.
 5. **Empty store.** If `orphan_check`/`trace_matrix` return nothing and
    `bc_list` is empty, say so plainly and point at `/arknet:req-interview`
    (greenfield or brownfield entry point) as the place to start -- an empty
-   register is not itself a finding, just a starting point.
+   store is not itself a finding, just a starting point.
 
 ## Scope boundary
 
@@ -84,7 +84,7 @@ already use them.
 - **No staleness heuristic against `actor_usecase_matrix`/`term_cooccurrence`.**
   Deliberately out of scope for now: neither tool carries a timestamp, and a
   "since the last `/arknet:bc-audit` run" signal would need one. Inventing a
-  register-size threshold instead would fake a precision the store cannot
+  store-size threshold instead would fake a precision the data cannot
   back up. A later iteration may add this once a real signal exists; until
   then, `/arknet:bc-audit` stays something the user is routed to on request,
   not something this skill infers is due.
