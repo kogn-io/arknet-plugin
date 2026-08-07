@@ -38,6 +38,17 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 - **Brownfield** -- an existing project is attached to arknet. Code delivers
   **questions, never answers**.
 
+**Elicitation order is not write order** -- two different orders, and mixing
+them up is the standard failure of this skill. *Elicited* along flows: use
+cases first, vocabulary emerges out of them. *Written* along dependencies:
+terms, then requirements, then use cases (see "Writing it in" below). The
+only elicitation exception is **actor terms** -- they have to exist before
+`uc_add`, because the tool resolves `primaryActor`/`supportingActors`
+against existing terms. Every other term is written when it surfaces in a
+concrete use case's goal or steps. A glossary round pulled forward -- terms
+proposed in advance, off class or package names -- is not a shortcut but the
+reverse-engineering this skill forbids one section further down.
+
 ### Brownfield: order (signal strength, not artifact hierarchy)
 
 Analysis priority, not a phase gate -- items can surface together, but when
@@ -478,7 +489,9 @@ Once a requirement/use case/term is settled with the user -- literal draft
 text shown and confirmed, per the definition above, not merely discussed:
 
 - Order by dependency, not by elicitation order: terms (including actors)
-  first, then requirements, then use cases (which reference both).
+  first, then requirements, then use cases (which reference both). The
+  elicitation order runs the other way round -- see "Elicitation order is
+  not write order" at the top.
 - Domain terms in a requirement's text that have no term yet: `term_add`
   first, then `req_link_term`.
 - After writing, report crisply **what changed and which code**
