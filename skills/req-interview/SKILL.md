@@ -30,6 +30,18 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   word the business actually uses. If they say "Vorgangsakte", that is the
   label, even when the interview runs in English -- translating it invents a
   second vocabulary, which is precisely what a glossary exists to prevent.
+- **One write call carries one language tag**, across every write tool
+  (`req_`, `constraint_`, `term_`, `uc_`). A second language therefore takes
+  a second call: create it in the first language, then restate it under the
+  second via the matching `*_update` -- a decision for the whole store, not
+  for a single entry (see the split rule above), so settle it with the user
+  before writing the second variant. Two silent failure modes live there,
+  both from omitting `language`, which falls the call back to the project's
+  default tag: identical text under that tag returns without error and
+  writes nothing, and *differing* text replaces the default-language literal
+  instead of adding a second variant -- the first language is then gone,
+  without an error. Name the `language` whenever the point of the call *is*
+  the language.
 
 ## Two entry points, one protocol
 
@@ -37,6 +49,19 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   it until a testable "done when" is reached.
 - **Brownfield** -- an existing project is attached to arknet. Code delivers
   **questions, never answers**.
+
+**Elicitation order is not write order** -- two different orders, and mixing
+them up is the standard failure of this skill. *Elicited* along flows: use
+cases first, vocabulary emerges out of them. *Written* along dependencies:
+terms, then requirements, then use cases (see "Writing it in" below).
+**Actor terms** are no exception to the elicitation order -- they surface
+with the use case they serve, like any other term -- only to the write
+order: they have to exist before `uc_add`, because the tool resolves
+`primaryActor`/`supportingActors` against existing terms. Every other term
+surfaces in a concrete use case's goal or steps and is written from there.
+A glossary round pulled forward -- terms proposed in advance, off class or
+package names -- is not a shortcut but the reverse-engineering "code
+delivers questions, never answers" forbids below.
 
 ### Brownfield: order (signal strength, not artifact hierarchy)
 
@@ -116,7 +141,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Artifact | Create | Read | Change |
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
-| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | (no update tool -- immutable, create anew) |
+| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
 | Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears) -- not actors/step structure) |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 
@@ -191,9 +216,17 @@ the draft, not after.
   (`arkreq:usesTerm`). After every new domain term in the requirement text,
   check: does a term already exist for it? If not, `term_add` first, then
   `req_link_term`.
-- `req_update(id, ...)` -- patches fields of an existing requirement
-  (partial update, not replace-by-identity) -- use this to fix a requirement
-  found wanting during a full-set audit instead of leaving it inconsistent.
+- `req_update(id, ..., newAcceptanceCriteria?, acceptanceCriteriaTextPatches?)`
+  -- patches fields of an existing requirement (partial update, not
+  replace-by-identity) -- use this to fix a requirement found wanting during
+  a full-set audit instead of leaving it inconsistent. Acceptance criteria
+  are reached through two independent, narrow parameters:
+  `newAcceptanceCriteria` appends criteria after the existing ones, and
+  `acceptanceCriteriaTextPatches` (list of `{position, text}`) corrects the
+  wording of existing ones by their 1-based position -- neither can insert
+  mid-list, delete or reorder a criterion, and a position with no matching
+  criterion is rejected. It does **not** touch status (`req_set_status`) or
+  linked terms (`req_link_term`).
 
 ### Deciding FR vs. NFR vs. Constraint
 
@@ -214,17 +247,40 @@ negotiable, not the shape of its done-when. Ask directly: "if we
 dropped/relaxed this, would that be a business tradeoff (NFR), or a rule
 violation (Constraint)?"
 
-### Constraints: `constraint_add(title, statement, type)`
+### Constraints: `constraint_add(title, statement, type, language?)`
 
 - `title` (required) -- short summary.
 - `statement` (required) -- the normative constraint text.
 - `type` (required) -- `TECHNICAL` | `BUSINESS` | `REGULATORY`.
+- `language` (optional) -- BCP-47 tag the title/statement are written in,
+  behaving as in `term_add`: falls back to the project's configured default
+  language, and if the project has no default either, the call is rejected
+  rather than writing an untagged literal.
 - Result: `TCON-n`/`BCON-n`/`RCON-n` code (one counter per subtype --
   deliberately not `TC-n`/`BC-n`/`RC-n`, which would collide with the
   existing Bounded Context abbreviation used throughout this ecosystem).
-- **Immutable once created** -- no update or status-change tool exists
-  (matches the ontology: a Constraint carries no status field). Get it right
-  at intake; a wrong one needs a fresh `constraint_add`, not a patch.
+- `constraint_update(id, title?, statement?, language?)` -- corrects an
+  already-created constraint's wording in place, keeping its identity and
+  every `oslc_rm:constrainedBy` link into it. Every argument but `id` is
+  optional and an omitted one leaves that field unchanged. `language`
+  behaves as in `term_update`: it replaces only the literal carrying the
+  resolved tag, every other language variant survives untouched -- except a
+  stale untagged one, swept away once the resolved tag equals the project's
+  default. It is also the only way to state an existing constraint in a
+  second language: one call carries exactly one tag, so `constraint_add`
+  then `constraint_update`, the same two-call pattern as for terms,
+  requirements and use cases.
+- **Type and code are fixed at intake** -- `constraint_update` changes text,
+  never `TECHNICAL`/`BUSINESS`/`REGULATORY`, and never the
+  `TCON-`/`BCON-`/`RCON-n` code that follows from the type. A retyped
+  constraint would need a new code, which nothing already referencing it via
+  `oslc_rm:constrainedBy` would follow. So the intake discipline still holds
+  -- for the type, not for the wording, which is correctable afterwards.
+- **No status** -- there is no `constraint_set_status`, matching the
+  ontology: a Constraint carries no status field.
+- `constraint_get(id, displayLocale?)` -- `displayLocale` behaves as in
+  `term_get`. `constraint_list` deliberately has none and reads under the
+  project's configured default language.
 - `req_link_constraint(reqId, constraintId)` -- links a requirement to the
   constraint that binds it (`oslc_rm:constrainedBy`), analogous to
   `req_link_term`. Idempotent no-op if already linked.
@@ -447,7 +503,9 @@ Once a requirement/use case/term is settled with the user -- literal draft
 text shown and confirmed, per the definition above, not merely discussed:
 
 - Order by dependency, not by elicitation order: terms (including actors)
-  first, then requirements, then use cases (which reference both).
+  first, then requirements, then use cases (which reference both). The
+  elicitation order runs the other way round -- see "Elicitation order is
+  not write order" at the top.
 - Domain terms in a requirement's text that have no term yet: `term_add`
   first, then `req_link_term`.
 - After writing, report crisply **what changed and which code**

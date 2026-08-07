@@ -303,6 +303,9 @@ are rejected with a didactic error rather than silently accepted.
   normative "the system shall ..." description, type, at least one testable
   acceptance criterion; optional MoSCoW priority, quality category, goal link).
 - `req_get` / `req_list` -- fetch one / list all requirements.
+- `req_update` -- correct an existing requirement's title, description,
+  priority or acceptance criteria (append new ones, or patch the wording of
+  existing ones by position).
 - `req_set_status` -- change lifecycle status (`PROPOSED` -> `ACCEPTED`).
 - `req_link_term` -- link a requirement to a glossary term it uses.
 - `req_schema` -- describe the requirement vocabulary (types, statuses,
@@ -312,7 +315,10 @@ are rejected with a didactic error rather than silently accepted.
 
 - `constraint_add` -- register a non-negotiable, externally imposed
   requirement (title, normative statement, type -- `TECHNICAL`, `BUSINESS`
-  or `REGULATORY`). Immutable once created -- no update or status tool.
+  or `REGULATORY`). No status tool -- a constraint carries no lifecycle.
+- `constraint_update` -- correct an already-created constraint's title and/or
+  statement, or state either of them in a further language. The type, and the
+  `TCON-`/`BCON-`/`RCON-` code that follows from it, stay fixed at creation.
 - `constraint_get` / `constraint_list` -- fetch one / list all constraints.
 - `req_link_constraint` -- link a requirement to the constraint that binds
   it.
@@ -324,6 +330,9 @@ are rejected with a didactic error rather than silently accepted.
   precondition/postcondition/extensions); steps can reference the
   requirements they realise.
 - `uc_get` / `uc_list` -- fetch one / list all use cases.
+- `uc_update` -- correct an existing use case's title/goal/scope/trigger/
+  pre-/postcondition, its extensions, and the text or `realises` references
+  of individual steps -- not its actors or the step list's structure.
 
 ### Glossary
 
@@ -331,6 +340,8 @@ are rejected with a didactic error rather than silently accepted.
   optionally mark it as an actor (`HUMAN`/`SYSTEM`) so it can later be used as
   a use case's primary or supporting actor.
 - `term_get` / `term_list` -- fetch one / list all glossary terms.
+- `term_update` -- correct an existing term's label, definition or actor
+  facet in place, keeping its identity and every link into it.
 
 ### Bounded contexts
 
