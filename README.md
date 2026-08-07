@@ -303,6 +303,9 @@ are rejected with a didactic error rather than silently accepted.
   normative "the system shall ..." description, type, at least one testable
   acceptance criterion; optional MoSCoW priority, quality category, goal link).
 - `req_get` / `req_list` -- fetch one / list all requirements.
+- `req_update` -- correct an existing requirement's title, description,
+  priority or acceptance criteria (append new ones, or patch the wording of
+  existing ones by position).
 - `req_set_status` -- change lifecycle status (`PROPOSED` -> `ACCEPTED`).
 - `req_link_term` -- link a requirement to a glossary term it uses.
 - `req_schema` -- describe the requirement vocabulary (types, statuses,

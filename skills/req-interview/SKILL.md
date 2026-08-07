@@ -191,9 +191,17 @@ the draft, not after.
   (`arkreq:usesTerm`). After every new domain term in the requirement text,
   check: does a term already exist for it? If not, `term_add` first, then
   `req_link_term`.
-- `req_update(id, ...)` -- patches fields of an existing requirement
-  (partial update, not replace-by-identity) -- use this to fix a requirement
-  found wanting during a full-set audit instead of leaving it inconsistent.
+- `req_update(id, ..., newAcceptanceCriteria?, acceptanceCriteriaTextPatches?)`
+  -- patches fields of an existing requirement (partial update, not
+  replace-by-identity) -- use this to fix a requirement found wanting during
+  a full-set audit instead of leaving it inconsistent. Acceptance criteria
+  are reached through two independent, narrow parameters:
+  `newAcceptanceCriteria` appends criteria after the existing ones, and
+  `acceptanceCriteriaTextPatches` (list of `{position, text}`) corrects the
+  wording of existing ones by their 1-based position -- neither can insert
+  mid-list, delete or reorder a criterion, and a position with no matching
+  criterion is rejected. It does **not** touch status (`req_set_status`) or
+  linked terms (`req_link_term`).
 
 ### Deciding FR vs. NFR vs. Constraint
 
