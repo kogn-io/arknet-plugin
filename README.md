@@ -330,6 +330,9 @@ are rejected with a didactic error rather than silently accepted.
   precondition/postcondition/extensions); steps can reference the
   requirements they realise.
 - `uc_get` / `uc_list` -- fetch one / list all use cases.
+- `uc_update` -- correct an existing use case's title/goal/scope/trigger/
+  pre-/postcondition, its extensions, and the text or `realises` references
+  of individual steps -- not its actors or the step list's structure.
 
 ### Glossary
 
@@ -337,6 +340,8 @@ are rejected with a didactic error rather than silently accepted.
   optionally mark it as an actor (`HUMAN`/`SYSTEM`) so it can later be used as
   a use case's primary or supporting actor.
 - `term_get` / `term_list` -- fetch one / list all glossary terms.
+- `term_update` -- correct an existing term's label, definition or actor
+  facet in place, keeping its identity and every link into it.
 
 ### Bounded contexts
 
