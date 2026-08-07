@@ -312,7 +312,10 @@ are rejected with a didactic error rather than silently accepted.
 
 - `constraint_add` -- register a non-negotiable, externally imposed
   requirement (title, normative statement, type -- `TECHNICAL`, `BUSINESS`
-  or `REGULATORY`). Immutable once created -- no update or status tool.
+  or `REGULATORY`). No status tool -- a constraint carries no lifecycle.
+- `constraint_update` -- correct an already-created constraint's title and/or
+  statement, or state either of them in a further language. The type, and the
+  `TCON-`/`BCON-`/`RCON-` code that follows from it, stay fixed at creation.
 - `constraint_get` / `constraint_list` -- fetch one / list all constraints.
 - `req_link_constraint` -- link a requirement to the constraint that binds
   it.

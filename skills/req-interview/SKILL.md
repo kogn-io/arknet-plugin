@@ -116,7 +116,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Artifact | Create | Read | Change |
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
-| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | (no update tool -- immutable, create anew) |
+| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
 | Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears) -- not actors/step structure) |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 
@@ -214,17 +214,40 @@ negotiable, not the shape of its done-when. Ask directly: "if we
 dropped/relaxed this, would that be a business tradeoff (NFR), or a rule
 violation (Constraint)?"
 
-### Constraints: `constraint_add(title, statement, type)`
+### Constraints: `constraint_add(title, statement, type, language?)`
 
 - `title` (required) -- short summary.
 - `statement` (required) -- the normative constraint text.
 - `type` (required) -- `TECHNICAL` | `BUSINESS` | `REGULATORY`.
+- `language` (optional) -- BCP-47 tag the title/statement are written in,
+  behaving as in `term_add`: falls back to the project's configured default
+  language, and if the project has no default either, the call is rejected
+  rather than writing an untagged literal.
 - Result: `TCON-n`/`BCON-n`/`RCON-n` code (one counter per subtype --
   deliberately not `TC-n`/`BC-n`/`RC-n`, which would collide with the
   existing Bounded Context abbreviation used throughout this ecosystem).
-- **Immutable once created** -- no update or status-change tool exists
-  (matches the ontology: a Constraint carries no status field). Get it right
-  at intake; a wrong one needs a fresh `constraint_add`, not a patch.
+- `constraint_update(id, title?, statement?, language?)` -- corrects an
+  already-created constraint's wording in place, keeping its identity and
+  every `oslc_rm:constrainedBy` link into it. Every argument but `id` is
+  optional and an omitted one leaves that field unchanged. `language`
+  behaves as in `term_update`: it replaces only the literal carrying the
+  resolved tag, every other language variant survives untouched -- except a
+  stale untagged one, swept away once the resolved tag equals the project's
+  default. It is also the only way to state an existing constraint in a
+  second language: one call carries exactly one tag, so `constraint_add`
+  then `constraint_update`, the same two-call pattern as for terms,
+  requirements and use cases.
+- **Type and code are fixed at intake** -- `constraint_update` changes text,
+  never `TECHNICAL`/`BUSINESS`/`REGULATORY`, and never the
+  `TCON-`/`BCON-`/`RCON-n` code that follows from the type. A retyped
+  constraint would need a new code, which nothing already referencing it via
+  `oslc_rm:constrainedBy` would follow. So the intake discipline still holds
+  -- for the type, not for the wording, which is correctable afterwards.
+- **No status** -- there is no `constraint_set_status`, matching the
+  ontology: a Constraint carries no status field.
+- `constraint_get(id, displayLocale?)` -- `displayLocale` behaves as in
+  `term_get`. `constraint_list` deliberately has none and reads under the
+  project's configured default language.
 - `req_link_constraint(reqId, constraintId)` -- links a requirement to the
   constraint that binds it (`oslc_rm:constrainedBy`), analogous to
   `req_link_term`. Idempotent no-op if already linked.
