@@ -141,7 +141,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 **Ordering consequence:** generalises beyond actors. Any reference a draft
 makes to another resource -- an actor/term by label, a requirement by code,
 or another use case by its capability (e.g. a step reading "checks against
-the register -- uses UC 'look up'") -- must exist **before** the draft that
+the tenant register -- uses UC 'look up'") -- must exist **before** the draft that
 depends on it is presented. Actor terms before `uc_add` is the case the tool
 itself enforces (see below); a use-case step presupposing a *different* use
 case's capability is not resolved or validated by any tool argument, so that

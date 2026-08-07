@@ -164,7 +164,7 @@ requirement. Each finding names the specialist skill that would resolve it
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
 (reading `actor_usecase_matrix`/`term_cooccurrence` for collisions that
 emerged "since the last audit run") -- neither tool carries a timestamp, and
-a store-size heuristic would fake a precision the data cannot back up.
+a store-size heuristic would fake a precision the store cannot back up.
 
 ## Requirements
 
@@ -268,7 +268,7 @@ glossary, bounded contexts).
 
 Later, three more entry points build on the same store:
 
-- `/arknet:adr` -- once a HOW decision needs recording (which database/
+- `/arknet:adr` -- once a HOW decision needs recording (which datastore/
   library/pattern, and why), not part of the requirements interview.
 - Asking the req-interview skill to **"review the requirements/use cases/
   glossary relentlessly"** re-runs it as a full-set audit instead of an

@@ -46,7 +46,7 @@ model the project is actually on before writing anything.
 
 Read `adr_list` before adding a decision, the same way `/arknet:req-interview` reads
 `req_list`/`uc_list`/`term_list` first. A decision judged in isolation misses the two defects
-that only show up against the whole store: **contradiction** (does this reverse or conflict
+that only show up against the whole ADR set: **contradiction** (does this reverse or conflict
 with an existing `PROPOSED`/`ACCEPTED` decision without saying so?) and **duplication** (is
 this the same decision under a different title?). Surface either before writing, don't let two
 silently-conflicting decisions both stand.
@@ -119,7 +119,7 @@ before calling `adr_add`**, rather than write speculatively and plan to fix it u
 tighter than the legacy Markdown skill's `Proposed`-is-freely-editable rule: here, nothing is
 freely editable, not even at `Proposed`.
 
-## Reviewing the store
+## Reviewing the ADRs in the store
 
 - `adr_list` for the overview; `adr_get` for one decision's full text.
 - `impact_analysis(code)` walks `addressesRequirement`/`affectsContext`/`supersedes` backward

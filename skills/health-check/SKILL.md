@@ -84,7 +84,7 @@ already use them.
 - **No staleness heuristic against `actor_usecase_matrix`/`term_cooccurrence`.**
   Deliberately out of scope for now: neither tool carries a timestamp, and a
   "since the last `/arknet:bc-audit` run" signal would need one. Inventing a
-  store-size threshold instead would fake a precision the data cannot
+  store-size threshold instead would fake a precision the store cannot
   back up. A later iteration may add this once a real signal exists; until
   then, `/arknet:bc-audit` stays something the user is routed to on request,
   not something this skill infers is due.
