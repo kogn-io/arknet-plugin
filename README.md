@@ -83,7 +83,7 @@ The same skill also runs a **full-set audit**: on a phrasing like "review the
 requirements relentlessly" or "are they complete/consistent", it first runs
 `orphan_check`/`trace_matrix` as a mandatory automated pass -- surfacing
 dangling links and orphaned terms that a content read alone would miss --
-then walks the entire register (requirements, use cases, glossary) one item
+then walks the entire store (requirements, use cases, glossary) one item
 at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
 filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the
@@ -95,11 +95,11 @@ interrogates the user on every gap it finds.
 
 ### `/arknet:bc-audit`
 
-Audits an already-filled requirements/use-case/glossary register for
+Audits an already-filled requirements/use-case/glossary store for
 emergent Bounded Context candidates -- it is an **audit**, never a
 greenfield "which contexts does your system need" interview. Bounded
 Context boundaries are meant to emerge from language collisions already
-present in a filled register, not be drawn on a blank whiteboard before
+present in a filled store, not be drawn on a blank whiteboard before
 the domain vocabulary exists.
 
 Reads `actor_usecase_matrix` (which use cases share an actor) and
@@ -164,7 +164,7 @@ requirement. Each finding names the specialist skill that would resolve it
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
 (reading `actor_usecase_matrix`/`term_cooccurrence` for collisions that
 emerged "since the last audit run") -- neither tool carries a timestamp, and
-a register-size heuristic would fake a precision the store cannot back up.
+a store-size heuristic would fake a precision the store cannot back up.
 
 ## Requirements
 
@@ -266,16 +266,16 @@ returns a compact digest plus the path to a self-contained HTML report
 (requirements with their acceptance criteria, use cases with their flow, the
 glossary, bounded contexts).
 
-Later, three more entry points build on the same register:
+Later, three more entry points build on the same store:
 
-- `/arknet:adr` -- once a HOW decision needs recording (which store/library/
-  pattern, and why), not part of the requirements interview.
+- `/arknet:adr` -- once a HOW decision needs recording (which datastore/
+  library/pattern, and why), not part of the requirements interview.
 - Asking the req-interview skill to **"review the requirements/use cases/
   glossary relentlessly"** re-runs it as a full-set audit instead of an
   intake: it checks structural gaps (`orphan_check`/`trace_matrix`) and then
   every item against a fixed linguistic and ISO 29148 quality checklist --
-  useful once the register has grown past a handful of entries.
-- `/arknet:bc-audit` -- once the register holds enough requirements/use
+  useful once the store has grown past a handful of entries.
+- `/arknet:bc-audit` -- once the store holds enough requirements/use
   cases/terms for language collisions to emerge, audits it for Bounded
   Context candidates instead of asking you to draw boundaries on a blank
   whiteboard. See below for the full protocol.
