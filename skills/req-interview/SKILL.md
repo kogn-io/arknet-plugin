@@ -33,10 +33,15 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 - **One write call carries one language tag**, across every write tool
   (`req_`, `constraint_`, `term_`, `uc_`). A second language therefore takes
   a second call: create it in the first language, then restate it under the
-  second via the matching `*_update`. One silent failure mode lives there --
-  a write whose text is identical to what is already stored, with no
-  `language` named, returns without error and writes nothing. Name the
-  `language` when the point of the call *is* the language.
+  second via the matching `*_update` -- a decision for the whole store, not
+  for a single entry (see the split rule above), so settle it with the user
+  before writing the second variant. Two silent failure modes live there,
+  both from omitting `language`, which falls the call back to the project's
+  default tag: identical text under that tag returns without error and
+  writes nothing, and *differing* text replaces the default-language literal
+  instead of adding a second variant -- the first language is then gone,
+  without an error. Name the `language` whenever the point of the call *is*
+  the language.
 
 ## Two entry points, one protocol
 
@@ -48,13 +53,15 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 **Elicitation order is not write order** -- two different orders, and mixing
 them up is the standard failure of this skill. *Elicited* along flows: use
 cases first, vocabulary emerges out of them. *Written* along dependencies:
-terms, then requirements, then use cases (see "Writing it in" below). The
-only elicitation exception is **actor terms** -- they have to exist before
-`uc_add`, because the tool resolves `primaryActor`/`supportingActors`
-against existing terms. Every other term is written when it surfaces in a
-concrete use case's goal or steps. A glossary round pulled forward -- terms
-proposed in advance, off class or package names -- is not a shortcut but the
-reverse-engineering this skill forbids one section further down.
+terms, then requirements, then use cases (see "Writing it in" below).
+**Actor terms** are no exception to the elicitation order -- they surface
+with the use case they serve, like any other term -- only to the write
+order: they have to exist before `uc_add`, because the tool resolves
+`primaryActor`/`supportingActors` against existing terms. Every other term
+surfaces in a concrete use case's goal or steps and is written from there.
+A glossary round pulled forward -- terms proposed in advance, off class or
+package names -- is not a shortcut but the reverse-engineering "code
+delivers questions, never answers" forbids below.
 
 ### Brownfield: order (signal strength, not artifact hierarchy)
 
