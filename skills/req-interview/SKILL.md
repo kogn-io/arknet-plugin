@@ -190,7 +190,7 @@ the draft, not after.
   project default, then to the server's own default, then to an untagged
   literal, then deterministically to any literal the term carries.
 
-### Requirements: `req_add(title, description, type, acceptanceCriteria, priority?, motivatedBy?, qualityCategory?)`
+### Requirements: `req_add(title, description, type, acceptanceCriteria, language?, priority?, motivatedBy?, qualityCategory?)`
 
 - `title` (required) -- short summary.
 - `description` (required) -- the normative statement ("The system shall
@@ -201,6 +201,10 @@ the draft, not after.
   first-class, SHACL-enforced field (`sh:minCount 1` / `sh:Violation`) --
   do not fold it into `description` as a suffix sentence, it has its own
   argument.
+- `language` (optional) -- BCP-47 tag the title/description are written in,
+  behaving as in `term_add`: falls back to the project's configured default
+  language, and if the project has no default either, the call is rejected
+  rather than writing an untagged literal.
 - `priority` (optional, MoSCoW) -- `MUST_HAVE` | `SHOULD_HAVE` |
   `COULD_HAVE` | `WONT_HAVE`.
 - `motivatedBy` (optional) -- IRI of an `arkreq:Goal`.
@@ -216,7 +220,8 @@ the draft, not after.
   (`arkreq:usesTerm`). After every new domain term in the requirement text,
   check: does a term already exist for it? If not, `term_add` first, then
   `req_link_term`.
-- `req_update(id, ..., newAcceptanceCriteria?, acceptanceCriteriaTextPatches?)`
+- `req_update(id, title?, description?, priority?, newAcceptanceCriteria?,
+  acceptanceCriteriaTextPatches?, language?)`
   -- patches fields of an existing requirement (partial update, not
   replace-by-identity) -- use this to fix a requirement found wanting during
   a full-set audit instead of leaving it inconsistent. Acceptance criteria
@@ -225,8 +230,18 @@ the draft, not after.
   `acceptanceCriteriaTextPatches` (list of `{position, text}`) corrects the
   wording of existing ones by their 1-based position -- neither can insert
   mid-list, delete or reorder a criterion, and a position with no matching
-  criterion is rejected. It does **not** touch status (`req_set_status`) or
+  criterion is rejected. `language` is the tag a non-omitted
+  `title`/`description` and any acceptance criterion this call touches are
+  written in, and behaves as in `term_update`: it replaces only the literal
+  carrying the resolved tag, every other language variant survives
+  untouched -- except a stale untagged one, swept away once the resolved tag
+  equals the project's default. It is also the only way to state an existing
+  requirement in a second language, the same two-call pattern as for terms and
+  constraints. It does **not** touch status (`req_set_status`) or
   linked terms (`req_link_term`).
+- `req_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
+  `req_list` deliberately has none and reads under the project's configured
+  default language.
 
 ### Deciding FR vs. NFR vs. Constraint
 
@@ -285,7 +300,7 @@ violation (Constraint)?"
   constraint that binds it (`oslc_rm:constrainedBy`), analogous to
   `req_link_term`. Idempotent no-op if already linked.
 
-### Use cases: `uc_add(title, goal, primaryActor, steps, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?)`
+### Use cases: `uc_add(title, goal, primaryActor, steps, language?, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?)`
 
 Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
@@ -300,6 +315,11 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
 - `scope`, `trigger`, `supportingActors` (list of actor labels),
   `precondition`, `postcondition`, `extensions` (list of free-text
   alternative/exception-flow lines) -- all optional.
+- `language` (optional) -- BCP-47 tag that title, goal, scope, trigger,
+  pre-/postcondition and every step's and extension's text are written in,
+  behaving as in `term_add`: falls back to the project's configured default
+  language, and if the project has no default either, the call is rejected
+  rather than writing an untagged literal.
 - Result: `UCn` code.
 
 - `uc_update(id, title?, goal?, scope?, trigger?, precondition?,
@@ -316,9 +336,17 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   from either list stays untouched. Every argument but `id` is optional
   and an omitted one leaves that field unchanged -- use this to fix a use
   case found wanting during a full-set audit instead of creating a
-  duplicate. It does **not** touch `primaryActor`, `supportingActors`, or
-  the step list's structure (add/remove/reorder) -- those still require a
-  fresh `uc_add`.
+  duplicate. `language` is the tag every field this call actually touches is
+  written in and behaves as in `term_update`: it replaces only the literal
+  carrying the resolved tag, every other language variant survives untouched
+  -- except a stale untagged one, swept away once the resolved tag equals the
+  project's default. It is also the only way to state an existing use case in
+  a second language. It does **not** touch `primaryActor`,
+  `supportingActors`, or the step list's structure (add/remove/reorder) --
+  those still require a fresh `uc_add`.
+- `uc_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
+  `uc_list` deliberately has none and reads under the project's configured
+  default language.
 
 arknet already resolves `primaryActor`/`supportingActors` and
 `steps[].realises` **schema-independently and with didactic rejection of

@@ -305,7 +305,8 @@ are rejected with a didactic error rather than silently accepted.
 - `req_get` / `req_list` -- fetch one / list all requirements.
 - `req_update` -- correct an existing requirement's title, description,
   priority or acceptance criteria (append new ones, or patch the wording of
-  existing ones by position).
+  existing ones by position), or state the fields it touches in a further
+  language.
 - `req_set_status` -- change lifecycle status (`PROPOSED` -> `ACCEPTED`).
 - `req_link_term` -- link a requirement to a glossary term it uses.
 - `req_schema` -- describe the requirement vocabulary (types, statuses,
@@ -332,16 +333,20 @@ are rejected with a didactic error rather than silently accepted.
 - `uc_get` / `uc_list` -- fetch one / list all use cases.
 - `uc_update` -- correct an existing use case's title/goal/scope/trigger/
   pre-/postcondition, its extensions, and the text or `realises` references
-  of individual steps -- not its actors or the step list's structure.
+  of individual steps, or state the fields it touches in a further language --
+  not its actors or the step list's structure.
 
 ### Glossary
 
 - `term_add` -- register a ubiquitous-language term as a SKOS concept;
-  optionally mark it as an actor (`HUMAN`/`SYSTEM`) so it can later be used as
-  a use case's primary or supporting actor.
+  optionally mark it as an actor (`HUMAN`/`SYSTEM`/`LEGAL` -- the last for a
+  legal person such as an organization or company, as opposed to a natural
+  person acting on its behalf) so it can later be used as a use case's primary
+  or supporting actor.
 - `term_get` / `term_list` -- fetch one / list all glossary terms.
 - `term_update` -- correct an existing term's label, definition or actor
-  facet in place, keeping its identity and every link into it.
+  facet in place, or state them in a further language, keeping its identity
+  and every link into it.
 
 ### Bounded contexts
 
