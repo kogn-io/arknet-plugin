@@ -345,7 +345,8 @@ are rejected with a didactic error rather than silently accepted.
   or supporting actor.
 - `term_get` / `term_list` -- fetch one / list all glossary terms.
 - `term_update` -- correct an existing term's label, definition or actor
-  facet in place, keeping its identity and every link into it.
+  facet in place, or state them in a further language, keeping its identity
+  and every link into it.
 
 ### Bounded contexts
 

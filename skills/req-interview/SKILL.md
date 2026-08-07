@@ -230,9 +230,10 @@ the draft, not after.
   `acceptanceCriteriaTextPatches` (list of `{position, text}`) corrects the
   wording of existing ones by their 1-based position -- neither can insert
   mid-list, delete or reorder a criterion, and a position with no matching
-  criterion is rejected. `language` is the tag every field this call actually
-  touches is written in and behaves as in `term_update`: it replaces only the
-  literal carrying the resolved tag, every other language variant survives
+  criterion is rejected. `language` is the tag a non-omitted
+  `title`/`description` and any acceptance criterion this call touches are
+  written in, and behaves as in `term_update`: it replaces only the literal
+  carrying the resolved tag, every other language variant survives
   untouched -- except a stale untagged one, swept away once the resolved tag
   equals the project's default. It is also the only way to state an existing
   requirement in a second language, the same two-call pattern as for terms and
@@ -299,7 +300,7 @@ violation (Constraint)?"
   constraint that binds it (`oslc_rm:constrainedBy`), analogous to
   `req_link_term`. Idempotent no-op if already linked.
 
-### Use cases: `uc_add(title, goal, primaryActor, steps, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?, language?)`
+### Use cases: `uc_add(title, goal, primaryActor, steps, language?, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?)`
 
 Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
