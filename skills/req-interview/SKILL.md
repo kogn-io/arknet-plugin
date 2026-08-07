@@ -30,6 +30,13 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   word the business actually uses. If they say "Vorgangsakte", that is the
   label, even when the interview runs in English -- translating it invents a
   second vocabulary, which is precisely what a glossary exists to prevent.
+- **One write call carries one language tag**, across every write tool
+  (`req_`, `constraint_`, `term_`, `uc_`). A second language therefore takes
+  a second call: create it in the first language, then restate it under the
+  second via the matching `*_update`. One silent failure mode lives there --
+  a write whose text is identical to what is already stored, with no
+  `language` named, returns without error and writes nothing. Name the
+  `language` when the point of the call *is* the language.
 
 ## Two entry points, one protocol
 
