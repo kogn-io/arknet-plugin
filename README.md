@@ -335,6 +335,8 @@ are rejected with a didactic error rather than silently accepted.
   pre-/postcondition, its extensions, and the text or `realises` references
   of individual steps, or state the fields it touches in a further language --
   not its actors or the step list's structure.
+- `uc_link_term` -- link a use case to a glossary term it uses.
+- `uc_link_constraint` -- link a use case to the constraint that binds it.
 
 ### Glossary
 
