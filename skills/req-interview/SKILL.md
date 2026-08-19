@@ -142,7 +142,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
-| Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears) -- not actors/step structure) |
+| Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears) -- not actors/step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 
 ### Glossary terms: `term_add(label, definition, language?, actorKind?, actorRole?)`
@@ -347,6 +347,14 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
 - `uc_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `uc_list` deliberately has none and reads under the project's configured
   default language.
+- `uc_link_term(ucId, termId)` -- links a use case to a glossary term it
+  uses (`arkreq:usesTerm`), analogous to `req_link_term`. After every new
+  domain term in the use case's goal/scope/trigger/pre-postcondition/step
+  text, check: does a term already exist for it? If not, `term_add` first,
+  then `uc_link_term`. Idempotent no-op if already linked.
+- `uc_link_constraint(ucId, constraintId)` -- links a use case to the
+  constraint that binds it (`oslc_rm:constrainedBy`), analogous to
+  `req_link_constraint`. Idempotent no-op if already linked.
 
 arknet already resolves `primaryActor`/`supportingActors` and
 `steps[].realises` **schema-independently and with didactic rejection of
@@ -534,8 +542,8 @@ text shown and confirmed, per the definition above, not merely discussed:
   first, then requirements, then use cases (which reference both). The
   elicitation order runs the other way round -- see "Elicitation order is
   not write order" at the top.
-- Domain terms in a requirement's text that have no term yet: `term_add`
-  first, then `req_link_term`.
+- Domain terms in a requirement's or use case's text that have no term yet:
+  `term_add` first, then `req_link_term`/`uc_link_term`.
 - After writing, report crisply **what changed and which code**
   (`FR-3`, `UC2`, `TERM-5`) -- not a full restatement of the content.
 
