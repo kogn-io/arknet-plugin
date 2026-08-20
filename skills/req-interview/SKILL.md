@@ -52,16 +52,19 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 
 **Elicitation order is not write order** -- two different orders, and mixing
 them up is the standard failure of this skill. *Elicited* along flows: use
-cases first, vocabulary emerges out of them. *Written* along dependencies:
-terms, then requirements, then use cases (see "Writing it in" below).
-**Actor terms** are no exception to the elicitation order -- they surface
-with the use case they serve, like any other term -- only to the write
-order: they have to exist before `uc_add`, because the tool resolves
-`primaryActor`/`supportingActors` against existing terms. Every other term
-surfaces in a concrete use case's goal or steps and is written from there.
-A glossary round pulled forward -- terms proposed in advance, off class or
-package names -- is not a shortcut but the reverse-engineering "code
-delivers questions, never answers" forbids below.
+cases first, vocabulary (and the actors who drive it) emerges out of them.
+*Written* along dependencies: actors and terms, then requirements, then use
+cases (see "Writing it in" below).
+**Actors** are no exception to the elicitation order -- they surface
+with the use case they serve, like any glossary term -- only to the write
+order: they have to exist (`actor_add`) before `uc_add`, because the tool
+resolves `primaryActor`/`supportingActors` against the actor register. An
+actor is its own resource, not a glossary term (see "Actors" below) --
+naming it does not, by itself, put a word into the glossary. Every other
+term surfaces in a concrete use case's goal or steps and is written from
+there. A glossary round pulled forward -- terms proposed in advance, off
+class or package names -- is not a shortcut but the reverse-engineering
+"code delivers questions, never answers" forbids below.
 
 ### Brownfield: order (signal strength, not artifact hierarchy)
 
@@ -92,9 +95,9 @@ signals conflict, trust this order:
 3. **Use case and actor surface together.** Who calls an entry point is
    usually visible right there (caller, auth context, trigger) --
    recognise both in the same pass. The *write* order stays unchanged
-   though: `term_add` with `actorKind` before `uc_add`, because the tool
-   resolves `primaryActor`/`supportingActors` by label (see "Ordering
-   consequence" below).
+   though: `actor_add` before `uc_add`, because the tool resolves
+   `primaryActor`/`supportingActors` by name against the actor register
+   (see "Ordering consequence" below).
 4. **Vocabulary beyond actors surfaces in context**, as terms appear in a
    use case's goal/steps -- not mined wholesale from class/package names
    in advance. Check every candidate against the load-bearing bar (used
@@ -144,8 +147,33 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
 | Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears) -- not actors/step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
+| Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it) |
 
-### Glossary terms: `term_add(label, definition, language?, actorKind?, actorRole?)`
+### Actors: `actor_add(type, name, description?)`
+
+An actor is a resource in its own right, not a glossary term or a facet of
+one -- someone or something that can act on the system under description,
+hold an interest in it, or both. It needs no definition and no `TERM-n`
+code to exist; a resource may still be *both* an actor and a glossary term
+(e.g. "Customer" worth an actor *and* a defined domain concept), but nothing
+forces the pairing.
+
+- `type` (required) -- `HUMAN` (a natural person) | `SYSTEM` (an external
+  system or service) | `LEGAL` (a legal person -- organization, company,
+  association) | `GROUP` (a group without a legal form of its own --
+  department, committee, team). Fixed at creation; `actor_update` cannot
+  change it.
+- `name` (required) -- what the actor is called, e.g. "Sachbearbeiter" or
+  "PaymentService". Plain text, no language tag (unlike a glossary term's
+  `skos:prefLabel`) -- an actor is a structural identity, not prose whose
+  wording is the deliverable.
+- `description` (optional) -- free text.
+- Result: `ACTOR-n` code.
+- `actor_update(id, name?, description?)` -- corrects an already-created
+  actor's name/description in place, keeping its identity (and every
+  existing link into it) unchanged. Cannot change `type` or the code.
+
+### Glossary terms: `term_add(label, definition, language?)`
 
 - `label` (required) -- `skos:prefLabel`.
 - `definition` (required).
@@ -153,37 +181,28 @@ the decision -- intentional / grown / accidental -- stays with the user.
   written in. Omitted, it falls back to the project's configured default
   language (`project_update`); if the project has no default either, the
   call is rejected rather than writing an untagged literal.
-- `actorKind` (optional) -- `HUMAN` | `SYSTEM` | `LEGAL`. Sets the actor facet
-  (the same concept additionally becomes
-  `arkproc:HumanActor`/`SystemActor`/`LegalActor` -- `LEGAL` for a legal
-  person, e.g. an organization, company or association, as opposed to a
-  natural person acting on its behalf) -- needed if the term is later going
-  to appear as `primaryActor`/`supportingActors` in a use case.
-- `actorRole` (optional) -- free text, only meaningful together with
-  `actorKind`.
 - Result: `TERM-n` code.
 
 **Ordering consequence:** generalises beyond actors. Any reference a draft
-makes to another resource -- an actor/term by label, a requirement by code,
+makes to another resource -- an actor/term by name, a requirement by code,
 or another use case by its capability (e.g. a step reading "checks against
 the tenant register -- uses UC 'look up'") -- must exist **before** the draft that
-depends on it is presented. Actor terms before `uc_add` is the case the tool
+depends on it is presented. Actors before `uc_add` is the case the tool
 itself enforces (see below); a use-case step presupposing a *different* use
 case's capability is not resolved or validated by any tool argument, so that
 existence check is on you -- verify via `uc_list`/`uc_get` before presenting
 the draft, not after.
 
-- `term_update(id, label?, definition?, language?, actorKind?, actorRole?)` --
-  corrects an already-created term's label/definition/actor facette in place,
-  keeping its identity and every existing link into it (e.g.
-  `arkreq:usesTerm`) unchanged. Every argument but `id` is optional and an
-  omitted one leaves that field unchanged -- use this to fix a term found
-  wanting during a full-set audit instead of creating a duplicate.
-  `language` behaves as in `term_add` (falls back to the project's default,
-  rejects if neither is set): it replaces only the literal carrying the
-  resolved tag, every other language variant survives untouched -- except a
-  stale untagged one, swept away once the resolved tag equals the project's
-  default.
+- `term_update(id, label?, definition?, language?)` -- corrects an
+  already-created term's label/definition in place, keeping its identity and
+  every existing link into it (e.g. `arkreq:usesTerm`) unchanged. Every
+  argument but `id` is optional and an omitted one leaves that field
+  unchanged -- use this to fix a term found wanting during a full-set audit
+  instead of creating a duplicate. `language` behaves as in `term_add`
+  (falls back to the project's default, rejects if neither is set): it
+  replaces only the literal carrying the resolved tag, every other language
+  variant survives untouched -- except a stale untagged one, swept away once
+  the resolved tag equals the project's default.
 - `term_get(id, displayLocale?)` -- `displayLocale` (optional) overrides the
   project's configured default language for this one read, choosing which
   language variant of label/definition comes back. Falls back to the
@@ -305,14 +324,14 @@ violation (Constraint)?"
 Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
 - `title`, `goal` (required) -- goal-in-context.
-- `primaryActor` (required) -- **label** of an existing actor term (see
-  above: must already exist via `term_add ... actorKind=...`; an unknown
-  label is rejected didactically, never silently created).
+- `primaryActor` (required) -- **name** of an existing actor (see above:
+  must already exist via `actor_add`; an unknown name is rejected
+  didactically, never silently created).
 - `steps` (required, at least 1) -- list of `{position, text, realises?}`:
   `position` 1-based and gapless, `text` the step description, `realises`
   optionally a list of requirement codes (`FR-n`/`NFR-n`) that this step
   fulfils.
-- `scope`, `trigger`, `supportingActors` (list of actor labels),
+- `scope`, `trigger`, `supportingActors` (list of actor names),
   `precondition`, `postcondition`, `extensions` (list of free-text
   alternative/exception-flow lines) -- all optional.
 - `language` (optional) -- BCP-47 tag that title, goal, scope, trigger,
@@ -360,8 +379,8 @@ arknet already resolves `primaryActor`/`supportingActors` and
 `steps[].realises` **schema-independently and with didactic rejection of
 unknown/ambiguous references** -- that rigor is already wired **into the
 tool itself**. The skill therefore does not need to invent this discipline,
-only observe the write order (terms before use cases, requirements before
-`realises` references).
+only observe the write order (actors and terms before use cases, requirements
+before `realises` references).
 
 ## The interrogation -- protocol
 
@@ -495,15 +514,18 @@ Cockburn completeness:
   `term_list` check alone cannot catch this; it takes deliberately asking
   "what does this label already mean out there?"
 - Definition precise enough that two people understand the same thing?
-- Does the term need an actor facet (`actorKind`/`actorRole`) because it will
-  later appear as an actor in a use case?
+- **Is this candidate actually an actor** (something that can act on the
+  system, hold an interest in it, or both)? If so it belongs as its own
+  `actor_add` resource, not a glossary term -- create the actor separately,
+  and only *also* write a glossary term for it if its meaning is itself
+  worth defining (the two are independent; neither implies the other).
 - **Before discarding a category/classification candidate as "not
   load-bearing"** -- check the actual ontology/schema (grep the vocabulary
   source, not just judge from prose mentions) for whether it is already a
-  modelled class that other terms parametrize against. A candidate that
+  modelled class that other resources parametrize against. A candidate that
   looks like idle prose ("just a category") may already be an implemented
-  supertype (e.g. an `Actor` class with `HumanActor`/`SystemActor`/
-  `LegalActor` subclasses) that every actor term's classification field
+  supertype (e.g. the `Actor` class with `HumanActor`/`SystemActor`/
+  `LegalActor`/`GroupActor` subclasses) that every actor's `type` field
   maps onto -- discarding it would leave that mapping without a defined
   domain concept.
 - **Duplication against related terms** -- does this term restate content
@@ -539,10 +561,10 @@ Cockburn completeness:
 Once a requirement/use case/term is settled with the user -- literal draft
 text shown and confirmed, per the definition above, not merely discussed:
 
-- Order by dependency, not by elicitation order: terms (including actors)
-  first, then requirements, then use cases (which reference both). The
-  elicitation order runs the other way round -- see "Elicitation order is
-  not write order" at the top.
+- Order by dependency, not by elicitation order: actors and terms first,
+  then requirements, then use cases (which reference both). The elicitation
+  order runs the other way round -- see "Elicitation order is not write
+  order" at the top.
 - Domain terms in a requirement's or use case's text that have no term yet:
   `term_add` first, then `req_link_term`/`uc_link_term`.
 - After writing, report crisply **what changed and which code**
@@ -598,5 +620,5 @@ of two outcomes:
   to the ADR skill, keep this conversation on WHAT & WHY.
 - Use cases belong here (Cockburn flows, linked to requirements via
   `realises`). User stories do not -- arknet has no separate role layer that
-  would justify an "as X I want" framing; it has actors (terms with
-  `actorKind`) and flows.
+  would justify an "as X I want" framing; it has actors (`actor_add`) and
+  flows.
