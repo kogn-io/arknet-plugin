@@ -380,9 +380,13 @@ are rejected with a didactic error rather than silently accepted.
   which use case(s) realise it.
 - `impact_analysis` -- what is transitively affected if a given requirement,
   term, use case or architecture decision changes.
-- `orphan_check` -- find requirements that no use case realises, glossary
-  terms that are never referenced, and constraints that no requirement is
-  bound by.
+- `orphan_check` -- four lists: requirements that no use case realises;
+  glossary terms that are never referenced (by a requirement, a use case, a
+  bounded context's ubiquitous language, or another term's broader term);
+  text that names a term without its backing edge -- a use case's goal,
+  scope, trigger, precondition, postcondition and every step/extension text
+  count as its text, and naming its own primary/supporting actor there is
+  not a gap; and constraints that no requirement or use case is bound by.
 - `actor_usecase_matrix` -- raw bipartite view: which use cases each actor
   appears in (`primaryActor`/`supportingActor`), and which actors each use
   case names. No clustering or judgement -- data for `/arknet:bc-audit`.

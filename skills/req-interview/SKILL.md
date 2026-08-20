@@ -376,8 +376,9 @@ entry points (see above), same protocol:
   complete/consistent"). This is the **default reading** of any
   "review/check" phrasing -- do not collapse it into a quick summary.
   **First, automated pass:** run `orphan_check` (requirements no use case
-  realises, glossary terms never referenced, constraints no requirement is
-  bound by) and `trace_matrix` (per
+  realises, glossary terms never referenced, text mentions of a term missing
+  its backing edge -- including a use case's prose beyond its `goal` -- and
+  constraints no requirement or use case is bound by) and `trace_matrix` (per
   requirement: which terms it uses, which use case(s) realise it) *before*
   any manual reading -- these two calls surface structural gaps
   (dangling links, orphaned terms, unrealised requirements) that a
