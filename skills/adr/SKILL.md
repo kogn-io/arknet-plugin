@@ -1,5 +1,5 @@
 ---
-description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
+description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_update/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
 ---
 
 # /arknet:adr -- Architecture Decision Records (arknet store)
@@ -18,7 +18,7 @@ the same project, and do not silently decide to migrate an existing file-based c
 find both a populated `docs/adr/` *and* this skill was invoked, say so and ask the user which
 model the project is actually on before writing anything.
 
-## The five tools
+## The seven tools
 
 | Tool | Purpose |
 |---|---|
@@ -27,8 +27,10 @@ model the project is actually on before writing anything.
 | `adr_get` | A single decision's full text, plus both directions of `supersedes`. |
 | `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. |
 | `adr_supersede` | Records that one decision replaces an older one (relation only -- see "Lifecycle" below). |
+| `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
+| `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
 
-`adr_add(name, adrContext, decision, consequences?, alternatives?, decisionDate?, addressesRequirements?, affectsContexts?)`:
+`adr_add(name, adrContext, decision, consequences?, alternatives?, decisionDate?, addressesRequirements?, affectsContexts?, relatedTo?)`:
 
 - `name`, `adrContext`, `decision` are required (`adrContext`/`decision` each need at least 5
   characters -- a floor, not a quality target).
@@ -41,6 +43,8 @@ model the project is actually on before writing anything.
   that **must already exist**. An unknown code is rejected by the tool itself with a didactic
   error -- if a reference doesn't obviously already exist, check with `req_list`/`bc_list`
   first (or create it: `req_add` / `bc_add`) rather than let the call fail as a surprise.
+- `relatedTo` (`ADR-n`) links this decision to peer decisions ("see also"), each of which must
+  already exist -- see "Related decisions" below.
 
 ## Context discipline -- read before writing
 
@@ -74,9 +78,9 @@ not validate decision *quality*. That is still yours to enforce:
 - **Role-based language, not personal names.** Check `adrContext`/`decision`/`consequences`/
   `alternatives` for named individuals (e.g. "Fred uses...") and replace with the store's
   existing convention of role-based language ("the user", "the operator"), matching how
-  requirements and bounded contexts already phrase this. There is no `adr_update` tool to fix
-  this after the fact, so a personalized ADR is a permanent blemish on an otherwise-correct
-  record -- catch it before writing.
+  requirements and bounded contexts already phrase this. `adr_update` can still correct this
+  while the decision is `PROPOSED` (see "Correcting a decision" below), but that window closes
+  for good at `ACCEPTED` -- catch it before writing rather than relying on the correction path.
 
 ## Lifecycle -- narrower than the ontology
 
@@ -92,7 +96,9 @@ render, never through the status line.
 What this means in practice:
 
 - **Rejecting a proposal.** Call `adr_set_status(id, "REJECTED")` -- do not fold the rejection
-  into `consequences`/`decision` text as a workaround.
+  into `consequences`/`decision` text as a workaround. `REJECTED` means the option was
+  considered and turned down -- a decision worth keeping, not a mistaken entry to undo; it is
+  deliberately not deletable either (see "Deleting a decision" below).
 - **Deprecating a decision that became obsolete without a successor.** Call
   `adr_set_status(id, "DEPRECATED")`. If a newer decision replaces it instead, use
   `adr_supersede` (see below), not `DEPRECATED`.
@@ -110,14 +116,55 @@ idempotent (recording the same pair twice is a no-op) and rejects a decision sup
 itself. There is no back-reference to maintain: `adr_get`/`adr_list` derive "superseded by" on
 the superseded record by reading the relation in reverse -- never write it from the other side.
 
-## No correction path
+## Correcting a decision
 
-There is no `adr_update` and no delete tool. A `PROPOSED` decision entered with wrong or
-incomplete text cannot be edited afterwards -- only accepted as-is, superseded later, or left
-standing as a permanent, imperfect record. Because of this, **confirm the content with the user
-before calling `adr_add`**, rather than write speculatively and plan to fix it up. This is
-tighter than the legacy Markdown skill's `Proposed`-is-freely-editable rule: here, nothing is
-freely editable, not even at `Proposed`.
+`adr_update(id, name?, adrContext?, decision?, consequences?, alternatives?, decisionDate?, addressesRequirements?, affectsContexts?, relatedTo?)`:
+every field but `id` is optional, and an omitted field is left unchanged -- never cleared.
+
+- **Text fields** (`name`, `adrContext`, `decision`, `consequences`, `alternatives`,
+  `decisionDate`) are correctable only while the decision is `PROPOSED`. From `ACCEPTED` on
+  (and likewise `REJECTED`/`DEPRECATED`) the tool refuses a text change, because a decision in
+  force records what was decided at the time -- record the correction as a new decision
+  (`adr_add`) and link it with `adr_supersede` instead of trying to edit the original.
+- **The three reference lists** (`addressesRequirements`, `affectsContexts`, `relatedTo`) are
+  the deliberate exception and stay correctable in *every* status, so an edge to a requirement,
+  bounded context or peer decision that did not exist yet when the decision was made can still
+  be completed. Passing a list replaces it wholesale; an empty list removes every edge of it;
+  omitting it leaves it untouched.
+- Status and the `supersedes` relation are not touched here -- still `adr_set_status` and
+  `adr_supersede`.
+
+Because the text-field window closes at `ACCEPTED`, **confirm the content with the user before
+calling `adr_add`** rather than write speculatively and plan to fix it up afterwards -- the
+correction path exists, but only for as long as the decision stays `PROPOSED`.
+
+## Related decisions (`relatedTo`)
+
+A loose "see also" cross-reference between decisions of equal rank -- unlike `supersedes`, it
+carries no direction of replacement. Settable at `adr_add` and completed later with
+`adr_update`; only the forward direction is stored (the decision recorded later names the
+earlier one it relates to), but `arkarch:relatedTo` is a symmetric property, so `adr_get`/
+`adr_list` read back a merged list regardless of which side wrote the edge. There is
+deliberately no `adr_link_related` tool -- the relation is set only through `adr_add`/
+`adr_update`.
+
+## Deleting a decision
+
+`adr_delete(id)` removes a decision and every triple it carries -- not a correction, the whole
+record is gone. The freed code is **not** handed out again; the next `adr_add` continues above
+it.
+
+- **Only `PROPOSED` is deletable.** This undoes a record entered by mistake -- a duplicate, a
+  draft that belongs elsewhere. From `ACCEPTED` on the record stays: what was decided is
+  exactly what an ADR exists to keep. Use `adr_supersede` or
+  `adr_set_status(id, "DEPRECATED")` instead.
+- **`REJECTED` is explicitly not deletable either** -- see "Lifecycle" above: it means the
+  option was considered and turned down, a decision worth keeping, not a mistake to undo.
+- **Refused while another decision still points at this one** via `supersedes` or `relatedTo`;
+  the refusal names those decisions. Note the asymmetry this creates with "Superseding a
+  decision" above: `arkarch:supersedes` itself has no removal path, so a superseded `PROPOSED`
+  record can never be deleted once something points at it, and a mistyped `adr_supersede` call
+  is permanent -- double-check `id`/`supersededId` before calling it.
 
 ## Reviewing the ADRs in the store
 
