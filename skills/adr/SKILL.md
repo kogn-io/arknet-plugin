@@ -23,22 +23,29 @@ model the project is actually on before writing anything.
 | Tool | Purpose |
 |---|---|
 | `adr_add` | Record a new decision. Always starts `PROPOSED`; takes no status parameter. |
-| `adr_list` | One compact line per decision: code, status, title, addresses/affects/supersedes/superseded-by. |
-| `adr_get` | A single decision's full text, plus both directions of `supersedes`. |
-| `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. |
-| `adr_supersede` | Records that one decision replaces an older one (relation only -- see "Lifecycle" below). |
+| `adr_list` | One compact line per decision: code, status, title, addresses/affects/supersedes/superseded-by/related-to. |
+| `adr_get` | A single decision's full text, plus both directions of `supersededBy` and every related decision. |
+| `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. Refuses `SUPERSEDED` -- that one needs `adr_supersede`. |
+| `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
 | `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
 
-`adr_add(name, adrContext, decision, consequences?, alternatives?, decisionDate?, addressesRequirements?, affectsContexts?, relatedTo?)`:
+`adr_add(name, adrContext, decision, consequences?, consideredOptions?, decisionDate?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
 
 - `name`, `adrContext`, `decision` are required (`adrContext`/`decision` each need at least 5
   characters -- a floor, not a quality target).
-- `consequences`, `alternatives` are optional but expected in practice (SHACL flags a missing
-  one as a warning, not a hard rejection) -- treat an empty one as a finding to raise with the
-  user, not something to silently skip.
+- `consequences` is a list of `{statement, type}`, `type` one of `POSITIVE`/`NEGATIVE`/
+  `NEUTRAL`. `consideredOptions` is a list of `{name, rationale, outcome}`, `outcome` one of
+  `CHOSEN`/`REJECTED` -- at most one option per decision may be `CHOSEN`. Both are optional but
+  expected in practice -- treat an empty one as a finding to raise with the user, not something
+  to silently skip.
 - `decisionDate` is optional ISO-8601 (`yyyy-MM-dd`) -- only set it once the decision has
   actually been made, not as a placeholder.
+- `language` (BCP-47, e.g. `en`, `de`) is the tag every multilingual text this call writes
+  (`name`, `adrContext`, `decision`, and any consequence/considered-option text) is recorded
+  under. Optional -- falls back to the project's configured default language. `adr_get`/
+  `adr_list` take a matching `displayLocale` to pick which language candidate is shown, again
+  falling back to the project default.
 - `addressesRequirements` (`FR-n`/`NFR-n`) and `affectsContexts` (`BC-n`) link to resources
   that **must already exist**. An unknown code is rejected by the tool itself with a didactic
   error -- if a reference doesn't obviously already exist, check with `req_list`/`bc_list`
@@ -73,25 +80,32 @@ not validate decision *quality*. That is still yours to enforce:
 - **The litmus test.** Does the sentence go stale the moment someone changes code? If yes, it's
   wiring state, not a decision, and belongs in a doc comment or the issue tracker, not in
   `decision`/`consequences`.
-- **Substantive alternatives.** "No alternatives considered" is a smell, not an answer -- if the
-  option space genuinely was empty, say briefly why.
-- **Role-based language, not personal names.** Check `adrContext`/`decision`/`consequences`/
-  `alternatives` for named individuals (e.g. "Fred uses...") and replace with the store's
-  existing convention of role-based language ("the user", "the operator"), matching how
-  requirements and bounded contexts already phrase this. `adr_update` can still correct this
-  while the decision is `PROPOSED` (see "Correcting a decision" below), but that window closes
-  for good at `ACCEPTED` -- catch it before writing rather than relying on the correction path.
+- **Substantive considered options.** "No options considered" is a smell, not an answer -- if
+  the option space genuinely was empty, say briefly why. `consideredOptions` is where the
+  discarded alternatives live, each with a `rationale`, and `outcome: CHOSEN` on the one taken --
+  the record of *why not X* is as much the point as the record of *why Y*.
+- **Role-based language, not personal names.** Check `adrContext`/`decision`/every consequence
+  `statement`/every considered option's `name`/`rationale` for named individuals (e.g. "Fred
+  uses...") and replace with the store's existing convention of role-based language ("the
+  user", "the operator"), matching how requirements and bounded contexts already phrase this.
+  `adr_update` can still correct this while the decision is `PROPOSED` (see "Correcting a
+  decision" below), but that window closes for good at `ACCEPTED` -- catch it before writing
+  rather than relying on the correction path.
 
-## Lifecycle -- narrower than the ontology
+## Lifecycle -- SUPERSEDED is a real, written status
 
 The ADR ontology defines five statuses (`Proposed`, `Accepted`, `Rejected`, `Deprecated`,
-`Superseded`). The tool surface implements four of them: `adr_set_status` supports
-`PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, and `ACCEPTED -> DEPRECATED` -- any other
-transition errors. `Superseded` is still not a settable status: `adr_supersede` does **not**
-change the superseded decision's status, it only records the `supersedes` relation. An old ADR
-keeps whatever status it had (typically `ACCEPTED`) forever; the fact that it has been
-superseded is visible only through the `supersedes`/`superseded by` fields `adr_get`/`adr_list`
-render, never through the status line.
+`Superseded`), and the tool surface implements all five. `adr_set_status` only ever sets
+`ACCEPTED`, `REJECTED` or `DEPRECATED` (`PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`,
+`ACCEPTED -> DEPRECATED`) and explicitly refuses `SUPERSEDED` as a target, pointing the caller
+at `adr_supersede` instead -- reaching `SUPERSEDED` always needs a named successor, which
+`adr_set_status` has no parameter for.
+
+`adr_supersede` sets the *older* decision's status to `SUPERSEDED` **and** its `supersededBy`
+edge to the newer decision, together in one write -- status and edge are coupled, never two
+independently maintained signals. After the call, `adr_get`/`adr_list` show the older decision's
+status as `SUPERSEDED` directly; there is no separate field to cross-check to know a decision is
+no longer current.
 
 What this means in practice:
 
@@ -102,45 +116,54 @@ What this means in practice:
 - **Deprecating a decision that became obsolete without a successor.** Call
   `adr_set_status(id, "DEPRECATED")`. If a newer decision replaces it instead, use
   `adr_supersede` (see below), not `DEPRECATED`.
-- **Judging whether a decision is still in force.** Never read only the status. After an
-  `adr_supersede` call, the superseded decision still reads `ACCEPTED` -- check its
-  `superseded by` field (via `adr_get`, or the inline annotation `adr_list` already shows) before
-  treating an `ACCEPTED` decision as current.
+- **Judging whether a decision is still in force.** Read the status: `SUPERSEDED` (like
+  `REJECTED`/`DEPRECATED`) means it no longer is. `adr_get`'s `superseded by` field additionally
+  names *which* decision replaced it.
 
 ## Superseding a decision
 
 `adr_supersede(id, supersededId)`: `id` is the new, superseding decision; `supersededId` the
-older one. Both must already exist -- write the new ADR first (`adr_add`, then
+older one. **Both must already be `ACCEPTED`** -- write the new ADR first (`adr_add`, then
 `adr_set_status` to `ACCEPTED` once it is genuinely decided), then link it. The call is
 idempotent (recording the same pair twice is a no-op) and rejects a decision superseding
-itself. There is no back-reference to maintain: `adr_get`/`adr_list` derive "superseded by" on
-the superseded record by reading the relation in reverse -- never write it from the other side.
+itself. **Naming a different successor for an already-superseded decision is refused** -- there
+is no tool to change or remove a `supersededBy` edge once set, so double-check `id`/
+`supersededId` before calling; a mistyped call is effectively permanent.
 
 ## Correcting a decision
 
-`adr_update(id, name?, adrContext?, decision?, consequences?, alternatives?, decisionDate?, addressesRequirements?, affectsContexts?, relatedTo?)`:
+`adr_update(id, name?, adrContext?, decision?, newConsequences?, consequenceCorrections?, newConsideredOptions?, consideredOptionCorrections?, decisionDate?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
 every field but `id` is optional, and an omitted field is left unchanged -- never cleared.
 
-- **Text fields** (`name`, `adrContext`, `decision`, `consequences`, `alternatives`,
-  `decisionDate`) are correctable only while the decision is `PROPOSED`. From `ACCEPTED` on
-  (and likewise `REJECTED`/`DEPRECATED`) the tool refuses a text change, because a decision in
-  force records what was decided at the time -- record the correction as a new decision
-  (`adr_add`) and link it with `adr_supersede` instead of trying to edit the original.
+- **`name`/`adrContext`/`decision`, and the `statement`/`type` of an existing consequence or the
+  `name`/`rationale`/`outcome` of an existing considered option** (addressed by 1-based
+  `position` via `consequenceCorrections`/`consideredOptionCorrections`) **are correctable only
+  while the decision is `PROPOSED`** -- **unless** the call writes a language that field or
+  position has never carried before, which counts as a translation and is allowed in *every*
+  status; correcting the wording of a language the field/position already carries stays
+  `PROPOSED`-only. Changing `type`/`outcome` is **never** exempt, regardless of language, once
+  the decision is no longer `PROPOSED` -- classification is a judgement on the decision, not a
+  fact of its wording. From `ACCEPTED` on, a refused text change means: record the correction as
+  a new decision (`adr_add`) and link it with `adr_supersede` instead of trying to edit the
+  original.
+- **`newConsequences`/`newConsideredOptions`** append new entries and are allowed in *every*
+  status -- adding a consequence noticed only later is not the same as rewriting one.
 - **The three reference lists** (`addressesRequirements`, `affectsContexts`, `relatedTo`) are
   the deliberate exception and stay correctable in *every* status, so an edge to a requirement,
   bounded context or peer decision that did not exist yet when the decision was made can still
   be completed. Passing a list replaces it wholesale; an empty list removes every edge of it;
   omitting it leaves it untouched.
-- Status and the `supersedes` relation are not touched here -- still `adr_set_status` and
+- Status and the `supersededBy` relation are not touched here -- still `adr_set_status` and
   `adr_supersede`.
 
 Because the text-field window closes at `ACCEPTED`, **confirm the content with the user before
 calling `adr_add`** rather than write speculatively and plan to fix it up afterwards -- the
-correction path exists, but only for as long as the decision stays `PROPOSED`.
+correction path exists, but only for as long as the decision stays `PROPOSED` (translations
+aside).
 
 ## Related decisions (`relatedTo`)
 
-A loose "see also" cross-reference between decisions of equal rank -- unlike `supersedes`, it
+A loose "see also" cross-reference between decisions of equal rank -- unlike `supersededBy`, it
 carries no direction of replacement. Settable at `adr_add` and completed later with
 `adr_update`; only the forward direction is stored (the decision recorded later names the
 earlier one it relates to), but `arkarch:relatedTo` is a symmetric property, so `adr_get`/
@@ -160,28 +183,28 @@ it.
   `adr_set_status(id, "DEPRECATED")` instead.
 - **`REJECTED` is explicitly not deletable either** -- see "Lifecycle" above: it means the
   option was considered and turned down, a decision worth keeping, not a mistake to undo.
-- **Refused while another decision still points at this one** via `supersedes` or `relatedTo`;
-  the refusal names those decisions. Note the asymmetry this creates with "Superseding a
-  decision" above: `arkarch:supersedes` itself has no removal path, so a superseded `PROPOSED`
-  record can never be deleted once something points at it, and a mistyped `adr_supersede` call
-  is permanent -- double-check `id`/`supersededId` before calling it.
+- **Refused while another decision still points at this one** -- named as its own successor
+  (`supersededBy`) or via `relatedTo`; the refusal names those decisions. There is no tool to
+  remove a `supersededBy` edge, so that block can only be cleared by removing the pointing
+  decision itself (or, for `relatedTo`, correcting it away with `adr_update`).
 
 ## Reviewing the ADRs in the store
 
 - `adr_list` for the overview; `adr_get` for one decision's full text.
-- `impact_analysis(code)` walks `addressesRequirement`/`affectsContext`/`supersedes` backward
-  from a requirement, bounded context, or ADR -- use it before treating a decision as safe to
-  leave unlinked or superseded, the same way `/arknet:req-interview` uses it after every written
-  change.
+- `impact_analysis(code)` walks `addressesRequirement`/`affectsContext` backward (change the
+  requirement/context, the ADR is affected) and `supersededBy` forward (supersede an ADR, its
+  successor is affected) -- use it before treating a decision as safe to leave unlinked or
+  superseded, the same way `/arknet:req-interview` uses it after every written change.
 - Per-decision checklist: one decision per record (independence test); no implementation
-  detail; `consequences`/`alternatives` populated and substantive, not empty or dutiful;
+  detail; consequences/considered options populated and substantive, not empty or dutiful;
   `addressesRequirements`/`affectsContexts` still resolve to requirements/contexts that
   actually exist (`req_get`/`bc_get` -- the store does not re-validate references on read, only
   on write); a shipped decision reads `ACCEPTED`, not still `PROPOSED`.
 - A decision that is `ACCEPTED` but no longer actually followed -- and not superseded by
   another ADR -- should be flagged to the user for `adr_set_status` to `DEPRECATED`, not left
-  stale. What you still cannot check from status alone: `Superseded` is never written as a
-  status (see "Lifecycle") -- always cross-check `superseded by` before trusting `ACCEPTED`.
+  stale. Since `SUPERSEDED` is a written status, `adr_list`'s status column already tells a
+  superseded decision apart from one still in force; `adr_get`'s `superseded by` field names
+  which decision replaced it.
 
 ## Scope boundary
 

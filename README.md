@@ -50,12 +50,16 @@ superseded in part. Implementation detail -- class names, signatures, literal
 parameter values -- is kept out of `decision`/`consequences` for the same
 reason files were kept clean of it: a rename should never falsify a decision.
 
-**The lifecycle the tools implement is narrower than the ontology.**
-`adr_set_status` supports `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, and
-`ACCEPTED -> DEPRECATED`; `Superseded` is still not a settable status --
-`adr_supersede` records the relation without touching the superseded
-decision's status. Judging whether a decision is still in force therefore
-means checking the `supersedes`/`superseded by` fields, not the status alone.
+**`SUPERSEDED` is a real, written status.** `adr_set_status` supports
+`PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, and `ACCEPTED -> DEPRECATED`,
+and explicitly refuses `SUPERSEDED` as a target -- that transition always
+needs a named successor, so it goes through `adr_supersede` instead, which
+sets the older decision's status to `SUPERSEDED` and its `supersededBy` edge
+together, in one write. Both decisions must already be `ACCEPTED`, and naming
+a different successor for an already-superseded decision is refused. Judging
+whether a decision is still in force is therefore a plain status read again;
+`adr_get`'s `superseded by` field additionally names which decision replaced
+it.
 
 **Corrections are narrower than they look.** `adr_update` corrects text fields
 only while a decision is `PROPOSED` -- from `ACCEPTED` on, only its reference
@@ -369,20 +373,25 @@ are rejected with a didactic error rather than silently accepted.
 
 ### Architecture decisions
 
-- `adr_add` -- record a new architecture decision (context, decision,
-  consequences, considered options); always starts `PROPOSED`.
+- `adr_add` -- record a new architecture decision (context, decision, a list
+  of typed consequences, a list of considered options with an outcome, an
+  optional `language`); always starts `PROPOSED`.
 - `adr_get` / `adr_list` -- fetch one / list all decisions, with both
-  directions of the `supersedes` relation.
+  directions of `supersededBy` and every related decision; take an optional
+  `displayLocale`.
 - `adr_set_status` -- change lifecycle status; supports
   `PROPOSED` -> `ACCEPTED`, `PROPOSED` -> `REJECTED`, and
-  `ACCEPTED` -> `DEPRECATED`.
-- `adr_supersede` -- record that one decision replaces an older one.
-- `adr_update` -- correct an already-recorded decision; text fields only
-  while `PROPOSED`, reference lists (`addressesRequirements`/
-  `affectsContexts`/`relatedTo`) in every status.
+  `ACCEPTED` -> `DEPRECATED`; refuses `SUPERSEDED` (use `adr_supersede`).
+- `adr_supersede` -- record that one decision replaces an older one; both
+  must already be `ACCEPTED`. Sets the older decision's status to
+  `SUPERSEDED` together with the `supersededBy` edge, in one write.
+- `adr_update` -- correct an already-recorded decision; text fields (and a
+  consequence's/considered option's wording) only while `PROPOSED`, unless
+  the call writes a language that field never carried yet; reference lists
+  (`addressesRequirements`/`affectsContexts`/`relatedTo`) in every status.
 - `adr_delete` -- remove a `PROPOSED` decision entered by mistake;
   `REJECTED` is explicitly not deletable, nor is a decision another one
-  still points at via `supersedes`/`relatedTo`.
+  still points at via `supersededBy`/`relatedTo`.
 
 ### Traceability and analysis
 
