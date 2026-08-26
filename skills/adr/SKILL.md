@@ -25,12 +25,12 @@ model the project is actually on before writing anything.
 | `adr_add` | Record a new decision. Always starts `PROPOSED`; takes no status parameter. |
 | `adr_list` | One compact line per decision: code, status, title, addresses/affects/supersedes/superseded-by/related-to. |
 | `adr_get` | A single decision's full text, plus both directions of `supersededBy` and every related decision. |
-| `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. Refuses `SUPERSEDED` -- that one needs `adr_supersede`. |
+| `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. Refuses `SUPERSEDED` -- that one needs `adr_supersede`. Also stamps the decision date -- the only place it is ever set. |
 | `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
 | `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
 
-`adr_add(name, adrContext, decision, consequences?, consideredOptions?, decisionDate?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
+`adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
 
 - `name`, `adrContext`, `decision` are required (`adrContext`/`decision` each need at least 5
   characters -- a floor, not a quality target).
@@ -39,8 +39,10 @@ model the project is actually on before writing anything.
   `CHOSEN`/`REJECTED` -- at most one option per decision may be `CHOSEN`. Both are optional but
   expected in practice -- treat an empty one as a finding to raise with the user, not something
   to silently skip.
-- `decisionDate` is optional ISO-8601 (`yyyy-MM-dd`) -- only set it once the decision has
-  actually been made, not as a placeholder.
+- There is **no** date parameter. A new record starts `PROPOSED`, which means precisely that
+  nothing has been decided yet, so there is no date to carry. The date is stamped by the
+  transition to `ACCEPTED`/`REJECTED` (see "Lifecycle" below) -- do not look for a way to set
+  it here, and do not record it in the prose instead.
 - `language` (BCP-47, e.g. `en`, `de`) is the tag every multilingual text this call writes
   (`name`, `adrContext`, `decision`, and any consequence/considered-option text) is recorded
   under. Optional -- falls back to the project's configured default language. `adr_get`/
@@ -101,6 +103,13 @@ The ADR ontology defines five statuses (`Proposed`, `Accepted`, `Rejected`, `Dep
 at `adr_supersede` instead -- reaching `SUPERSEDED` always needs a named successor, which
 `adr_set_status` has no parameter for.
 
+**The transition to `ACCEPTED`/`REJECTED` is also what dates the decision** -- that moment *is*
+the decision, so it is the only place the date is ever written. `adr_add`/`adr_update` cannot
+touch it. Today's date is recorded unless the optional `decidedOn` (ISO-8601 `yyyy-MM-dd`) names
+an earlier day; pass it only for a decision genuinely taken back then and entered only now, not
+to tidy up a timeline. `DEPRECATED` refuses `decidedOn` outright: it retires a decision rather
+than making one, and the original date stays as it was.
+
 `adr_supersede` sets the *older* decision's status to `SUPERSEDED` **and** its `supersededBy`
 edge to the newer decision, together in one write -- status and edge are coupled, never two
 independently maintained signals. After the call, `adr_get`/`adr_list` show the older decision's
@@ -132,7 +141,7 @@ is no tool to change or remove a `supersededBy` edge once set, so double-check `
 
 ## Correcting a decision
 
-`adr_update(id, name?, adrContext?, decision?, newConsequences?, consequenceCorrections?, newConsideredOptions?, consideredOptionCorrections?, decisionDate?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
+`adr_update(id, name?, adrContext?, decision?, newConsequences?, consequenceCorrections?, newConsideredOptions?, consideredOptionCorrections?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
 every field but `id` is optional, and an omitted field is left unchanged -- never cleared.
 
 - **`name`/`adrContext`/`decision`, and the `statement`/`type` of an existing consequence or the
