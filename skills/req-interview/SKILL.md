@@ -145,7 +145,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
-| Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears) -- not actors/step structure), `uc_link_term`, `uc_link_constraint` |
+| Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryActor` (replaces, cannot be cleared), `supportingActors` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
 | Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it) |
 
@@ -343,16 +343,19 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
 - `uc_update(id, title?, goal?, scope?, trigger?, precondition?,
   postcondition?, extensions?, stepTextPatches?, stepRealisesPatches?,
-  language?)` -- corrects an already-created use case's
-  title/goal/scope/trigger/pre-/postcondition in place; `extensions`
-  replaces the alternative/exception flows wholesale (omitted leaves them
-  unchanged); `stepTextPatches` (list of `{position, text}`) corrects the
-  *text* of individual existing main-flow steps by their position, and the
-  independent `stepRealisesPatches` (list of `{position, realises}`)
-  corrects a step's `realises` references by the same position -- a listed
-  position's requirement codes replace that step's entire `realises` set
-  wholesale, an empty list explicitly clears it, and a position omitted
-  from either list stays untouched. Every argument but `id` is optional
+  primaryActor?, supportingActors?, language?)` -- corrects an
+  already-created use case's title/goal/scope/trigger/pre-/postcondition in
+  place; `extensions` replaces the alternative/exception flows wholesale
+  (omitted leaves them unchanged); `stepTextPatches` (list of
+  `{position, text}`) corrects the *text* of individual existing main-flow
+  steps by their position, and the independent `stepRealisesPatches` (list
+  of `{position, realises}`) corrects a step's `realises` references by the
+  same position -- a listed position's requirement codes replace that
+  step's entire `realises` set wholesale, an empty list explicitly clears
+  it, and a position omitted from either list stays untouched. `primaryActor`
+  replaces the current primary actor (it cannot be cleared -- a use case
+  always has exactly one); `supportingActors` replaces the current list
+  wholesale, an empty array clearing it. Every argument but `id` is optional
   and an omitted one leaves that field unchanged -- use this to fix a use
   case found wanting during a full-set audit instead of creating a
   duplicate. `language` is the tag every field this call actually touches is
@@ -360,9 +363,8 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   carrying the resolved tag, every other language variant survives untouched
   -- except a stale untagged one, swept away once the resolved tag equals the
   project's default. It is also the only way to state an existing use case in
-  a second language. It does **not** touch `primaryActor`,
-  `supportingActors`, or the step list's structure (add/remove/reorder) --
-  those still require a fresh `uc_add`.
+  a second language. It does **not** touch the step list's structure
+  (add/remove/reorder) -- that still requires a fresh `uc_add`.
 - `uc_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `uc_list` deliberately has none and reads under the project's configured
   default language.

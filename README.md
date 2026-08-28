@@ -340,9 +340,11 @@ are rejected with a didactic error rather than silently accepted.
   requirements they realise.
 - `uc_get` / `uc_list` -- fetch one / list all use cases.
 - `uc_update` -- correct an existing use case's title/goal/scope/trigger/
-  pre-/postcondition, its extensions, and the text or `realises` references
-  of individual steps, or state the fields it touches in a further language --
-  not its actors or the step list's structure.
+  pre-/postcondition, its extensions, the text or `realises` references of
+  individual steps, and its primary/supporting actors (each replaced
+  wholesale; the primary actor cannot be cleared, an empty supporting-actors
+  list clears it), or state the fields it touches in a further language --
+  not the step list's structure.
 - `uc_link_term` -- link a use case to a glossary term it uses.
 - `uc_link_constraint` -- link a use case to the constraint that binds it.
 
