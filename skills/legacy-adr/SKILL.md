@@ -70,8 +70,10 @@ content belongs elsewhere (see below).
 
 ## One decision per record
 
-A record holds exactly one decision. Before writing, and on every review, apply the
-**independence test** to each numbered point of the Decision section:
+A record holds exactly one decision. Before writing, and on every review, split the Decision
+section into its separate assertions -- **not only where they are numbered; a second decision
+hides in running prose far more often than in a numbered list** -- and apply the
+**independence test** to each of them:
 
 > **Could this point have gone the other way without changing the point before it?**
 > Yes -> it is its own ADR.
