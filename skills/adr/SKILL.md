@@ -69,9 +69,10 @@ silently-conflicting decisions both stand.
 The tools validate structure (required fields, minimum lengths, reference existence); they do
 not validate decision *quality*. That is still yours to enforce:
 
-- **One decision per record.** Apply the independence test: could a numbered point in
-  `decision` have gone the other way without changing the point before it? If yes, it is its
-  own ADR. This matters even more here than on paper: `adr_supersede` points at the whole
+- **One decision per record.** Apply the independence test: split `decision` into its separate
+  assertions -- **not only where they are numbered; a second decision hides in running prose far
+  more often than in a numbered list** -- and take them pairwise: could the later assertion have
+  gone the other way without changing the earlier one? If yes, it is its own ADR. This matters even more here than on paper: `adr_supersede` points at the whole
   record, so a bundled ADR cannot be superseded in part -- reversing half of it means either
   superseding a decision that is still partly in force, or leaving the half you don't want
   standing.
@@ -199,21 +200,64 @@ it.
 
 ## Reviewing the ADRs in the store
 
-- `adr_list` for the overview; `adr_get` for one decision's full text.
-- `impact_analysis(code)` walks `addressesRequirement`/`affectsContext` backward (change the
-  requirement/context, the ADR is affected) and `supersededBy` forward (supersede an ADR, its
-  successor is affected) -- use it before treating a decision as safe to leave unlinked or
-  superseded, the same way `/arknet:req-interview` uses it after every written change.
-- Per-decision checklist: one decision per record (independence test); no implementation
-  detail; consequences/considered options populated and substantive, not empty or dutiful;
-  `addressesRequirements`/`affectsContexts` still resolve to requirements/contexts that
-  actually exist (`req_get`/`bc_get` -- the store does not re-validate references on read, only
-  on write); a shipped decision reads `ACCEPTED`, not still `PROPOSED`.
-- A decision that is `ACCEPTED` but no longer actually followed -- and not superseded by
-  another ADR -- should be flagged to the user for `adr_set_status` to `DEPRECATED`, not left
-  stale. Since `SUPERSEDED` is a written status, `adr_list`'s status column already tells a
-  superseded decision apart from one still in force; `adr_get`'s `superseded by` field names
-  which decision replaced it.
+A review covers **every** decision in the store, not the ones that prompted it. The failure this
+section exists to prevent is not a missing rule -- it is a rule applied to one record and not to
+the rest. A prose verdict cannot be seen to be incomplete; a table can. So the review
+**always** ends in the table below, one row per record, and an empty cell means "not checked",
+never "fine".
+
+### 1. Read everything first
+
+`adr_list` for the overview, then `adr_get` for **each** record -- the compact list omits the
+text every rule below is about. Two defects only show up against the whole set and have no row
+of their own, so check them once across the corpus and report them under the table:
+
+- **Contradiction** -- does one decision reverse or conflict with another without saying so?
+- **Duplication and orphaned neighbours** -- is the same decision recorded twice under different
+  titles? Do two records that govern the same subject fail to reference each other? (A reader
+  who finds one must be able to reach the other; `relatedTo` is what carries that.)
+
+`impact_analysis(code)` walks `addressesRequirement`/`affectsContext` backward (change the
+requirement/context, the ADR is affected) and `supersededBy` forward -- use it before treating a
+decision as safe to leave unlinked or superseded, the same way `/arknet:req-interview` uses it
+after every written change.
+
+### 2. Per-record rules
+
+| # | Rule | How to apply it |
+|---|---|---|
+| R1 | One decision | Split `decision` into its separate assertions -- not only where the text numbers them -- and take them pairwise: could the later one have gone the other way without changing the earlier one? If yes, it is its own record. Applying this by feel finds nothing; do the split. |
+| R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail. |
+| R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
+| R4 | No status prose | "today", "currently", "not yet", "so far" in `decision` or a consequence. In `adrContext` they are legitimate -- it describes the situation the decision was taken in. |
+| R5 | Substantive consequences and options | Both populated; every option carries a rationale; exactly one `CHOSEN`. Negative consequences present -- a record with only positive ones has not been thought through. |
+| R6 | References resolve | `addressesRequirements`/`affectsContexts` still name requirements/contexts that exist (`req_get`/`bc_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold. |
+| R7 | Prose matches the graph | Every peer decision named in the text also has a `relatedTo`/`supersededBy` edge, and every edge is one a reader can follow. Edges copied from elsewhere are the usual cause of a mismatch. |
+| R8 | Status is honest | A shipped decision reads `ACCEPTED`, not still `PROPOSED`. A `decisionDate` on a `PROPOSED` record is a leftover -- nothing has been decided yet. Never flip a status on your own reading of the build state (see below). |
+
+### 3. Report as a table
+
+| Record | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 |
+|---|---|---|---|---|---|---|---|---|
+| ADR-1 | ok | ok | ok | ok | ok | ok | ok | ok |
+| ADR-2 | *finding* | ok | ... | | | | | |
+
+`ok` or a short finding per cell. Then the corpus-wide findings from step 1, then the ranked
+list of what to do. A record you did not reach gets a row too, marked as unchecked -- the point
+of the table is that the gap is visible.
+
+### 4. What follows from a finding
+
+- A finding on R1-R7 is a text correction: possible **only while the record is `PROPOSED`**
+  (translations aside, see "Correcting a decision"). Raise them before any status transition,
+  not after -- from `ACCEPTED` on the only remaining route is a successor record.
+- A decision that is `ACCEPTED` but no longer actually followed -- and not superseded -- should
+  be flagged to the user for `adr_set_status` to `DEPRECATED`, not left stale. Since
+  `SUPERSEDED` is a written status, `adr_list`'s status column already tells a superseded
+  decision apart from one still in force; `adr_get`'s `superseded by` field names which decision
+  replaced it.
+- **Never transition a status yourself on the strength of your own reading of the build state.**
+  R8 reports the mismatch; the user decides.
 
 ## Scope boundary
 
