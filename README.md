@@ -63,7 +63,7 @@ it.
 
 **Corrections are narrower than they look.** `adr_update` corrects text fields
 only while a decision is `PROPOSED` -- from `ACCEPTED` on, only its reference
-lists (`addressesRequirements`/`affectsContexts`/`relatedTo`) stay editable.
+lists (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) stay editable.
 `adr_delete` removes a `PROPOSED` decision entered by mistake, but explicitly
 not a `REJECTED` one -- "considered and rejected" is itself a decision worth
 keeping. The skill still confirms content with the user before writing,
@@ -393,7 +393,8 @@ are rejected with a didactic error rather than silently accepted.
 - `adr_update` -- correct an already-recorded decision; text fields (and a
   consequence's/considered option's wording) only while `PROPOSED`, unless
   the call writes a language that field never carried yet; reference lists
-  (`addressesRequirements`/`affectsContexts`/`relatedTo`) in every status.
+  (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) in
+  every status.
 - `adr_delete` -- remove a `PROPOSED` decision entered by mistake;
   `REJECTED` is explicitly not deletable, nor is a decision another one
   still points at via `supersededBy`/`relatedTo`.

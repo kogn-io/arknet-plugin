@@ -30,7 +30,7 @@ model the project is actually on before writing anything.
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
 | `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
 
-`adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
+`adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
 
 - `name`, `adrContext`, `decision` are required (`adrContext`/`decision` each need at least 5
   characters -- a floor, not a quality target).
@@ -48,10 +48,11 @@ model the project is actually on before writing anything.
   under. Optional -- falls back to the project's configured default language. `adr_get`/
   `adr_list` take a matching `displayLocale` to pick which language candidate is shown, again
   falling back to the project default.
-- `addressesRequirements` (`FR-n`/`NFR-n`) and `affectsContexts` (`BC-n`) link to resources
-  that **must already exist**. An unknown code is rejected by the tool itself with a didactic
-  error -- if a reference doesn't obviously already exist, check with `req_list`/`bc_list`
-  first (or create it: `req_add` / `bc_add`) rather than let the call fail as a surprise.
+- `addressesRequirements` (`FR-n`/`NFR-n`), `affectsContexts` (`BC-n`) and `usesTerms`
+  (`TERM-n`) link to resources that **must already exist**. An unknown code is rejected by the
+  tool itself with a didactic error -- if a reference doesn't obviously already exist, check
+  with `req_list`/`bc_list`/`term_list` first (or create it: `req_add` / `bc_add` / `term_add`)
+  rather than let the call fail as a surprise.
 - `relatedTo` (`ADR-n`) links this decision to peer decisions ("see also"), each of which must
   already exist -- see "Related decisions" below.
 
@@ -142,7 +143,7 @@ is no tool to change or remove a `supersededBy` edge once set, so double-check `
 
 ## Correcting a decision
 
-`adr_update(id, name?, adrContext?, decision?, newConsequences?, consequenceCorrections?, newConsideredOptions?, consideredOptionCorrections?, language?, addressesRequirements?, affectsContexts?, relatedTo?)`:
+`adr_update(id, name?, adrContext?, decision?, newConsequences?, consequenceCorrections?, newConsideredOptions?, consideredOptionCorrections?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
 every field but `id` is optional, and an omitted field is left unchanged -- never cleared.
 
 - **`name`/`adrContext`/`decision`, and the `statement`/`type` of an existing consequence or the
@@ -158,11 +159,11 @@ every field but `id` is optional, and an omitted field is left unchanged -- neve
   original.
 - **`newConsequences`/`newConsideredOptions`** append new entries and are allowed in *every*
   status -- adding a consequence noticed only later is not the same as rewriting one.
-- **The three reference lists** (`addressesRequirements`, `affectsContexts`, `relatedTo`) are
-  the deliberate exception and stay correctable in *every* status, so an edge to a requirement,
-  bounded context or peer decision that did not exist yet when the decision was made can still
-  be completed. Passing a list replaces it wholesale; an empty list removes every edge of it;
-  omitting it leaves it untouched.
+- **The four reference lists** (`addressesRequirements`, `affectsContexts`, `usesTerms`,
+  `relatedTo`) are the deliberate exception and stay correctable in *every* status, so an edge
+  to a requirement, bounded context, glossary term or peer decision that did not exist yet when
+  the decision was made can still be completed. Passing a list replaces it wholesale; an empty
+  list removes every edge of it; omitting it leaves it untouched.
 - Status and the `supersededBy` relation are not touched here -- still `adr_set_status` and
   `adr_supersede`.
 
@@ -217,10 +218,10 @@ of their own, so check them once across the corpus and report them under the tab
   titles? Do two records that govern the same subject fail to reference each other? (A reader
   who finds one must be able to reach the other; `relatedTo` is what carries that.)
 
-`impact_analysis(code)` walks `addressesRequirement`/`affectsContext` backward (change the
-requirement/context, the ADR is affected) and `supersededBy` forward -- use it before treating a
-decision as safe to leave unlinked or superseded, the same way `/arknet:req-interview` uses it
-after every written change.
+`impact_analysis(code)` walks `addressesRequirement`/`affectsContext`/`usesTerm` backward (change
+the requirement/context/glossary term, the ADR is affected) and `supersededBy` forward -- use it
+before treating a decision as safe to leave unlinked or superseded, the same way
+`/arknet:req-interview` uses it after every written change.
 
 ### 2. Per-record rules
 
@@ -231,7 +232,7 @@ after every written change.
 | R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
 | R4 | No status prose | "today", "currently", "not yet", "so far" in `decision` or a consequence. In `adrContext` they are legitimate -- it describes the situation the decision was taken in. |
 | R5 | Substantive consequences and options | Both populated; every option carries a rationale; exactly one `CHOSEN`. Negative consequences present -- a record with only positive ones has not been thought through. |
-| R6 | References resolve | `addressesRequirements`/`affectsContexts` still name requirements/contexts that exist (`req_get`/`bc_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold. |
+| R6 | References resolve | `addressesRequirements`/`affectsContexts`/`usesTerms` still name requirements/contexts/glossary terms that exist (`req_get`/`bc_get`/`term_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold. |
 | R7 | Prose matches the graph | Every peer decision named in the text also has a `relatedTo`/`supersededBy` edge, and every edge is one a reader can follow. Edges copied from elsewhere are the usual cause of a mismatch. |
 | R8 | Status is honest | A shipped decision reads `ACCEPTED`, not still `PROPOSED`. A `decisionDate` on a `PROPOSED` record is a leftover -- nothing has been decided yet. Never flip a status on your own reading of the build state (see below). |
 
