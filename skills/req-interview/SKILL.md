@@ -30,13 +30,23 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   word the business actually uses. If they say "Vorgangsakte", that is the
   label, even when the interview runs in English -- translating it invents a
   second vocabulary, which is precisely what a glossary exists to prevent.
+- **A second language never restates a term's `label`.** In a store that
+  deliberately carries two languages, a term's label goes in under every
+  language tag as the same word, and only its `definition` is written a
+  second time. A translated label is the second vocabulary the rule above
+  forbids -- a reader seeing `Anker`/`Anchor` cannot tell whether that is one
+  term or two, and mention detection resolves a term through one label at a
+  time, so prose naming it in the other language stays unlinked. This is the
+  one exception to the restate rule below, which governs prose fields
+  (`title`, `description`, use-case text) only.
 - **One write call carries one language tag**, across every write tool
   (`req_`, `constraint_`, `term_`, `uc_`). A second language therefore takes
   a second call: create it in the first language, then restate it under the
-  second via the matching `*_update` -- a decision for the whole store, not
-  for a single entry (see the split rule above), so settle it with the user
-  before writing the second variant. Two silent failure modes live there,
-  both from omitting `language`, which falls the call back to the project's
+  second via the matching `*_update` -- a term's `label` excepted, see the
+  rule above. That is a decision for the whole store, not for a single entry
+  (see the split rule above), so settle it with the user before writing the
+  second variant. Two silent failure modes live there, both from omitting
+  `language`, which falls the call back to the project's
   default tag: identical text under that tag returns without error and
   writes nothing, and *differing* text replaces the default-language literal
   instead of adding a second variant -- the first language is then gone,
@@ -175,7 +185,9 @@ forces the pairing.
 
 ### Glossary terms: `term_add(label, definition, language?)`
 
-- `label` (required) -- `skos:prefLabel`.
+- `label` (required) -- `skos:prefLabel`. The same word under every language
+  tag the store carries; only `definition` is restated in a second language
+  (see "Language" above).
 - `definition` (required).
 - `language` (optional) -- BCP-47 tag (e.g. `de`) the label/definition are
   written in. Omitted, it falls back to the project's configured default
