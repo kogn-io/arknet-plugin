@@ -39,7 +39,7 @@ its own release cycle.
 Maintains Architecture Decision Records as first-class resources in the arknet
 store (`arkarch:ArchitectureDecisionRecord`), via arknet's `adr_add`/
 `adr_list`/`adr_get`/`adr_set_status`/`adr_supersede`/`adr_unsupersede`/
-`adr_update`/`adr_delete` MCP tools -- not Markdown files. Keeps every ADR a record of a
+`adr_update`/`adr_check`/`adr_delete` MCP tools -- not Markdown files. Keeps every ADR a record of a
 durable decision and its lasting consequences -- never a status report, never
 an implementation snapshot.
 
@@ -108,6 +108,17 @@ rather than relying on the correction window.
 `relatedTo` (or `supersededBy`/`addressesRequirements`), never by naming its
 code inside `adrContext`/`decision`/consequences/considered options -- a
 record cannot know the code of a decision written after it.
+
+**A review starts with `adr_check`, not a manual reread for patterns.** Its
+`Facts` block covers the mechanical part of several review rules (tracker
+references, status prose, unresolved `ADR-n` mentions, missing edges, empty
+consequence/option lists, nothing `CHOSEN`, a stray `decisionDate`); the
+skill only judges what the tool cannot -- whether a flagged pattern is
+actually a defect, whether a record bundles more than one decision, whether
+two records contradict each other, whether a consequence says anything.
+`Suspicions` and the tool's own not-checked list are candidates for that
+judgement, never findings to act on directly, and neither ever triggers a
+status change by itself.
 
 ### `/arknet:legacy-adr`
 
@@ -457,6 +468,16 @@ are rejected with a didactic error rather than silently accepted.
   the call writes a language that field never carried yet; reference lists
   (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) in
   every status.
+- `adr_check` -- check the whole corpus and report what is mechanically
+  decidable, without changing anything: `Facts` (a `decisionDate` on a
+  decision not yet taken, no consequence/no considered option recorded, an
+  option space with nothing `CHOSEN` on a decision that was taken, a
+  decision addressing no requirement and affecting no bounded context, an
+  `ADR-n` in the prose the project does not hold or no edge backs) and
+  `Suspicions` (tracker references, address/port literals, status prose,
+  near-identical titles -- each a hint, not a defect). Names, in its own
+  output, what it does not check: bundled decisions, contradiction between
+  records, whether a consequence has substance.
 - `adr_delete` -- remove a `PROPOSED` decision entered by mistake;
   `REJECTED` is explicitly not deletable, nor is a decision another one
   still points at via `supersededBy`/`relatedTo`.

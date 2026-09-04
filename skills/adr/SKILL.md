@@ -1,5 +1,5 @@
 ---
-description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_unsupersede/adr_update/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
+description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_unsupersede/adr_update/adr_check/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
 ---
 
 # /arknet:adr -- Architecture Decision Records (arknet store)
@@ -18,7 +18,7 @@ the same project, and do not silently decide to migrate an existing file-based c
 find both a populated `docs/adr/` *and* this skill was invoked, say so and ask the user which
 model the project is actually on before writing anything.
 
-## The eight tools
+## The nine tools
 
 | Tool | Purpose |
 |---|---|
@@ -29,6 +29,7 @@ model the project is actually on before writing anything.
 | `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
 | `adr_unsupersede` | Regret path for a mistyped `adr_supersede` call -- reverts a `SUPERSEDED` decision back to `ACCEPTED` and drops its `supersededBy` edge (see "Un-superseding a decision" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
+| `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context, an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
 | `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
 
 `adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
@@ -309,14 +310,21 @@ never "fine".
 
 ### 1. Read everything first
 
-`adr_list` for the overview, then `adr_get` for **each** record -- the compact list omits the
-text every rule below is about. Two defects only show up against the whole set and have no row
-of their own, so check them once across the corpus and report them under the table:
+`adr_check` first -- its `Facts` are the source for the mechanical part of R3, R4, R5, R6, R7 and
+R8 below; do not re-derive them by rereading the corpus for the same patterns. Its
+`Suspicions` and its not-checked list are candidates, not findings -- each still needs a
+reader's judgement (see the rules below), and neither ever moves a status on its own. Then
+`adr_list` for the overview, and `adr_get` for **each** record -- the compact list omits the
+text the remaining, judgement-only rules are about. Two defects only show up against the whole
+set and have no row of their own, so check them once across the corpus and report them under
+the table:
 
 - **Contradiction** -- does one decision reverse or conflict with another without saying so?
-- **Duplication and orphaned neighbours** -- is the same decision recorded twice under different
-  titles? Do two records that govern the same subject fail to reference each other? (A reader
-  who finds one must be able to reach the other; `relatedTo` is what carries that.)
+- **Duplication and orphaned neighbours** -- `adr_check`'s `Suspicions` already flag two
+  decisions with near-identical titles as a hint; a reader still judges whether it is the same
+  decision recorded twice, not just similar wording. Do two records that govern the same subject
+  fail to reference each other? (A reader who finds one must be able to reach the other;
+  `relatedTo` is what carries that -- `adr_check` does not check this.)
 
 `impact_analysis(code)` walks `addressesRequirement`/`affectsContext`/`usesTerm` backward (change
 the requirement/context/glossary term, the ADR is affected) and `supersededBy` forward -- use it
@@ -330,12 +338,12 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 | R0 | Worth recording at all | Q1 (reach) and Q2 (cost of reversal) from "Before writing", applied to the finished record. A convention, a local detail, a reversible default or a piece of work planning fails here while every rule below reads `ok` -- that combination is the whole reason this row exists. |
 | R1 | One decision | The independence test of "Before writing", applied to a record that already exists: split `decision` into its separate assertions -- not only where the text numbers them -- and take them pairwise: could the later one have gone the other way without changing the earlier one? If yes, it is its own record. Applying this by feel finds nothing; do the split. |
 | R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail. |
-| R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
-| R4 | No status prose | "today", "currently", "not yet", "so far" in `decision` or a consequence. In `adrContext` they are legitimate -- it describes the situation the decision was taken in. |
-| R5 | Substantive consequences and options | Both populated; every option carries a rationale. `adr_add`/`adr_update` already surface an empty `consequences`/`consideredOptions` list as an inline, non-blocking warning in their result text (`no consequence recorded`/`no considered option recorded`) -- that warning is the signal for this rule, not a message to silence with a placeholder entry. On a `PROPOSED` (or `REJECTED`) record it is a note: take it, report it to the user. Resolve it before the record goes `ACCEPTED` -- either with real content or with the record's own reasoning for why the space was empty; never by inventing a consequence or considered option just to clear the warning. `CHOSEN` is status-dependent: a `PROPOSED` (or `REJECTED`) record may have options with none `CHOSEN` yet -- `adr_set_status(ACCEPTED)` is what will require one; from `ACCEPTED` on, exactly one `CHOSEN` is required once the record carries any options at all, a record with no options stays fine. Negative consequences present -- a record with only positive ones has not been thought through. |
-| R6 | References resolve | `addressesRequirements`/`affectsContexts`/`usesTerms` still name requirements/contexts/glossary terms that exist (`req_get`/`bc_get`/`term_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold -- a validity check on a stray reference, distinct from the writing-quality rule above that keeps codes out of the prose in the first place. |
-| R7 | Prose matches the graph | Every peer decision named in the text also has a `relatedTo`/`supersededBy` edge, and every edge is one a reader can follow. Edges copied from elsewhere are the usual cause of a mismatch. |
-| R8 | Status is honest | A shipped decision reads `ACCEPTED`, not still `PROPOSED`. A `decisionDate` on a `PROPOSED` record is a leftover -- nothing has been decided yet. Never flip a status on your own reading of the build state (see below). A `PROPOSED` record whose decision was never confirmed by the user is not a candidate for `ACCEPTED` -- it is a question back to the user. |
+| R3 | No external references | `adr_check`'s `Suspicions` already flag a tracker-looking reference (`#123`); a reader confirms the flag is actually one (not, say, a decision or option count that happens to look like it) and decides how to rewrite the record so it stands on its own without it. |
+| R4 | No status prose | `adr_check`'s `Suspicions` already flag "today"/"currently"/"not yet"/"so far"-style wording in `decision` or a consequence; a reader judges whether the flagged phrase genuinely describes a transient state that will go stale, not a quoted title or a fixed name. In `adrContext` such wording is legitimate either way -- it describes the situation the decision was taken in, and `adr_check` does not flag it there. |
+| R5 | Substantive consequences and options | `adr_check`'s `Facts` already flag a record with no consequence or no considered option recorded, and a taken decision (`ACCEPTED` on) with nothing `CHOSEN`. What is left for a reader: whether a populated list is actually substantive -- every considered option carries a real rationale, not a placeholder; the record's own reasoning for an empty space (see "Substantive consequences and considered options" above) is adequate, never invented after the fact just to clear the tool's finding; and negative consequences are present -- a record with only positive ones has not been thought through. |
+| R6 | References resolve | `adr_check`'s `Facts` already flag an `ADR-n` named in the prose that the store does not hold. What is left for a reader: whether `addressesRequirements`/`affectsContexts`/`usesTerms` name the *right* requirement/context/term for what the decision is actually about, not merely one that happens to exist. |
+| R7 | Prose matches the graph | `adr_check`'s `Facts` already flag an `ADR-n` named in the text with no `supersedes`/`supersededBy`/`relatedTo` edge backing it. What is left for a reader: whether an edge that does exist is the right relation for what the prose actually says -- a `relatedTo` doing the work of an unrecorded `supersededBy`, or the reverse -- since the tool checks presence, not fit. |
+| R8 | Status is honest | `adr_check`'s `Facts` already flag a `decisionDate` on a record not yet taken (still `PROPOSED`) -- a leftover, not something to act on by itself. What is left for a reader: whether a shipped decision still reads `PROPOSED`, and whether a `PROPOSED` record whose decision was never confirmed by the user is a question back to them rather than a candidate for `ACCEPTED`. Never flip a status yourself -- neither on your own reading of the build state nor on the strength of an `adr_check` finding (see below). |
 
 ### 3. Report as a table
 
@@ -365,8 +373,9 @@ of the table is that the gap is visible.
   `SUPERSEDED` is a written status, `adr_list`'s status column already tells a superseded
   decision apart from one still in force; `adr_get`'s `superseded by` field names which decision
   replaced it.
-- **Never transition a status yourself on the strength of your own reading of the build state.**
-  R8 reports the mismatch; the user decides.
+- **Never transition a status yourself on the strength of your own reading of the build state, or
+  of an `adr_check` finding.** A `Fact` is decidable as stated, a `Suspicion` is a hint a reader
+  rules on -- neither is a status decision by itself; R8 reports the mismatch, the user decides.
 
 ## Scope boundary
 
