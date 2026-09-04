@@ -1,5 +1,5 @@
 ---
-description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_update/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
+description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_unsupersede/adr_update/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
 ---
 
 # /arknet:adr -- Architecture Decision Records (arknet store)
@@ -18,7 +18,7 @@ the same project, and do not silently decide to migrate an existing file-based c
 find both a populated `docs/adr/` *and* this skill was invoked, say so and ask the user which
 model the project is actually on before writing anything.
 
-## The seven tools
+## The eight tools
 
 | Tool | Purpose |
 |---|---|
@@ -27,6 +27,7 @@ model the project is actually on before writing anything.
 | `adr_get` | A single decision's full text, plus both directions of `supersededBy` and every related decision. |
 | `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. Refuses `SUPERSEDED` -- that one needs `adr_supersede`. Also stamps the decision date -- the only place it is ever set. |
 | `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
+| `adr_unsupersede` | Regret path for a mistyped `adr_supersede` call -- reverts a `SUPERSEDED` decision back to `ACCEPTED` and drops its `supersededBy` edge (see "Un-superseding a decision" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
 | `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
 
@@ -200,6 +201,8 @@ What this means in practice:
 - **Deprecating a decision that became obsolete without a successor.** Call
   `adr_set_status(id, "DEPRECATED")`. If a newer decision replaces it instead, use
   `adr_supersede` (see below), not `DEPRECATED`.
+- **Correcting a mistyped `adr_supersede` call.** Call `adr_unsupersede` -- see "Un-superseding a
+  decision" below. Only on the user's request, like every status transition here.
 - **Judging whether a decision is still in force.** Read the status: `SUPERSEDED` (like
   `REJECTED`/`DEPRECATED`) means it no longer is. `adr_get`'s `superseded by` field additionally
   names *which* decision replaced it.
@@ -213,6 +216,18 @@ idempotent (recording the same pair twice is a no-op) and rejects a decision sup
 itself. **Naming a different successor for an already-superseded decision is refused** -- there
 is no tool to change or remove a `supersededBy` edge once set, so double-check `id`/
 `supersededId` before calling; a mistyped call is effectively permanent.
+
+## Un-superseding a decision
+
+`adr_unsupersede(id)`: a regret path for a mistyped `adr_supersede` call -- not a lifecycle step
+and not a way to reverse a valid supersession. `id` here identifies the older, wrongly-superseded
+decision, not the successor. Accepted only on a decision whose status is `SUPERSEDED`; refused on
+any other status, with no no-op fallback for an already-correct one. In one write, it removes
+that decision's `supersededBy` edge and sets its status back to `ACCEPTED`, mirroring how
+`adr_supersede` sets both together in the other direction. The successor named by the mistaken
+call is left untouched, so a fresh, correctly aimed `adr_supersede` call can follow. Like every
+status transition, call it only on the user's explicit request -- never as an automatic recovery
+from a call that returned an error.
 
 ## Correcting a decision
 

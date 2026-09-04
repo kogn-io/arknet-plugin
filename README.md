@@ -38,8 +38,8 @@ its own release cycle.
 
 Maintains Architecture Decision Records as first-class resources in the arknet
 store (`arkarch:ArchitectureDecisionRecord`), via arknet's `adr_add`/
-`adr_list`/`adr_get`/`adr_set_status`/`adr_supersede`/`adr_update`/
-`adr_delete` MCP tools -- not Markdown files. Keeps every ADR a record of a
+`adr_list`/`adr_get`/`adr_set_status`/`adr_supersede`/`adr_unsupersede`/
+`adr_update`/`adr_delete` MCP tools -- not Markdown files. Keeps every ADR a record of a
 durable decision and its lasting consequences -- never a status report, never
 an implementation snapshot.
 
@@ -90,7 +90,11 @@ together, in one write. Both decisions must already be `ACCEPTED`, and naming
 a different successor for an already-superseded decision is refused. Judging
 whether a decision is still in force is therefore a plain status read again;
 `adr_get`'s `superseded by` field additionally names which decision replaced
-it.
+it. A mistyped `adr_supersede` call has a narrow regret path back:
+`adr_unsupersede`, accepted only on a `SUPERSEDED` decision, drops its
+`supersededBy` edge and reverts its status to `ACCEPTED` in one write, leaving
+the named successor untouched -- a correction, never a way to reverse a valid
+supersession.
 
 **Corrections are narrower than they look.** `adr_update` corrects text fields
 only while a decision is `PROPOSED` -- from `ACCEPTED` on, only its reference
@@ -443,6 +447,9 @@ are rejected with a didactic error rather than silently accepted.
 - `adr_supersede` -- record that one decision replaces an older one; both
   must already be `ACCEPTED`. Sets the older decision's status to
   `SUPERSEDED` together with the `supersededBy` edge, in one write.
+- `adr_unsupersede` -- regret path for a mistyped `adr_supersede` call; only on
+  a `SUPERSEDED` decision, reverts its status to `ACCEPTED` and drops its
+  `supersededBy` edge, in one write, leaving the successor untouched.
 - `adr_update` -- correct an already-recorded decision; text fields (and a
   consequence's/considered option's wording) only while `PROPOSED`, unless
   the call writes a language that field never carried yet; reference lists
