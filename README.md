@@ -473,7 +473,8 @@ are rejected with a didactic error rather than silently accepted.
   text that names a term without its backing edge -- a use case's goal,
   scope, trigger, precondition, postcondition and every step/extension text
   count as its text, and naming its own primary/supporting actor there is
-  not a gap; and constraints that no requirement or use case is bound by.
+  not a gap; an ADR's context, decision, consequences, and options are scanned
+  as well; and constraints that no requirement or use case is bound by.
 - `actor_usecase_matrix` -- raw bipartite view: which use cases each actor
   appears in (`primaryActor`/`supportingActor`), and which actors each use
   case names. No clustering or judgement -- data for `/arknet:bc-audit`.
