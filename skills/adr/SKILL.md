@@ -1,5 +1,5 @@
 ---
-description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_update/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
+description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_unsupersede/adr_update/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
 ---
 
 # /arknet:adr -- Architecture Decision Records (arknet store)
@@ -18,15 +18,16 @@ the same project, and do not silently decide to migrate an existing file-based c
 find both a populated `docs/adr/` *and* this skill was invoked, say so and ask the user which
 model the project is actually on before writing anything.
 
-## The seven tools
+## The eight tools
 
 | Tool | Purpose |
 |---|---|
 | `adr_add` | Record a new decision. Always starts `PROPOSED`; takes no status parameter. |
 | `adr_list` | One compact line per decision: code, status, title, addresses/affects/supersedes/superseded-by/related-to. |
 | `adr_get` | A single decision's full text, plus both directions of `supersededBy` and every related decision. |
-| `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. Refuses `SUPERSEDED` -- that one needs `adr_supersede`. Also stamps the decision date -- the only place it is ever set. |
+| `adr_set_status` | Transitions: `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, `ACCEPTED -> DEPRECATED`. Refuses `SUPERSEDED` -- that one needs `adr_supersede`. Refuses `ACCEPTED` if the record carries considered options and not exactly one is `CHOSEN` -- `adr_update` corrects that first. Also stamps the decision date -- the only place it is ever set. |
 | `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
+| `adr_unsupersede` | Regret path for a mistyped `adr_supersede` call -- reverts a `SUPERSEDED` decision back to `ACCEPTED` and drops its `supersededBy` edge (see "Un-superseding a decision" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
 | `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
 
@@ -191,8 +192,11 @@ What this means in practice:
 - **Accepting a proposal.** Before calling `adr_set_status(id, "ACCEPTED")` on the user's
   request, state Q1 and Q2 from "Before writing" once, one line each. This is the moment the
   text freezes, which makes it the last and most effective place for the category question --
-  cheap to record while `PROPOSED`, expensive once `ACCEPTED`. Say it, do not decide on it: the
-  transition still happens only because the user asked for it.
+  cheap to record while `PROPOSED`, expensive once `ACCEPTED`. If the record carries any
+  considered options, check that exactly one is `CHOSEN` -- `adr_set_status` refuses `ACCEPTED`
+  otherwise; a record with no considered options at all stays acceptable. If none is `CHOSEN` yet,
+  use `adr_update` (`consideredOptionCorrections`) to mark one first, then retry. Say it, do not
+  decide on it: the transition still happens only because the user asked for it.
 - **Rejecting a proposal.** Call `adr_set_status(id, "REJECTED")` -- do not fold the rejection
   into `consequences`/`decision` text as a workaround. `REJECTED` means the option was
   considered and turned down -- a decision worth keeping, not a mistaken entry to undo; it is
@@ -200,6 +204,8 @@ What this means in practice:
 - **Deprecating a decision that became obsolete without a successor.** Call
   `adr_set_status(id, "DEPRECATED")`. If a newer decision replaces it instead, use
   `adr_supersede` (see below), not `DEPRECATED`.
+- **Correcting a mistyped `adr_supersede` call.** Call `adr_unsupersede` -- see "Un-superseding a
+  decision" below. Only on the user's request, like every status transition here.
 - **Judging whether a decision is still in force.** Read the status: `SUPERSEDED` (like
   `REJECTED`/`DEPRECATED`) means it no longer is. `adr_get`'s `superseded by` field additionally
   names *which* decision replaced it.
@@ -213,6 +219,18 @@ idempotent (recording the same pair twice is a no-op) and rejects a decision sup
 itself. **Naming a different successor for an already-superseded decision is refused** -- there
 is no tool to change or remove a `supersededBy` edge once set, so double-check `id`/
 `supersededId` before calling; a mistyped call is effectively permanent.
+
+## Un-superseding a decision
+
+`adr_unsupersede(id)`: a regret path for a mistyped `adr_supersede` call -- not a lifecycle step
+and not a way to reverse a valid supersession. `id` here identifies the older, wrongly-superseded
+decision, not the successor. Accepted only on a decision whose status is `SUPERSEDED`; refused on
+any other status, with no no-op fallback for an already-correct one. In one write, it removes
+that decision's `supersededBy` edge and sets its status back to `ACCEPTED`, mirroring how
+`adr_supersede` sets both together in the other direction. The successor named by the mistaken
+call is left untouched, so a fresh, correctly aimed `adr_supersede` call can follow. Like every
+status transition, call it only on the user's explicit request -- never as an automatic recovery
+from a call that returned an error.
 
 ## Correcting a decision
 
@@ -305,7 +323,7 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 | R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail. |
 | R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
 | R4 | No status prose | "today", "currently", "not yet", "so far" in `decision` or a consequence. In `adrContext` they are legitimate -- it describes the situation the decision was taken in. |
-| R5 | Substantive consequences and options | Both populated; every option carries a rationale; exactly one `CHOSEN`. Negative consequences present -- a record with only positive ones has not been thought through. |
+| R5 | Substantive consequences and options | Both populated; every option carries a rationale. `CHOSEN` is status-dependent: a `PROPOSED` (or `REJECTED`) record may have options with none `CHOSEN` yet -- `adr_set_status(ACCEPTED)` is what will require one; from `ACCEPTED` on, exactly one `CHOSEN` is required once the record carries any options at all, a record with no options stays fine. Negative consequences present -- a record with only positive ones has not been thought through. |
 | R6 | References resolve | `addressesRequirements`/`affectsContexts`/`usesTerms` still name requirements/contexts/glossary terms that exist (`req_get`/`bc_get`/`term_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold -- a validity check on a stray reference, distinct from the writing-quality rule above that keeps codes out of the prose in the first place. |
 | R7 | Prose matches the graph | Every peer decision named in the text also has a `relatedTo`/`supersededBy` edge, and every edge is one a reader can follow. Edges copied from elsewhere are the usual cause of a mismatch. |
 | R8 | Status is honest | A shipped decision reads `ACCEPTED`, not still `PROPOSED`. A `decisionDate` on a `PROPOSED` record is a leftover -- nothing has been decided yet. Never flip a status on your own reading of the build state (see below). A `PROPOSED` record whose decision was never confirmed by the user is not a candidate for `ACCEPTED` -- it is a question back to the user. |
