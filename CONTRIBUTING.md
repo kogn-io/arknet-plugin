@@ -76,6 +76,15 @@ Things to raise in an issue first:
   path instead, because both repos are small enough to mostly be maintained
   together). Keep it in mind at the same points: when touching a skill's tool
   table, and at a `/wrapup`-style session close.
+- **A skill change that changes the flow or rules a skill describes pulls the
+  matching `README.md` section along, in the same pull request.** The same
+  drift as above, mirrored within this repo: `README.md` summarizes a
+  skill's behaviour for a reader who has not opened `SKILL.md`, and a new
+  step, a new rule, or a changed default that lands only in the skill file
+  leaves that summary describing a flow the skill no longer follows. This is
+  a process reflex too, not an automated check -- apply it to a material
+  change (a step reordered, a rule added or dropped), not to a wording pass
+  that leaves the described behaviour the same.
 
 ## Commit messages
 

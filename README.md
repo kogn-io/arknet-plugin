@@ -42,6 +42,14 @@ store (`arkarch:ArchitectureDecisionRecord`), via arknet's `adr_add`/
 durable decision and its lasting consequences -- never a status report, never
 an implementation snapshot.
 
+**The decision is the user's, not the agent's.** A choice the agent made on
+its own -- a library it picked, a split it judged best -- is named as such
+and put to the user before `adr_add`, not written in as if already settled.
+An open decision keeps `adrContext` naming the openness and `decision`
+stating the agent's preference as a proposal, status `PROPOSED`; a
+`PROPOSED` record whose decision the user never confirmed is a question
+back to the user, not a candidate for `ACCEPTED`.
+
 **"Is this an ADR at all?" comes before "is this a good ADR?"** Four
 questions run ahead of `adr_add`: reach (structure, a contract, a dependency,
 a quality attribute, or a construction technique that holds across the
@@ -90,6 +98,11 @@ lists (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) stay e
 not a `REJECTED` one -- "considered and rejected" is itself a decision worth
 keeping. The skill still confirms content with the user before writing,
 rather than relying on the correction window.
+
+**No `ADR-n` codes in the prose.** A peer decision is connected via
+`relatedTo` (or `supersededBy`/`addressesRequirements`), never by naming its
+code inside `adrContext`/`decision`/consequences/considered options -- a
+record cannot know the code of a decision written after it.
 
 ### `/arknet:legacy-adr`
 
