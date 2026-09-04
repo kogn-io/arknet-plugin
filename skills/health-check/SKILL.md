@@ -24,7 +24,7 @@ case where the question is too vague to name one.
 
 | Tool | Role | Category |
 |---|---|---|
-| `orphan_check` | Requirements no use case realises; glossary terms never referenced; terms named in text without a backing edge (including a use case's prose fields, not just its `goal`); constraints no requirement or use case is bound by. | Hard fact |
+| `orphan_check` | Requirements no use case realises; glossary terms never referenced; terms named in text without a backing edge (including a use case's prose fields, not just its `goal`, and an ADR's context, decision, consequences, and options); constraints no requirement or use case is bound by. | Hard fact |
 | `trace_matrix` | Per requirement: which terms it uses, which use case(s) realise it. | Hard fact |
 | `adr_list` | Every recorded decision with its status; filter the result to `PROPOSED` yourself -- the tool has no status parameter. | Hard fact |
 | `bc_list` | Every registered Bounded Context -- the pool to check for missing relationships. | Judgement candidate |
@@ -39,8 +39,8 @@ already use them.
 1. **Hard structural facts, no interpretation needed.**
    - `orphan_check` -- report the four lists as-is (orphaned requirements,
      unreferenced terms, unbacked mentions -- including a use case's prose
-     fields beyond its `goal`, not just requirement/bounded-context text --
-     and unbound constraints).
+     fields beyond its `goal`, an ADR's context/decision/consequences/options,
+     not just requirement/bounded-context text -- and unbound constraints).
    - `trace_matrix` -- report any requirement with no realising use case; a
      requirement `orphan_check` already flagged does not need repeating here,
      but a requirement `trace_matrix` shows with an empty `realises` list and
