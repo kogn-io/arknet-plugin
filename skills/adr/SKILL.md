@@ -158,6 +158,11 @@ not validate decision *quality*. That is still yours to enforce:
   still open, `adrContext` names the openness and `decision` states your preference as a
   proposal; status stays `PROPOSED`, and the transition onward is the user's call (see
   "Accepting a proposal" below).
+- **No `ADR-n` codes in the prose.** `adrContext`, `decision`, consequences and considered
+  options name the thing itself ("the registered project identity"), never a peer decision's
+  code -- the connection is carried by `relatedTo` (or `supersededBy`/`addressesRequirements`,
+  as the case is), which `adr_get`/`adr_list` show. A record cannot know the code of a decision
+  written after it, so a code in the prose is one split or reorder away from stale.
 
 ## Lifecycle -- SUPERSEDED is a real, written status
 
@@ -301,7 +306,7 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 | R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
 | R4 | No status prose | "today", "currently", "not yet", "so far" in `decision` or a consequence. In `adrContext` they are legitimate -- it describes the situation the decision was taken in. |
 | R5 | Substantive consequences and options | Both populated; every option carries a rationale; exactly one `CHOSEN`. Negative consequences present -- a record with only positive ones has not been thought through. |
-| R6 | References resolve | `addressesRequirements`/`affectsContexts`/`usesTerms` still name requirements/contexts/glossary terms that exist (`req_get`/`bc_get`/`term_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold. |
+| R6 | References resolve | `addressesRequirements`/`affectsContexts`/`usesTerms` still name requirements/contexts/glossary terms that exist (`req_get`/`bc_get`/`term_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold -- a validity check on a stray reference, distinct from the writing-quality rule above that keeps codes out of the prose in the first place. |
 | R7 | Prose matches the graph | Every peer decision named in the text also has a `relatedTo`/`supersededBy` edge, and every edge is one a reader can follow. Edges copied from elsewhere are the usual cause of a mismatch. |
 | R8 | Status is honest | A shipped decision reads `ACCEPTED`, not still `PROPOSED`. A `decisionDate` on a `PROPOSED` record is a leftover -- nothing has been decided yet. Never flip a status on your own reading of the build state (see below). A `PROPOSED` record whose decision was never confirmed by the user is not a candidate for `ACCEPTED` -- it is a question back to the user. |
 
