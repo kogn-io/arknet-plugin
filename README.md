@@ -441,6 +441,8 @@ are rejected with a didactic error rather than silently accepted.
 - `adr_set_status` -- change lifecycle status; supports
   `PROPOSED` -> `ACCEPTED`, `PROPOSED` -> `REJECTED`, and
   `ACCEPTED` -> `DEPRECATED`; refuses `SUPERSEDED` (use `adr_supersede`).
+  Refuses `ACCEPTED` if the record carries considered options and not
+  exactly one is `CHOSEN` -- a `PROPOSED` record is allowed to have none.
   Moving to `ACCEPTED`/`REJECTED` also stamps the decision date -- the only
   place it is set; an optional `decidedOn` backdates it to a day the
   decision was really taken.
