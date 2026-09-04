@@ -65,7 +65,13 @@ with an existing `PROPOSED`/`ACCEPTED` decision without saying so?) and **duplic
 this the same decision under a different title?). Surface either before writing, don't let two
 silently-conflicting decisions both stand.
 
-## Before writing -- is this an ADR at all?
+## Before writing -- two steps, in this order
+
+Both steps run before `adr_add`, not in the review afterwards. By the time a review reaches a
+record, a status transition is usually about to freeze its text, and the only remaining route
+for a defect either step would have caught is a successor record.
+
+### 1. Is this an ADR at all?
 
 The tools accept anything that fills the required fields, and every rule below only asks whether
 a record is *well written*: a naming convention, a local packaging choice, a piece of work
@@ -100,23 +106,34 @@ follows (see "Correcting a decision") -- two lines, not a rendered table per inv
 > This is an ADR because Q1: it fixes the persistence dependency for the whole service; Q2: a
 > reversal means migrating the stored data. Agreed?
 
-The independence test under "Writing quality" runs *after* this check and splits what passed it.
-Run this check again on each fragment a split produces -- a split routinely frees trivial
-by-catch ("use PostgreSQL" plus "name the schema `app`": the first passes Q1, the second does
-not).
+### 2. One decision, or several?
+
+The independence test is a step in writing, not only rule R1 of the review. It falls on **every**
+record you are about to write:
+
+- Write `decision` out as its separate assertions -- **not only where they are numbered; a
+  second decision hides in running prose far more often than in a numbered list.**
+- Take them pairwise: could the later assertion have gone the other way without changing the
+  earlier one? If yes, it is its own record. Applying this by feel finds nothing; do the split.
+- **A handed-over list of split candidates is not the scope of this test.** Splitting the three
+  records someone named and leaving the rest of the set untouched is exactly the failure this
+  step exists to prevent -- when you write a whole set of decisions in one go, the test falls on
+  each of them, including the ones nobody flagged.
+- Then **run step 1 again on each fragment.** A split routinely frees trivial by-catch ("use
+  PostgreSQL" plus "name the schema `app`": the first passes Q1, the second does not).
+
+Only then call `adr_add` -- one call per surviving fragment.
 
 ## Writing quality -- independent of the store, still your job
 
 The tools validate structure (required fields, minimum lengths, reference existence); they do
 not validate decision *quality*. That is still yours to enforce:
 
-- **One decision per record.** Apply the independence test: split `decision` into its separate
-  assertions -- **not only where they are numbered; a second decision hides in running prose far
-  more often than in a numbered list** -- and take them pairwise: could the later assertion have
-  gone the other way without changing the earlier one? If yes, it is its own ADR. This matters even more here than on paper: `adr_supersede` points at the whole
-  record, so a bundled ADR cannot be superseded in part -- reversing half of it means either
-  superseding a decision that is still partly in force, or leaving the half you don't want
-  standing.
+- **One decision per record.** Enforced by the independence test in "Before writing", which is
+  a step before `adr_add` and not a rule you check once the record exists. This matters even
+  more here than on paper: `adr_supersede` points at the whole record, so a bundled ADR cannot
+  be superseded in part -- reversing half of it means either superseding a decision that is
+  still partly in force, or leaving the half you don't want standing.
 - **No implementation detail.** No class names, method signatures, or literal parameter values
   in `decision`/`consequences`. The store has no file history a reader can consult to see a
   detail age past a rename -- an implementation detail written into `decision` goes stale
@@ -273,7 +290,7 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 | # | Rule | How to apply it |
 |---|---|---|
 | R0 | Worth recording at all | Q1 (reach) and Q2 (cost of reversal) from "Before writing", applied to the finished record. A convention, a local detail, a reversible default or a piece of work planning fails here while every rule below reads `ok` -- that combination is the whole reason this row exists. |
-| R1 | One decision | Split `decision` into its separate assertions -- not only where the text numbers them -- and take them pairwise: could the later one have gone the other way without changing the earlier one? If yes, it is its own record. Applying this by feel finds nothing; do the split. |
+| R1 | One decision | The independence test of "Before writing", applied to a record that already exists: split `decision` into its separate assertions -- not only where the text numbers them -- and take them pairwise: could the later one have gone the other way without changing the earlier one? If yes, it is its own record. Applying this by feel finds nothing; do the split. |
 | R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail. |
 | R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
 | R4 | No status prose | "today", "currently", "not yet", "so far" in `decision` or a consequence. In `adrContext` they are legitimate -- it describes the situation the decision was taken in. |
