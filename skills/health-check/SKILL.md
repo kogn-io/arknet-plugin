@@ -47,7 +47,12 @@ already use them.
      `orphan_check` missed (e.g. because a use case references it in prose
      without the `realises` edge) is a separate, additional finding.
    - `adr_list` -- filter to `PROPOSED` and report each one: still waiting on
-     an accept/reject decision.
+     an accept/reject decision. **"Waiting" is not "waiting to be accepted."**
+     `/arknet:adr` weighs a record against R0 -- worth recording at all --
+     before it weighs its status, and deleting a record that should never
+     have been an ADR is a legitimate outcome while it is still `PROPOSED`
+     (`adr_delete` takes no other status). Report the record as open; do not
+     phrase it as a pending accept, and do not suggest one.
 2. **Judgement candidates, hint only.** `bc_list` for every registered
    context, then `resource_get` on each to check its recorded
    `ContextRelationship` edges. A context with zero edges is a **hint**, not a

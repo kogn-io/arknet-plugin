@@ -65,6 +65,46 @@ with an existing `PROPOSED`/`ACCEPTED` decision without saying so?) and **duplic
 this the same decision under a different title?). Surface either before writing, don't let two
 silently-conflicting decisions both stand.
 
+## Before writing -- is this an ADR at all?
+
+The tools accept anything that fills the required fields, and every rule below only asks whether
+a record is *well written*: a naming convention, a local packaging choice, a piece of work
+planning or a reversible default passes all of them. So ask the category question first, before
+the record exists -- the cheapest place to keep a non-decision out of the store.
+
+| # | Question | A "no" means |
+|---|---|---|
+| Q1 | **Reach.** Does it bear on structure (modules, bounded contexts), an interface or contract, a dependency (technology, library, external system), a quality attribute, or a construction technique that holds across the project? | A convention or a detail -- a doc comment, a style guide, the README. Not an ADR. |
+| Q2 | **Cost of reversal.** Would reversing it in a year cost more than taking it did -- a migration, a broken contract, a rewrite in more than one place? | A reversible default -- configuration or a doc comment. Not an ADR. |
+| Q3 | **A real alternative.** Was there at least one option a reasonable team could have chosen, or is the "alternative" a straw man? | No discretion was exercised: it is a constraint (`constraint_add`) or a plain fact, not a decision. |
+| Q4 | **Category.** Is the core of it a HOW? A "must/shall" about system behaviour is a requirement (`req_add`), a definition is a glossary term (`term_add`), a date or a "later" is a tracker issue. | Hand that part off (see "Scope boundary") and write the ADR for the HOW remainder only -- if one is left. |
+
+- **A "no" on Q1 or Q2 stops the write.** Say where the thing belongs instead, and do not call
+  `adr_add`.
+- **A "no" on Q3 does not.** An empty option space is allowed as long as the record says why it
+  was empty (see "Substantive considered options"); Q3 exists to expose a straw-man option, not
+  to force one into existence.
+- **Project-wide is not the same as architecturally relevant.** A rule about naming, file
+  placement or formatting holds everywhere and is still a convention -- it settles where things
+  sit, not how the system is built. Q1 asks whether the decision constrains the *construction*
+  of the system (a library it depends on, the technique its domain types are built with), not
+  whether it happens to apply in every package.
+- **Measure reach, not size.** "No Lombok" and "records, not entities, for domain types" are one
+  sentence each and architecturally relevant -- a construction technique that holds across the
+  project passes Q1. The expensive mistake is the decision that never gets recorded, not the one
+  that sits `PROPOSED` a while longer: where Q1 and Q2 are genuinely close, write it and say so.
+
+Put the result to the user as **its own question**, separate from the content confirmation that
+follows (see "Correcting a decision") -- two lines, not a rendered table per invocation:
+
+> This is an ADR because Q1: it fixes the persistence dependency for the whole service; Q2: a
+> reversal means migrating the stored data. Agreed?
+
+The independence test under "Writing quality" runs *after* this check and splits what passed it.
+Run this check again on each fragment a split produces -- a split routinely frees trivial
+by-catch ("use PostgreSQL" plus "name the schema `app`": the first passes Q1, the second does
+not).
+
 ## Writing quality -- independent of the store, still your job
 
 The tools validate structure (required fields, minimum lengths, reference existence); they do
@@ -120,6 +160,11 @@ no longer current.
 
 What this means in practice:
 
+- **Accepting a proposal.** Before calling `adr_set_status(id, "ACCEPTED")` on the user's
+  request, state Q1 and Q2 from "Before writing" once, one line each. This is the moment the
+  text freezes, which makes it the last and most effective place for the category question --
+  cheap to record while `PROPOSED`, expensive once `ACCEPTED`. Say it, do not decide on it: the
+  transition still happens only because the user asked for it.
 - **Rejecting a proposal.** Call `adr_set_status(id, "REJECTED")` -- do not fold the rejection
   into `consequences`/`decision` text as a workaround. `REJECTED` means the option was
   considered and turned down -- a decision worth keeping, not a mistaken entry to undo; it is
@@ -227,6 +272,7 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 
 | # | Rule | How to apply it |
 |---|---|---|
+| R0 | Worth recording at all | Q1 (reach) and Q2 (cost of reversal) from "Before writing", applied to the finished record. A convention, a local detail, a reversible default or a piece of work planning fails here while every rule below reads `ok` -- that combination is the whole reason this row exists. |
 | R1 | One decision | Split `decision` into its separate assertions -- not only where the text numbers them -- and take them pairwise: could the later one have gone the other way without changing the earlier one? If yes, it is its own record. Applying this by feel finds nothing; do the split. |
 | R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail. |
 | R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
@@ -238,10 +284,10 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 
 ### 3. Report as a table
 
-| Record | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 |
-|---|---|---|---|---|---|---|---|---|
-| ADR-1 | ok | ok | ok | ok | ok | ok | ok | ok |
-| ADR-2 | *finding* | ok | ... | | | | | |
+| Record | R0 | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 |
+|---|---|---|---|---|---|---|---|---|---|
+| ADR-1 | ok | ok | ok | ok | ok | ok | ok | ok | ok |
+| ADR-2 | ok | *finding* | ok | ... | | | | | |
 
 `ok` or a short finding per cell. Then the corpus-wide findings from step 1, then the ranked
 list of what to do. A record you did not reach gets a row too, marked as unchecked -- the point
@@ -249,6 +295,13 @@ of the table is that the gap is visible.
 
 ### 4. What follows from a finding
 
+- **An R0 finding on a `PROPOSED` record: propose `adr_delete`.** That is precisely the "draft
+  that belongs elsewhere" case the delete path exists for (see "Deleting a decision"). Propose
+  it and name where the content belongs instead; the user deletes, you do not decide it away.
+- **An R0 finding on an `ACCEPTED` record: report it, do not act.** There is no status for
+  "should never have been an ADR" -- `DEPRECATED` says "no longer in force", a different
+  statement about a real decision. Report the finding and leave the choice between leaving it
+  standing and `adr_set_status(id, "DEPRECATED")` to the user.
 - A finding on R1-R7 is a text correction: possible **only while the record is `PROPOSED`**
   (translations aside, see "Correcting a decision"). Raise them before any status transition,
   not after -- from `ACCEPTED` on the only remaining route is a successor record.
@@ -264,5 +317,12 @@ of the table is that the gap is visible.
 
 - **HOW, not WHAT/WHY.** Requirements, use cases and glossary terms belong to
   `/arknet:req-interview`; this skill only records the architectural decision itself.
+- **A WHAT inside the draft is handed over, not absorbed.** When a draft decision carries a
+  requirement in its first half ("because responses have to arrive in under 200 ms, a cache is
+  introduced"), name that half, offer the handoff to `/arknet:req-interview` (`req_add` for a
+  quality attribute, `constraint_add` for an imposed limit), and keep the ADR for the HOW
+  remainder ("introduce a cache") only. Link the two afterwards with `addressesRequirements`, so
+  the decision keeps the reason it was taken for. This is the mirror image of the handoff
+  `/arknet:req-interview` already offers in the other direction.
 - **Store, not files.** A project still on file-based ADRs belongs to `/arknet:legacy-adr`, not
   here.
