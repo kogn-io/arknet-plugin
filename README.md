@@ -42,9 +42,31 @@ store (`arkarch:ArchitectureDecisionRecord`), via arknet's `adr_add`/
 durable decision and its lasting consequences -- never a status report, never
 an implementation snapshot.
 
+**"Is this an ADR at all?" comes before "is this a good ADR?"** Four
+questions run ahead of `adr_add`: reach (structure, a contract, a dependency,
+a quality attribute, or a construction technique that holds across the
+project), cost of reversal, whether a real alternative existed, and whether
+the core is a HOW at all -- a "must/shall" about system behaviour is a
+requirement, a definition is a glossary term, a "later" is a tracker issue. A
+"no" on reach or cost of reversal stops the write and names where the thing
+belongs instead; the criterion is reach, not size, so "no Lombok" is one
+sentence and still an architecture decision. A draft that carries a
+requirement in its first half hands that half to `/arknet:req-interview`
+(`req_add`/`constraint_add`) and keeps the ADR for the HOW remainder, linked
+back via `addressesRequirements`.
+
+The same check is **R0 of the review**, ahead of R1-R8: a `PROPOSED` record
+that fails it is proposed for `adr_delete`, an `ACCEPTED` one is reported and
+left to the user, since there is no status for "should never have been an
+ADR" -- `DEPRECATED` says something else. And it is stated once more before
+`adr_set_status` moves a decision to `ACCEPTED`, the moment its text freezes.
+
 **One decision per record**, still enforced by discipline rather than the
-store: the independence test -- "could a point have gone the other way
-without changing the point before it?" -- decides whether it is its own ADR.
+store -- and before the write rather than in the review afterwards: the
+independence test -- "could a point have gone the other way without changing
+the point before it?" -- splits `decision` into its separate assertions, and
+each surviving fragment becomes its own `adr_add` call. It falls on every
+record written, not only on the ones someone flagged as candidates.
 `adr_supersede` points at the whole record, so a bundled decision cannot be
 superseded in part. Implementation detail -- class names, signatures, literal
 parameter values -- is kept out of `decision`/`consequences` for the same
@@ -160,8 +182,10 @@ actually resolves each finding.
 
 Reports two kinds of finding, always visibly separated: **hard facts** --
 `orphan_check`/`trace_matrix` (dangling links, orphaned terms, untraced
-requirements) and `adr_list` filtered to `PROPOSED` (decisions still waiting
-on accept/reject) -- stated plainly, no judgement needed; and **hints** -- a
+requirements) and `adr_list` filtered to `PROPOSED` (decisions still open --
+open, not waiting to be accepted: `/arknet:adr` weighs a record's right to
+exist before its status, and deleting one is a legitimate outcome while it is
+still `PROPOSED`) -- stated plainly, no judgement needed; and **hints** -- a
 Bounded Context with no `bc_link_context` edge recorded (`bc_list` against
 `resource_get`), phrased as a question ("worth a look with
 `/arknet:context-map`?"), never as a defect on par with an orphaned
