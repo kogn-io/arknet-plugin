@@ -19,6 +19,7 @@ its own release cycle.
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Compatibility check](#compatibility-check)
+- [Export freshness nudge](#export-freshness-nudge)
 - [Getting started](#getting-started)
 - [MCP Tools](#mcp-tools)
   - [Requirements](#requirements-1)
@@ -258,6 +259,21 @@ need and, once per session, warns if something's missing -- naming the
 affected skill so you know to update the arknet-mcp daemon rather than
 wonder why a skill is failing. The check is silent otherwise: no server
 reachable, or everything present, produces no extra output.
+
+## Export freshness nudge
+
+If your project keeps a reproducible export of the arknet store in the
+working tree (a directory holding a `.trig` full dump, as produced by
+`project_export`) for readers without a running server, that snapshot goes
+stale the moment the store is written again. A `Stop` hook watches for this:
+once per session, if a store-writing arknet tool (`adr_add`, `req_update`,
+`bc_link_term`, and so on) was called and such an export directory is found
+in the project, it adds a one-line reminder to regenerate the snapshot
+before committing. The check is silent otherwise -- no write tool called, no
+export directory found, or the nudge already fired this session produces no
+extra output. The export mechanism itself (script, path convention) is not
+part of this plugin; the hook only discovers an existing `.trig` snapshot,
+it does not create one.
 
 ## Getting started
 
