@@ -39,7 +39,9 @@ model the project is actually on before writing anything.
   `NEUTRAL`. `consideredOptions` is a list of `{name, rationale, outcome}`, `outcome` one of
   `CHOSEN`/`REJECTED` -- at most one option per decision may be `CHOSEN`. Both are optional but
   expected in practice -- treat an empty one as a finding to raise with the user, not something
-  to silently skip.
+  to silently skip. The call's result text names this itself: an empty list comes back with an
+  inline warning (`no consequence recorded`/`no considered option recorded`), which is the cue,
+  not a placeholder entry (see "Substantive consequences and considered options" below).
 - There is **no** date parameter. A new record starts `PROPOSED`, which means precisely that
   nothing has been decided yet, so there is no date to carry. The date is stamped by the
   transition to `ACCEPTED`/`REJECTED` (see "Lifecycle" below) -- do not look for a way to set
@@ -89,8 +91,8 @@ the record exists -- the cheapest place to keep a non-decision out of the store.
 - **A "no" on Q1 or Q2 stops the write.** Say where the thing belongs instead, and do not call
   `adr_add`.
 - **A "no" on Q3 does not.** An empty option space is allowed as long as the record says why it
-  was empty (see "Substantive considered options"); Q3 exists to expose a straw-man option, not
-  to force one into existence.
+  was empty (see "Substantive consequences and considered options"); Q3 exists to expose a
+  straw-man option, not to force one into existence.
 - **Project-wide is not the same as architecturally relevant.** A rule about naming, file
   placement or formatting holds everywhere and is still a convention -- it settles where things
   sit, not how the system is built. Q1 asks whether the decision constrains the *construction*
@@ -142,10 +144,17 @@ not validate decision *quality*. That is still yours to enforce:
 - **The litmus test.** Does the sentence go stale the moment someone changes code? If yes, it's
   wiring state, not a decision, and belongs in a doc comment or the issue tracker, not in
   `decision`/`consequences`.
-- **Substantive considered options.** "No options considered" is a smell, not an answer -- if
-  the option space genuinely was empty, say briefly why. `consideredOptions` is where the
-  discarded alternatives live, each with a `rationale`, and `outcome: CHOSEN` on the one taken --
-  the record of *why not X* is as much the point as the record of *why Y*.
+- **Substantive consequences and considered options.** "No options considered" is a smell, not
+  an answer -- if the option space genuinely was empty, say briefly why in `adrContext`.
+  `consideredOptions` is where the discarded alternatives live, each with a `rationale`, and
+  `outcome: CHOSEN` on the one taken -- the record of *why not X* is as much the point as the
+  record of *why Y*. The same holds for `consequences`: a decision with none recorded has not
+  been thought through. `adr_add`/`adr_update` already flag either empty list with an inline,
+  non-blocking warning in their result text (`no consequence recorded`/`no considered option
+  recorded`) -- that warning is the signal, not something to write around. On a `PROPOSED`
+  record, note it and report it to the user rather than acting on it yourself; resolve it before
+  the record goes `ACCEPTED` -- with real content or the brief reasoning above, never with a
+  placeholder consequence or considered option invented only to make the warning go away.
 - **Role-based language, not personal names.** Check `adrContext`/`decision`/every consequence
   `statement`/every considered option's `name`/`rationale` for named individuals (e.g. "Fred
   uses...") and replace with the store's existing convention of role-based language ("the
@@ -323,7 +332,7 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 | R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail. |
 | R3 | No external references | Issue, PR or commit numbers (`#123`). The record has to stand on its own; a tracker id ages worse than the decision and says nothing to a later reader. |
 | R4 | No status prose | "today", "currently", "not yet", "so far" in `decision` or a consequence. In `adrContext` they are legitimate -- it describes the situation the decision was taken in. |
-| R5 | Substantive consequences and options | Both populated; every option carries a rationale. `CHOSEN` is status-dependent: a `PROPOSED` (or `REJECTED`) record may have options with none `CHOSEN` yet -- `adr_set_status(ACCEPTED)` is what will require one; from `ACCEPTED` on, exactly one `CHOSEN` is required once the record carries any options at all, a record with no options stays fine. Negative consequences present -- a record with only positive ones has not been thought through. |
+| R5 | Substantive consequences and options | Both populated; every option carries a rationale. `adr_add`/`adr_update` already surface an empty `consequences`/`consideredOptions` list as an inline, non-blocking warning in their result text (`no consequence recorded`/`no considered option recorded`) -- that warning is the signal for this rule, not a message to silence with a placeholder entry. On a `PROPOSED` (or `REJECTED`) record it is a note: take it, report it to the user. Resolve it before the record goes `ACCEPTED` -- either with real content or with the record's own reasoning for why the space was empty; never by inventing a consequence or considered option just to clear the warning. `CHOSEN` is status-dependent: a `PROPOSED` (or `REJECTED`) record may have options with none `CHOSEN` yet -- `adr_set_status(ACCEPTED)` is what will require one; from `ACCEPTED` on, exactly one `CHOSEN` is required once the record carries any options at all, a record with no options stays fine. Negative consequences present -- a record with only positive ones has not been thought through. |
 | R6 | References resolve | `addressesRequirements`/`affectsContexts`/`usesTerms` still name requirements/contexts/glossary terms that exist (`req_get`/`bc_get`/`term_get` -- the store validates references on write, not on read). No `ADR-n` in the prose that the store does not hold -- a validity check on a stray reference, distinct from the writing-quality rule above that keeps codes out of the prose in the first place. |
 | R7 | Prose matches the graph | Every peer decision named in the text also has a `relatedTo`/`supersededBy` edge, and every edge is one a reader can follow. Edges copied from elsewhere are the usual cause of a mismatch. |
 | R8 | Status is honest | A shipped decision reads `ACCEPTED`, not still `PROPOSED`. A `decisionDate` on a `PROPOSED` record is a leftover -- nothing has been decided yet. Never flip a status on your own reading of the build state (see below). A `PROPOSED` record whose decision was never confirmed by the user is not a candidate for `ACCEPTED` -- it is a question back to the user. |
