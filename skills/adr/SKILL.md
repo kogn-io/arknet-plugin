@@ -141,7 +141,15 @@ not validate decision *quality*. That is still yours to enforce:
 - **No implementation detail.** No class names, method signatures, or literal parameter values
   in `decision`/`consequences`. The store has no file history a reader can consult to see a
   detail age past a rename -- an implementation detail written into `decision` goes stale
-  exactly the same way it would in a file, just without a diff to notice it.
+  exactly the same way it would in a file, just without a diff to notice it. The rule has a
+  ceiling, though: the things the decision draws a boundary between or maps onto each other
+  (a record and a triple, a daemon and a client, the vocabulary IRI it removes) are its
+  subject, not a detail. A record that no longer says what it is about once they are
+  abstracted away is too abstract, not too concrete. "Domain types stay plain records with
+  no graph access; the translation to triples lives in the out-adapter alone" names both
+  sides of the boundary and survives every rename; "the domain type has no graph access, the
+  out-port translates" names neither and cannot be read without the code it was written
+  against.
 - **The litmus test.** Does the sentence go stale the moment someone changes code? If yes, it's
   wiring state, not a decision, and belongs in a doc comment or the issue tracker, not in
   `decision`/`consequences`.
@@ -337,7 +345,7 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 |---|---|---|
 | R0 | Worth recording at all | Q1 (reach) and Q2 (cost of reversal) from "Before writing", applied to the finished record. A convention, a local detail, a reversible default or a piece of work planning fails here while every rule below reads `ok` -- that combination is the whole reason this row exists. |
 | R1 | One decision | The independence test of "Before writing", applied to a record that already exists: split `decision` into its separate assertions -- not only where the text numbers them -- and take them pairwise: could the later one have gone the other way without changing the earlier one? If yes, it is its own record. Applying this by feel finds nothing; do the split. |
-| R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail. |
+| R2 | No implementation detail | Class, module or annotation names, method signatures, literal values (ports, addresses, keys, paths). A term the record itself decides about (a vocabulary IRI it removes, a tool prefix it keeps) is the subject, not a detail -- and so are the things the decision draws a boundary between or maps onto each other (a record and a triple, a daemon and a client). A record that no longer says what it is about without them is too abstract, not too concrete; abstracting them away is a finding under this rule, not a pass. |
 | R3 | No external references | `adr_check`'s `Suspicions` already flag a tracker-looking reference (`#123`); a reader confirms the flag is actually one (not, say, a decision or option count that happens to look like it) and decides how to rewrite the record so it stands on its own without it. |
 | R4 | No status prose | `adr_check`'s `Suspicions` already flag "today"/"currently"/"not yet"/"so far"-style wording in `decision` or a consequence; a reader judges whether the flagged phrase genuinely describes a transient state that will go stale, not a quoted title or a fixed name. In `adrContext` such wording is legitimate either way -- it describes the situation the decision was taken in, and `adr_check` does not flag it there. |
 | R5 | Substantive consequences and options | `adr_check`'s `Facts` already flag a record with no consequence or no considered option recorded, and a taken decision (`ACCEPTED` on) with nothing `CHOSEN`. What is left for a reader: whether a populated list is actually substantive -- every considered option carries a real rationale, not a placeholder; the record's own reasoning for an empty space (see "Substantive consequences and considered options" above) is adequate, never invented after the fact just to clear the tool's finding; and negative consequences are present -- a record with only positive ones has not been thought through. |
