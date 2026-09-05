@@ -157,7 +157,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
 | Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryActor` (replaces, cannot be cleared), `supportingActors` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
-| Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it) |
+| Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a use case still names it) |
 
 ### Actors: `actor_add(type, name, description?)`
 
@@ -182,6 +182,11 @@ forces the pairing.
 - `actor_update(id, name?, description?)` -- corrects an already-created
   actor's name/description in place, keeping its identity (and every
   existing link into it) unchanged. Cannot change `type` or the code.
+- `actor_delete(id)` -- removes the whole actor resource, not just a
+  correction. Rejected while a use case still names it as `primaryActor` or
+  `supportingActor` -- re-point that use case first (`uc_update`). An actor
+  that is also a glossary term keeps its glossary entry; only the actor
+  resource goes away.
 
 ### Glossary terms: `term_add(label, definition, broader?, related?, language?)`
 

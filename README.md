@@ -23,6 +23,8 @@ its own release cycle.
 - [Getting started](#getting-started)
 - [MCP Tools](#mcp-tools)
   - [Requirements](#requirements-1)
+  - [Constraints](#constraints)
+  - [Actors](#actors)
   - [Use cases](#use-cases)
   - [Glossary](#glossary)
   - [Bounded contexts](#bounded-contexts)
@@ -402,6 +404,25 @@ are rejected with a didactic error rather than silently accepted.
 - `constraint_get` / `constraint_list` -- fetch one / list all constraints.
 - `req_link_constraint` -- link a requirement to the constraint that binds
   it.
+
+### Actors
+
+- `actor_add` -- register an actor: someone or something that can act on the
+  system under description, hold an interest in it, or both (a regulator or
+  a department that never touches the system counts as much as a user).
+  Takes a type (`HUMAN`, `SYSTEM`, `LEGAL` or `GROUP`), a plain-text name
+  (no language tag, unlike a glossary term) and an optional description; the
+  result is an `ACTOR-n` code. An actor is a resource in its own right and
+  needs no glossary entry -- `term_add` it separately if its name is also a
+  term worth defining.
+- `actor_get` / `actor_list` -- fetch one / list all actors.
+- `actor_update` -- correct an already-created actor's name and/or
+  description in place. The type, and the `ACTOR-n` code, stay fixed at
+  creation.
+- `actor_delete` -- remove the whole actor resource, not just a correction;
+  rejected while a use case still references it as its primary or
+  supporting actor. An actor that is also a glossary term keeps its glossary
+  entry.
 
 ### Use cases
 
