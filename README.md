@@ -453,6 +453,13 @@ are rejected with a didactic error rather than silently accepted.
   language, keeping its identity and every link into it. `broader` and
   `related` are the exceptions to "omitted = unchanged": an empty string
   (`broader`) or an empty list (`related`) explicitly clears what is set.
+- `term_delete` -- remove the whole term resource (label and definition in
+  every language), not just a correction; rejected while anything still
+  references it: a requirement's, use case's or architecture decision's
+  `usesTerm`, a bounded context's ubiquitous-language link, or another
+  term's `broader`/`related`. Remove those edges first (`req_update`/
+  `uc_update`, `adr_update`, `bc_link_term`, `term_update` on the other
+  term).
 
 ### Bounded contexts
 
