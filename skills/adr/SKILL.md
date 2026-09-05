@@ -244,7 +244,7 @@ from a call that returned an error.
 
 ## Correcting a decision
 
-`adr_update(id, name?, adrContext?, decision?, newConsequences?, consequenceCorrections?, newConsideredOptions?, consideredOptionCorrections?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
+`adr_update(id, name?, adrContext?, decision?, newConsequences?, consequenceCorrections?, newConsideredOptions?, consideredOptionCorrections?, removeConsequencePositions?, removeConsideredOptionPositions?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
 every field but `id` is optional, and an omitted field is left unchanged -- never cleared.
 
 - **`name`/`adrContext`/`decision`, and the `statement`/`type` of an existing consequence or the
@@ -260,6 +260,12 @@ every field but `id` is optional, and an omitted field is left unchanged -- neve
   original.
 - **`newConsequences`/`newConsideredOptions`** append new entries and are allowed in *every*
   status -- adding a consequence noticed only later is not the same as rewriting one.
+- **`removeConsequencePositions`/`removeConsideredOptionPositions`** take an entry out by its
+  1-based position as `adr_get` currently shows it; the entries after it move up. **Only while
+  `PROPOSED`, with no translation exemption** -- a removal is never a translation, so from
+  `ACCEPTED` on nothing is ever removed. A position cannot be corrected and removed in the same
+  call. This is the way out for a consequence or option recorded by mistake; `adr_delete` plus
+  a fresh `adr_add` is not (new code, every `relatedTo` edge lost).
 - **The four reference lists** (`addressesRequirements`, `affectsContexts`, `usesTerms`,
   `relatedTo`) are the deliberate exception and stay correctable in *every* status, so an edge
   to a requirement, bounded context, glossary term or peer decision that did not exist yet when

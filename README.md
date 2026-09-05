@@ -101,6 +101,8 @@ supersession.
 **Corrections are narrower than they look.** `adr_update` corrects text fields
 only while a decision is `PROPOSED` -- from `ACCEPTED` on, only its reference
 lists (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) stay editable.
+The same window applies to taking a consequence or considered option out again
+by position (`removeConsequencePositions`/`removeConsideredOptionPositions`).
 `adr_delete` removes a `PROPOSED` decision entered by mistake, but explicitly
 not a `REJECTED` one -- "considered and rejected" is itself a decision worth
 keeping. The skill still confirms content with the user before writing,
@@ -498,7 +500,10 @@ are rejected with a didactic error rather than silently accepted.
   `supersededBy` edge, in one write, leaving the successor untouched.
 - `adr_update` -- correct an already-recorded decision; text fields (and a
   consequence's/considered option's wording) only while `PROPOSED`, unless
-  the call writes a language that field never carried yet; reference lists
+  the call writes a language that field never carried yet; a consequence or
+  considered option is removed by position (`removeConsequencePositions`/
+  `removeConsideredOptionPositions`, later entries move up) only while
+  `PROPOSED`, with no translation exemption; reference lists
   (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) in
   every status.
 - `adr_check` -- check the whole corpus and report what is mechanically
