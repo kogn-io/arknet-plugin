@@ -156,7 +156,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
 | Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryActor` (replaces, cannot be cleared), `supportingActors` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
-| Glossary term | `term_add` | `term_get`, `term_list` | `term_update` |
+| Glossary term | `term_add` | `term_get`, `term_list` | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
 | Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a use case still names it) |
 
 ### Actors: `actor_add(type, name, description?)`
@@ -242,6 +242,17 @@ the draft, not after.
   replaces only the literal carrying the resolved tag, every other language
   variant survives untouched -- except a stale untagged one, swept away once
   the resolved tag equals the project's default.
+- `term_delete(id)` -- removes the whole term resource, label and
+  definition in every language, not just a correction -- for a term created
+  by mistake (a duplicate, an actor that should have been `actor_add`).
+  Rejected while anything still references it: a requirement's or use
+  case's `arkreq:usesTerm`, an architecture decision's `arkarch:usesTerm`,
+  a bounded context's `ubiquitousLanguageTerm`, or another term's `broader`
+  or `related`. Remove those edges first (`req_update`/`uc_update`,
+  `adr_update`, `bc_link_term`, or `term_update` on the *other* term to
+  clear its `broader`/`related`). A term found wanting is corrected with
+  `term_update`, not deleted and re-created -- re-creating loses the code
+  and every link into it.
 - `term_get(id, displayLocale?)` -- `displayLocale` (optional) overrides the
   project's configured default language for this one read, choosing which
   language variant of label/definition comes back. Falls back to the
