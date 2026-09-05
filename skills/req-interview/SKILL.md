@@ -183,12 +183,25 @@ forces the pairing.
   actor's name/description in place, keeping its identity (and every
   existing link into it) unchanged. Cannot change `type` or the code.
 
-### Glossary terms: `term_add(label, definition, language?)`
+### Glossary terms: `term_add(label, definition, broader?, related?, language?)`
 
 - `label` (required) -- `skos:prefLabel`. The same word under every language
   tag the store carries; only `definition` is restated in a second language
   (see "Language" above).
 - `definition` (required).
+- `broader` (optional) -- code of an already-existing term this one
+  specializes, its superordinate term (`skos:broader`), e.g. "Human Actor"
+  as the broader term of "Customer". Rejected if the code does not resolve
+  to an existing term.
+- `related` (optional) -- codes of already-existing terms this one is
+  associatively connected to (`skos:related`): a domain neighbourhood
+  without hierarchy, e.g. "Anchor" and "Project" -- neither is a kind of the
+  other, yet one is not understood without the other. The relation is
+  symmetric: it shows on both terms, naming it on either one is enough.
+  Rejected if a code does not resolve, or names the term itself.
+- Which edge: `broader` when one term *is a kind of* the other -- its
+  definition reads "a <other term> that ..."; `related` when the two belong
+  together without either specializing the other.
 - `language` (optional) -- BCP-47 tag (e.g. `de`) the label/definition are
   written in. Omitted, it falls back to the project's configured default
   language (`project_update`); if the project has no default either, the
@@ -205,12 +218,21 @@ case's capability is not resolved or validated by any tool argument, so that
 existence check is on you -- verify via `uc_list`/`uc_get` before presenting
 the draft, not after.
 
-- `term_update(id, label?, definition?, language?)` -- corrects an
-  already-created term's label/definition in place, keeping its identity and
-  every existing link into it (e.g. `arkreq:usesTerm`) unchanged. Every
-  argument but `id` is optional and an omitted one leaves that field
-  unchanged -- use this to fix a term found wanting during a full-set audit
-  instead of creating a duplicate. `language` behaves as in `term_add`
+- `term_update(id, label?, definition?, broader?, related?, language?)` --
+  corrects an already-created term's label/definition/broader/related in
+  place, keeping its identity and every existing link into it (e.g.
+  `arkreq:usesTerm`) unchanged. Every argument but `id` is optional and an
+  omitted one leaves that field unchanged -- use this to fix a term found
+  wanting during a full-set audit instead of creating a duplicate. `broader`
+  and `related` carry a third state on top of that: omitted leaves the
+  edge(s) unchanged, an empty string (`broader`) or an empty list
+  (`related`) explicitly clears them, a value sets/replaces them wholesale.
+  Rejected if a code does not resolve, if `broader` would make the term its
+  own (direct or transitive) broader term, or if `related` names the term
+  itself. `related` is symmetric but written in one direction: a
+  `term_update` rewrites only the edges this term asserts itself -- an edge
+  another term asserts towards this one is cleared with a `term_update` on
+  *that* term. `language` behaves as in `term_add`
   (falls back to the project's default, rejects if neither is set): it
   replaces only the literal carrying the resolved tag, every other language
   variant survives untouched -- except a stale untagged one, swept away once
