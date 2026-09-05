@@ -3,5 +3,5 @@
   "arknet:bc-audit": ["actor_usecase_matrix", "term_cooccurrence"],
   "arknet:context-map": ["bc_link_context"],
   "arknet:health-check": ["adr_check"],
-  "arknet:req-interview": ["constraint_add", "constraint_get", "constraint_list", "constraint_update", "req_link_constraint", "req_update", "uc_update", "term_update"]
+  "arknet:req-interview": ["actor_add", "actor_get", "actor_list", "actor_update", "actor_delete", "constraint_add", "constraint_get", "constraint_list", "constraint_update", "req_link_constraint", "req_update", "uc_update", "term_update", "term_delete"]
 }
