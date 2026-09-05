@@ -1,5 +1,5 @@
 ---
-description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_unsupersede/adr_update/adr_check/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for a project that still keeps file-based Markdown ADRs under docs/adr/ (use /arknet:legacy-adr there instead). NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
+description: "Write, review and maintain Architecture Decision Records as first-class resources in the arknet store (arkarch:ArchitectureDecisionRecord), via arknet's adr_add/adr_list/adr_get/adr_set_status/adr_supersede/adr_unsupersede/adr_update/adr_check/adr_delete MCP tools -- not Markdown files. Keeps every ADR a durable decision record: one decision per record, free of implementation detail, references only requirements/bounded contexts that already exist. Trigger (also DE, since the user may phrase it in German): /arknet:adr, 'write an ADR', 'new ADR', 'ADR for X', 'review this ADR', 'maintain the ADRs', 'is this a good ADR', 'supersede this ADR'; DE: 'schreib ein ADR', 'neues ADR', 'ADR fuer X', 'review das ADR', 'pflege die ADRs', 'loese dieses ADR ab'. NOT for writing Markdown ADR files -- a project still keeping its ADRs as files is asked whether to move them into the store, never written to as files. NOT for general documentation, NOT for requirements (use /arknet:req-interview), NOT for code comments."
 ---
 
 # /arknet:adr -- Architecture Decision Records (arknet store)
@@ -12,11 +12,12 @@ lasting consequences**, never a status report or an implementation snapshot.
 
 ## Is this the right skill for this project?
 
-If the project still keeps its ADRs as Markdown files under `docs/adr/` and has not moved to
-the store, stop and use `/arknet:legacy-adr` there instead -- do not write into both models for
-the same project, and do not silently decide to migrate an existing file-based corpus. If you
-find both a populated `docs/adr/` *and* this skill was invoked, say so and ask the user which
-model the project is actually on before writing anything.
+The store is the only model this skill writes to. If the project still keeps its ADRs as
+Markdown files (conventionally under `docs/adr/`), say so and ask the user whether the project
+moves to the store before writing anything -- do not write into both models for the same
+project, do not silently decide to migrate an existing file-based corpus, and do not write
+Markdown records yourself. A migration, once the user wants one, is ordinary `adr_add` work
+under the rules below; the files are the user's to retire.
 
 ## The nine tools
 
@@ -396,5 +397,5 @@ of the table is that the gap is visible.
   remainder ("introduce a cache") only. Link the two afterwards with `addressesRequirements`, so
   the decision keeps the reason it was taken for. This is the mirror image of the handoff
   `/arknet:req-interview` already offers in the other direction.
-- **Store, not files.** A project still on file-based ADRs belongs to `/arknet:legacy-adr`, not
-  here.
+- **Store, not files.** This skill never writes Markdown ADR files. A project still on files is
+  asked about moving to the store first (see "Is this the right skill for this project?").

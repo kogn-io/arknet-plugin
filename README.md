@@ -10,7 +10,6 @@ its own release cycle.
 
 - [Skills](#skills)
   - [`/arknet:adr`](#arknetadr)
-  - [`/arknet:legacy-adr`](#arknetlegacy-adr)
   - [`/arknet:req-interview`](#arknetreq-interview)
   - [`/arknet:bc-audit`](#arknetbc-audit)
   - [`/arknet:context-map`](#arknetcontext-map)
@@ -121,15 +120,6 @@ two records contradict each other, whether a consequence says anything.
 `Suspicions` and the tool's own not-checked list are candidates for that
 judgement, never findings to act on directly, and neither ever triggers a
 status change by itself.
-
-### `/arknet:legacy-adr`
-
-The file-based predecessor of `/arknet:adr`, kept for projects that still
-maintain their ADRs as Markdown under `docs/adr/` and have not migrated to
-the store yet. Same durable-decision discipline (one decision per record,
-immutability from `Accepted` on, an index at `docs/adr/README.md`), applied
-to files instead of store resources. New projects should use `/arknet:adr`;
-this skill exists only for backward compatibility during the transition.
 
 ### `/arknet:req-interview`
 
