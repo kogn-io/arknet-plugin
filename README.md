@@ -394,6 +394,12 @@ are rejected with a didactic error rather than silently accepted.
   statement, or state either of them in a further language. The type, and the
   `TCON-`/`BCON-`/`RCON-` code that follows from it, stay fixed at creation.
 - `constraint_get` / `constraint_list` -- fetch one / list all constraints.
+- `constraint_delete` -- remove the whole constraint resource, not just a
+  correction; the intended use is undoing a misclassification, a record
+  that turns out to be something the project decided itself and belongs in
+  `adr_add` or `req_add` instead. Rejected while a requirement or use case
+  still references it via `constrainedBy`. The `TCON-`/`BCON-`/`RCON-` code
+  stays taken.
 - `req_link_constraint` -- link a requirement to the constraint that binds
   it.
 

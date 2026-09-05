@@ -154,7 +154,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Artifact | Create | Read | Change |
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
-| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it) |
+| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
 | Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryActor` (replaces, cannot be cleared), `supportingActors` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
 | Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a use case still names it) |
@@ -331,6 +331,14 @@ negotiable, not the shape of its done-when. Ask directly: "if we
 dropped/relaxed this, would that be a business tradeoff (NFR), or a rule
 violation (Constraint)?"
 
+**Mandatory step before every `constraint_add`:** run the classification
+test -- "Could this project decide otherwise?" If yes, it is a decision
+(`adr_add`) or a requirement (`req_add`), never a constraint; only a "no"
+clears the way to `constraint_add`. A constraint whose statement does not
+name who or what imposes it (law, contract, customer, platform, budget,
+organisation) has failed this test and is not ready to write in -- push back
+and ask for the source before calling `constraint_add`.
+
 ### Constraints: `constraint_add(title, statement, type, language?)`
 
 - `title` (required) -- short summary.
@@ -362,6 +370,13 @@ violation (Constraint)?"
   -- for the type, not for the wording, which is correctable afterwards.
 - **No status** -- there is no `constraint_set_status`, matching the
   ontology: a Constraint carries no status field.
+- `constraint_delete(id)` -- removes the whole resource, not a correction.
+  The intended use is undoing a misclassification: a record that turns out
+  to be something the project decided itself, and belongs in `adr_add` or
+  `req_add` instead. Refused while a requirement or use case still points at
+  it via `constrainedBy` (`req_link_constraint`/`uc_link_constraint`). The
+  `TCON-`/`BCON-`/`RCON-n` code stays taken, so it never ends up naming a
+  different constraint later.
 - `constraint_get(id, displayLocale?)` -- `displayLocale` behaves as in
   `term_get`. `constraint_list` deliberately has none and reads under the
   project's configured default language.
