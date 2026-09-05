@@ -422,14 +422,16 @@ are rejected with a didactic error rather than silently accepted.
 ### Glossary
 
 - `term_add` -- register a ubiquitous-language term as a SKOS concept;
-  optionally mark it as an actor (`HUMAN`/`SYSTEM`/`LEGAL` -- the last for a
-  legal person such as an organization or company, as opposed to a natural
-  person acting on its behalf) so it can later be used as a use case's primary
-  or supporting actor.
+  optionally name an already-existing term it specializes (`broader`,
+  `skos:broader`) and/or terms it is associatively connected to without
+  either being a kind of the other (`related`, `skos:related` -- symmetric,
+  naming it on one side is enough).
 - `term_get` / `term_list` -- fetch one / list all glossary terms.
-- `term_update` -- correct an existing term's label, definition or actor
-  facet in place, or state them in a further language, keeping its identity
-  and every link into it.
+- `term_update` -- correct an existing term's label, definition, broader
+  term or related peers in place, or state label/definition in a further
+  language, keeping its identity and every link into it. `broader` and
+  `related` are the exceptions to "omitted = unchanged": an empty string
+  (`broader`) or an empty list (`related`) explicitly clears what is set.
 
 ### Bounded contexts
 
@@ -493,7 +495,8 @@ are rejected with a didactic error rather than silently accepted.
   term, use case or architecture decision changes.
 - `orphan_check` -- four lists: requirements that no use case realises;
   glossary terms that are never referenced (by a requirement, a use case, a
-  bounded context's ubiquitous language, or another term's broader term);
+  bounded context's ubiquitous language, or another term's broader or
+  related term);
   text that names a term without its backing edge -- a use case's goal,
   scope, trigger, precondition, postcondition and every step/extension text
   count as its text, and naming its own primary/supporting actor there is
