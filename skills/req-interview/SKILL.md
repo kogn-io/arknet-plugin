@@ -271,7 +271,7 @@ the draft, not after.
   the only evidence the entry really is in that language. Without the tag the
   two cases are indistinguishable in the output.
 
-### Requirements: `req_add(title, description, type, acceptanceCriteria, language?, priority?, qualityCategory?)`
+### Requirements: `req_add(title, description, type, acceptanceCriteria, language?, priority?, qualityCategory?, rationale?)`
 
 - `title` (required) -- short summary.
 - `description` (required) -- the normative statement ("The system shall
@@ -290,6 +290,13 @@ the draft, not after.
   `COULD_HAVE` | `WONT_HAVE`.
 - `qualityCategory` (optional, **only** for `NON_FUNCTIONAL`) -- free text,
   e.g. "performance", "security".
+- `rationale` (optional) -- *why* this requirement exists, not a
+  restatement of what it does (e.g. "so that a caller can undo a mistaken
+  order without calling support"). This is the knowledge that is lost first
+  when people move on, and what stops a later reader from deleting a
+  requirement whose purpose nobody remembers -- always ask for it, do not
+  treat it as a field to skip because it is optional (see "Checklist per
+  requirement" below).
 - Result: `FR-n`/`NFR-n` code.
 - `req_set_status(id, status)` -- `status`: only `PROPOSED` | `ACCEPTED`
   (the lifecycle enum is deliberately MVP-minimal; `Rejected`/`Deprecated`
@@ -300,25 +307,28 @@ the draft, not after.
   (`arkreq:usesTerm`). After every new domain term in the requirement text,
   check: does a term already exist for it? If not, `term_add` first, then
   `req_link_term`.
-- `req_update(id, title?, description?, priority?, newAcceptanceCriteria?,
-  acceptanceCriteriaTextPatches?, language?)`
+- `req_update(id, title?, description?, rationale?, priority?,
+  newAcceptanceCriteria?, acceptanceCriteriaTextPatches?, language?)`
   -- patches fields of an existing requirement (partial update, not
   replace-by-identity) -- use this to fix a requirement found wanting during
-  a full-set audit instead of leaving it inconsistent. Acceptance criteria
+  a full-set audit instead of leaving it inconsistent. An omitted `rationale`
+  never clears one already recorded -- this is also the way a requirement
+  found without one during a full-set audit gets its reason recorded after
+  the fact, once the user has answered why it exists. Acceptance criteria
   are reached through two independent, narrow parameters:
   `newAcceptanceCriteria` appends criteria after the existing ones, and
   `acceptanceCriteriaTextPatches` (list of `{position, text}`) corrects the
   wording of existing ones by their 1-based position -- neither can insert
   mid-list, delete or reorder a criterion, and a position with no matching
   criterion is rejected. `language` is the tag a non-omitted
-  `title`/`description` and any acceptance criterion this call touches are
-  written in, and behaves as in `term_update`: it replaces only the literal
-  carrying the resolved tag, every other language variant survives
-  untouched -- except a stale untagged one, swept away once the resolved tag
-  equals the project's default. It is also the only way to state an existing
-  requirement in a second language, the same two-call pattern as for terms and
-  constraints. It does **not** touch status (`req_set_status`) or
-  linked terms (`req_link_term`).
+  `title`/`description`/`rationale` and any acceptance criterion this call
+  touches are written in, and behaves as in `term_update`: it replaces only
+  the literal carrying the resolved tag, every other language variant
+  survives untouched -- except a stale untagged one, swept away once the
+  resolved tag equals the project's default. It is also the only way to state
+  an existing requirement in a second language, the same two-call pattern as
+  for terms and constraints. It does **not** touch status (`req_set_status`)
+  or linked terms (`req_link_term`).
 - `req_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `req_list(displayLocale?)` takes it too and flags a fallen-back entry with
   the same inline `[fallback: ...]` tag as `term_list`.
@@ -545,6 +555,12 @@ Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
 - **Testability** -- does `acceptanceCriteria` hold at least one objective
   "done when ..." criterion, not a restatement of `description`? If you
   cannot write one, elicitation is not finished.
+- **Rationale** -- does `rationale` say *why* this requirement exists, not
+  just restate `description`? This is the knowledge lost first when people
+  move on, and what stops a later reader from deleting a requirement whose
+  purpose nobody remembers -- ask for it explicitly rather than leaving it
+  unset because it is optional. Missing on a requirement found during a
+  full-set audit -> record it with `req_update` once the user answers.
 - **Dependencies** -- what does it presuppose/affect (which other
   FRs/UCs/terms)?
 - **Non-functional aspects** -- performance, security, scalability,
