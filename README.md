@@ -374,7 +374,7 @@ are rejected with a didactic error rather than silently accepted.
 
 - `req_add` -- register a functional/non-functional requirement (title,
   normative "the system shall ..." description, type, at least one testable
-  acceptance criterion; optional MoSCoW priority, quality category, goal link).
+  acceptance criterion; optional MoSCoW priority and quality category).
 - `req_get` / `req_list` -- fetch one / list all requirements.
 - `req_update` -- correct an existing requirement's title, description,
   priority or acceptance criteria (append new ones, or patch the wording of
