@@ -374,16 +374,19 @@ are rejected with a didactic error rather than silently accepted.
 
 - `req_add` -- register a functional/non-functional requirement (title,
   normative "the system shall ..." description, type, at least one testable
-  acceptance criterion; optional MoSCoW priority and quality category).
+  acceptance criterion; optional MoSCoW priority, quality category and
+  rationale -- why the requirement exists, not a restatement of what it
+  does).
 - `req_get` / `req_list` -- fetch one / list all requirements; both take an
   optional `displayLocale` choosing which language variant is shown. The list
   tools also say when they fell back: an entry missing in the requested
   language is shown under another one with an inline `[fallback: ...]` tag, so
   a gap in the kept language no longer looks like a present translation.
 - `req_update` -- correct an existing requirement's title, description,
-  priority or acceptance criteria (append new ones, or patch the wording of
-  existing ones by position), or state the fields it touches in a further
-  language.
+  rationale, priority or acceptance criteria (append new ones, or patch the
+  wording of existing ones by position), or state the fields it touches in a
+  further language. Also the way a requirement gets its rationale recorded
+  after the fact if it was registered without one.
 - `req_set_status` -- change lifecycle status (`PROPOSED` -> `ACCEPTED`).
 - `req_link_term` -- link a requirement to a glossary term it uses.
 - `req_schema` -- describe the requirement vocabulary (types, statuses,
