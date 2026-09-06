@@ -9,6 +9,7 @@ its own release cycle.
 ## Table of Contents
 
 - [Skills](#skills)
+  - [`/arknet:init`](#arknetinit)
   - [`/arknet:adr`](#arknetadr)
   - [`/arknet:req-interview`](#arknetreq-interview)
   - [`/arknet:bc-audit`](#arknetbc-audit)
@@ -21,6 +22,7 @@ its own release cycle.
 - [Export freshness nudge](#export-freshness-nudge)
 - [Getting started](#getting-started)
 - [MCP Tools](#mcp-tools)
+  - [Projects](#projects)
   - [Requirements](#requirements-1)
   - [Constraints](#constraints)
   - [Actors](#actors)
@@ -34,6 +36,45 @@ its own release cycle.
 - [License](#license)
 
 ## Skills
+
+### `/arknet:init`
+
+A **one-time onboarding skill** for a project that is about to use arknet.
+Two jobs, and the first is the reason it exists.
+
+It appends a short **routing block** to the project's own `CLAUDE.md`
+(creating the file if there is none): this project's architecture model --
+requirements, use cases, glossary, bounded contexts, ADRs, constraints --
+lives in the arknet store, not in files, and is maintained through the
+`/arknet:*` skills. Without that sentence a session only finds out where the
+model lives once a skill trigger happens to fire; before that it writes a
+`docs/adr/0001-....md` and no one notices. The block carries nothing the
+store already holds (label, languages, anchor, description -- a copy
+drifts), no tool lists, no version numbers, and deliberately no export path:
+an export is a snapshot out of the store, never a source for it. It is
+wrapped in an HTML-comment marker pair so a later run recognises and replaces
+it in place instead of appending a second copy, and it never touches the rest
+of the file -- Claude Code's built-in `/init` may run before or after, in
+either order.
+
+Second, it makes the current directory **resolve to the right project** in the
+store. That is a choice between three tools, not one call: `project_add` for a
+genuinely new project, `project_attach_anchor` when the same project is
+already registered under another directory (a git worktree, a second
+checkout, another IDE workspace), and `project_adopt` for a dataset that
+already holds data but no registration. All three succeed from an
+unregistered directory, so the wrong one does not fail -- `project_add` from a
+worktree silently creates a *second* project, and the tool surface has no
+`project_delete` to undo it. The skill proposes the case it reads from
+`project_list` and lets the user confirm it before writing. For a project that
+already resolves, it shows the state and offers `project_update` -- in
+particular for an absent `languages` set, without which `store_check`'s
+language check reports `LANGUAGE: not checked` and is silently off.
+
+Same dialogue discipline as `/arknet:req-interview`: one question at a time,
+each with the skill's own proposal attached (label from the repository name,
+languages from the languages the project's docs are actually written in),
+never a blank prompt.
 
 ### `/arknet:adr`
 
@@ -129,8 +170,10 @@ A relentless requirements-interview skill. Elicits functional/non-functional
 requirements, constraints, use cases, and glossary terms in dialogue --
 against arknet's store tools (`req_add`/`constraint_add`/`uc_add`/`term_add`),
 not markdown tables -- until a shared, testable understanding is reached. Two
-entry points: greenfield (an idea or wish) and brownfield (attach an existing
-codebase and let the code raise questions).
+entry points: greenfield (an idea or wish) and brownfield (interrogate an
+existing codebase and let the code raise questions). Either way the project
+has to resolve to a project in the store first -- if it does not, the skill
+stops and points at `/arknet:init` rather than guessing a registration call.
 
 The same skill also runs a **full-set audit**: on a phrasing like "review the
 requirements relentlessly" or "are they complete/consistent", it first runs
@@ -294,14 +337,22 @@ it does not create one.
 ## Getting started
 
 Once the daemon is running and the plugin is installed and configured (see
-above), start Claude Code from your project's directory -- that directory
-becomes the project's anchor.
+above), start Claude Code from your project's directory -- that directory is
+the anchor every call is routed by.
 
-**Register the project, once:**
+**Onboard the project, once:**
 
 ```
-project_add(label: "my-project")
+/arknet:init
 ```
+
+It decides which registration call this directory actually needs
+(`project_add`, `project_adopt` or `project_attach_anchor`), asks for the
+label, the default language, the set of languages the model will be
+maintained in and an optional description -- one question at a time, each
+with its own proposal -- and appends the routing block to your project's
+`CLAUDE.md` that tells every later session the model lives in the store, not
+in files.
 
 Then start the actual work with the skill, not with the raw tools:
 
@@ -373,6 +424,39 @@ ubiquitous-language glossary, and bounded contexts -- as an RDF/SKOS store with
 SHACL write validation. All writes are validated against arknet's shapes;
 unknown or ambiguous references (e.g. an actor label that does not exist yet)
 are rejected with a didactic error rather than silently accepted.
+
+### Projects
+
+A project is what an anchor -- your session's start directory, sent as the
+`X-Arknet-Project-Anchor` header -- resolves to; every other tool below
+operates inside the project the call comes from. Prefer `/arknet:init` over
+calling these directly: three of them can register a project, only one of
+them is right in a given situation, and there is no `project_delete`.
+
+- `project_list` -- every registered project with its anchors, default
+  language, maintained languages and description, plus the datasets in the
+  store that no project claims yet (the candidates for `project_adopt`).
+- `project_add` -- register a new project (`label`, optional
+  `defaultLanguage`, optional `languages`, optional `description` with its
+  `language` tag). The calling directory becomes the project's first anchor;
+  the optional `anchor`/`anchorType` are only for clients that cannot supply
+  one.
+- `project_adopt` -- claim an existing, unregistered dataset (`datasetId` as
+  `project_list` reports it, plus a `label`) as the project this call comes
+  from -- for data written before projects were registered, or restored from
+  a backup. The dataset keeps its identity and its data.
+- `project_attach_anchor` -- attach a further `anchor` to the caller's
+  project, for a second directory working on the same project (a git
+  worktree, another checkout, another IDE workspace). This, not
+  `project_add`, is the call from a second directory.
+- `project_update` -- correct the caller's project: `description` (+
+  `language`), `defaultLanguage`, and `languages`, the set the project
+  undertakes to maintain its model in. `languages` is the target state
+  `store_check` compares against, and `defaultLanguage` has to be one of its
+  members; passing an empty list removes the set, omitting it leaves it
+  untouched.
+- `project_rename` -- change the project's human-readable `label`. Identity
+  and anchors are unaffected.
 
 ### Requirements
 
