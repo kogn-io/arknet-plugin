@@ -22,7 +22,11 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   use is the language of the ones you add. `title`, `description`, `label`,
   use-case text all follow it, even if the conversation ran in another
   language. A store split across two languages is a defect in itself -- do
-  not be the one who starts the split.
+  not be the one who starts the split. Read those lists under the language
+  you are keeping (`displayLocale`) and read their `[fallback: ...]` tags: a
+  tagged line is an entry **missing** in that language, not one written in
+  it. Untagged is the only proof of a real entry -- without the tag a gap and
+  a translation look the same.
 - **Empty store** -- use the language the domain speaks, which is the user's,
   not necessarily the interview's. Settle it once at the start and say which
   you picked, rather than deciding it again per entry.
@@ -153,10 +157,10 @@ the decision -- intentional / grown / accidental -- stays with the user.
 
 | Artifact | Create | Read | Change |
 |---|---|---|---|
-| Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` | `req_set_status`, `req_link_term`, `req_update` |
-| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
-| Use case | `uc_add` | `uc_get`, `uc_list` | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryActor` (replaces, cannot be cleared), `supportingActors` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
-| Glossary term | `term_add` | `term_get`, `term_list` | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
+| Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` (both `displayLocale?`) | `req_set_status`, `req_link_term`, `req_update` |
+| Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` (both `displayLocale?`) | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
+| Use case | `uc_add` | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryActor` (replaces, cannot be cleared), `supportingActors` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
+| Glossary term | `term_add` | `term_get`, `term_list` (both `displayLocale?`) | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
 | Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a use case still names it) |
 
 ### Actors: `actor_add(type, name, description?)`
@@ -258,6 +262,14 @@ the draft, not after.
   language variant of label/definition comes back. Falls back to the
   project default, then to the server's own default, then to an untagged
   literal, then deterministically to any literal the term carries.
+- `term_list(displayLocale?)` -- takes the same parameter and falls back the
+  same way, and marks what it fell back to: a term whose label/definition is
+  missing in the requested (or project-default) language is shown under
+  another one with an inline `[fallback: ...]` tag naming the language
+  actually shown. Read that tag as **the entry is missing in the language you
+  asked for**, not as "a translation exists elsewhere" -- an untagged line is
+  the only evidence the entry really is in that language. Without the tag the
+  two cases are indistinguishable in the output.
 
 ### Requirements: `req_add(title, description, type, acceptanceCriteria, language?, priority?, qualityCategory?)`
 
@@ -308,8 +320,8 @@ the draft, not after.
   constraints. It does **not** touch status (`req_set_status`) or
   linked terms (`req_link_term`).
 - `req_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
-  `req_list` deliberately has none and reads under the project's configured
-  default language.
+  `req_list(displayLocale?)` takes it too and flags a fallen-back entry with
+  the same inline `[fallback: ...]` tag as `term_list`.
 
 ### Deciding FR vs. NFR vs. Constraint
 
@@ -377,8 +389,9 @@ and ask for the source before calling `constraint_add`.
   `TCON-`/`BCON-`/`RCON-n` code stays taken, so it never ends up naming a
   different constraint later.
 - `constraint_get(id, displayLocale?)` -- `displayLocale` behaves as in
-  `term_get`. `constraint_list` deliberately has none and reads under the
-  project's configured default language.
+  `term_get`. `constraint_list(displayLocale?)` takes it too and flags a
+  fallen-back entry with the same inline `[fallback: ...]` tag as
+  `term_list`.
 - `req_link_constraint(reqId, constraintId)` -- links a requirement to the
   constraint that binds it (`oslc_rm:constrainedBy`), analogous to
   `req_link_term`. Idempotent no-op if already linked.
@@ -430,8 +443,8 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   a second language. It does **not** touch the step list's structure
   (add/remove/reorder) -- that still requires a fresh `uc_add`.
 - `uc_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
-  `uc_list` deliberately has none and reads under the project's configured
-  default language.
+  `uc_list(displayLocale?)` takes it too and flags a fallen-back entry with
+  the same inline `[fallback: ...]` tag as `term_list`.
 - `uc_link_term(ucId, termId)` -- links a use case to a glossary term it
   uses (`arkreq:usesTerm`), analogous to `req_link_term`. After every new
   domain term in the use case's goal/scope/trigger/pre-postcondition/step

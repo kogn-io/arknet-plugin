@@ -375,7 +375,11 @@ are rejected with a didactic error rather than silently accepted.
 - `req_add` -- register a functional/non-functional requirement (title,
   normative "the system shall ..." description, type, at least one testable
   acceptance criterion; optional MoSCoW priority and quality category).
-- `req_get` / `req_list` -- fetch one / list all requirements.
+- `req_get` / `req_list` -- fetch one / list all requirements; both take an
+  optional `displayLocale` choosing which language variant is shown. The list
+  tools also say when they fell back: an entry missing in the requested
+  language is shown under another one with an inline `[fallback: ...]` tag, so
+  a gap in the kept language no longer looks like a present translation.
 - `req_update` -- correct an existing requirement's title, description,
   priority or acceptance criteria (append new ones, or patch the wording of
   existing ones by position), or state the fields it touches in a further
@@ -393,7 +397,9 @@ are rejected with a didactic error rather than silently accepted.
 - `constraint_update` -- correct an already-created constraint's title and/or
   statement, or state either of them in a further language. The type, and the
   `TCON-`/`BCON-`/`RCON-` code that follows from it, stay fixed at creation.
-- `constraint_get` / `constraint_list` -- fetch one / list all constraints.
+- `constraint_get` / `constraint_list` -- fetch one / list all constraints;
+  both take an optional `displayLocale`, and the list marks a fallen-back
+  entry as described under `req_list`.
 - `constraint_delete` -- remove the whole constraint resource, not just a
   correction; the intended use is undoing a misclassification, a record
   that turns out to be something the project decided itself and belongs in
@@ -428,7 +434,9 @@ are rejected with a didactic error rather than silently accepted.
   (goal-in-context, primary/supporting actors, ordered main flow, optional
   precondition/postcondition/extensions); steps can reference the
   requirements they realise.
-- `uc_get` / `uc_list` -- fetch one / list all use cases.
+- `uc_get` / `uc_list` -- fetch one / list all use cases; both take an
+  optional `displayLocale`, and the list marks a fallen-back entry as
+  described under `req_list`.
 - `uc_update` -- correct an existing use case's title/goal/scope/trigger/
   pre-/postcondition, its extensions, the text or `realises` references of
   individual steps, and its primary/supporting actors (each replaced
@@ -445,7 +453,9 @@ are rejected with a didactic error rather than silently accepted.
   `skos:broader`) and/or terms it is associatively connected to without
   either being a kind of the other (`related`, `skos:related` -- symmetric,
   naming it on one side is enough).
-- `term_get` / `term_list` -- fetch one / list all glossary terms.
+- `term_get` / `term_list` -- fetch one / list all glossary terms; both take
+  an optional `displayLocale`, and the list marks a fallen-back entry as
+  described under `req_list`.
 - `term_update` -- correct an existing term's label, definition, broader
   term or related peers in place, or state label/definition in a further
   language, keeping its identity and every link into it. `broader` and
@@ -479,7 +489,8 @@ are rejected with a didactic error rather than silently accepted.
   optional `language`); always starts `PROPOSED`.
 - `adr_get` / `adr_list` -- fetch one / list all decisions, with both
   directions of `supersededBy` and every related decision; take an optional
-  `displayLocale`.
+  `displayLocale`, and `adr_list` carries the same `[fallback: ...]` tag as
+  the other list tools.
 - `adr_set_status` -- change lifecycle status; supports
   `PROPOSED` -> `ACCEPTED`, `PROPOSED` -> `REJECTED`, and
   `ACCEPTED` -> `DEPRECATED`; refuses `SUPERSEDED` (use `adr_supersede`).
