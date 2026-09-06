@@ -52,7 +52,10 @@ under the rules below; the files are the user's to retire.
   (`name`, `adrContext`, `decision`, and any consequence/considered-option text) is recorded
   under. Optional -- falls back to the project's configured default language. `adr_get`/
   `adr_list` take a matching `displayLocale` to pick which language candidate is shown, again
-  falling back to the project default.
+  falling back to the project default -- and `adr_list` names what it fell back to: a decision
+  whose title is missing in the requested language is shown under another one with an inline
+  `[fallback: ...]` tag. Read that tag as **not recorded in that language**, not as "recorded
+  elsewhere and translated".
 - `addressesRequirements` (`FR-n`/`NFR-n`), `affectsContexts` (`BC-n`) and `usesTerms`
   (`TERM-n`) link to resources that **must already exist**. An unknown code is rejected by the
   tool itself with a didactic error -- if a reference doesn't obviously already exist, check

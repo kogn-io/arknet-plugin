@@ -23,7 +23,7 @@ the greenfield BDUF this skill is designed not to do.
 
 | Tool | Role |
 |---|---|
-| `term_list`, `req_list`, `uc_list` | Read the whole requirements/use-case/glossary set before anything else. |
+| `term_list`, `req_list`, `uc_list` | Read the whole requirements/use-case/glossary set before anything else. Each takes `displayLocale?`; a line carrying an inline `[fallback: ...]` tag is an entry **missing** in that language, shown under another one. |
 | `actor_usecase_matrix` | Raw bipartite data: which use cases each actor appears in (`primaryActor`/`supportingActor`), and vice versa. No clustering, no judgement -- that stays with you and the user. |
 | `term_cooccurrence` | Raw data: which glossary terms are named together in the same requirement/use-case text, and which never co-occur -- the material for "is this one term or a homonym with two meanings per context?". |
 | `bc_add(name, domainVision, subdomain?, ownedBy?)` | Register a confirmed Bounded Context. `domainVision` must come out of the discussion with the user, never be invented to fill the field. |
@@ -40,7 +40,11 @@ agent and the user.
 
 1. **Read the requirements, use cases and glossary.** `term_list`,
    `req_list`, `uc_list`, in full -- this is the baseline every candidate
-   gets checked against.
+   gets checked against. Read them under one language (`displayLocale`) and
+   watch the inline `[fallback: ...]` tags: a tagged line is an entry the
+   store does not hold in that language at all. A term you are about to weigh
+   as a naming collision may just be the same concept surfacing under two
+   languages, so resolve the tags before reading anything into the wording.
 2. **Find candidate collisions.** Call `actor_usecase_matrix` and
    `term_cooccurrence` and look for language that clusters or splits: an
    actor whose use cases fall into two unrelated groups, a term that never
