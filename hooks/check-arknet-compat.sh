@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# SessionStart hook: warns once if the connected arknet MCP server is
-# missing a tool a shipped skill needs (see hooks/required-tools.json).
+# SessionStart hook: warns if the connected arknet MCP server is missing a
+# tool a shipped skill needs (see hooks/required-tools.json). Has no dedup
+# of its own -- the matcher in hooks/hooks.json bounds how often it runs
+# (startup, resume, clear), so a /clear repeats the warning on purpose,
+# the emptied context no longer carrying the earlier one.
 # Never the reason a session fails to start -- any failure here (missing
 # curl/jq, unreachable server, malformed response) exits silently instead
 # of surfacing an error.

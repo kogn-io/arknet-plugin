@@ -1,5 +1,5 @@
 {
-  "description": "Warn once per session if the connected arknet MCP server is missing a tool a shipped skill needs, and nudge once per session if arknet's store was written but a discovered export snapshot in the project was not regenerated.",
+  "description": "Warn on session start, on resume and after /clear if the connected arknet MCP server is missing a tool a shipped skill needs, and nudge once per session if arknet's store was written but a discovered export snapshot in the project was not regenerated.",
   "hooks": {
     "SessionStart": [
       {
