@@ -37,16 +37,19 @@ from inside the directory, and only the user knows which it is.
 | What `project_list` shows for this directory | The right call |
 |---|---|
 | An anchor of an existing project matches the current directory | Nothing to register -- go to the review below, then step 3. |
-| No matching anchor, but a listed project **is** this project, worked on from another directory (a git worktree, a second checkout, another IDE workspace) | `project_attach_anchor(anchor: "<this directory>")` |
+| No matching anchor, but a listed project **is** this project, worked on from another directory (a git worktree, a second checkout, another IDE workspace) | `project_attach_anchor(anchor: "<this directory>", callerAnchor: "<one of that project's anchors, as listed>")` |
 | No matching anchor, but an **unregistered dataset** belongs to this project (data written before projects were registered, or restored from a backup) | `project_adopt(datasetId: "<id as listed>", label: "<label>")` |
 | No matching anchor, nothing to attach to and nothing to adopt | `project_add(label: "<label>", ...)` -- see step 2 |
 
 **Why the distinction is worth a question:** from an unregistered directory
-every one of these calls succeeds. `project_add` in the second row would not
-fail and would not warn -- it would create a second, empty project alongside
-the real one, and the session would then write its model into the wrong one.
-There is no `project_delete`, so say this out loud before proposing a call,
-rather than after.
+`project_add` and `project_adopt` both succeed, and `project_add` in the
+second row would not warn -- it would create a second, empty project
+alongside the real one, and the session would then write its model into the
+wrong one. `project_attach_anchor` called without `callerAnchor` from that
+same directory fails instead, with an error that names `project_add` as one
+remedy -- which is exactly how the wrong call gets made. There is no
+`project_delete`, so say this out loud before proposing a call, rather than
+after.
 
 **Already registered:** report the project's state as `project_list` gives
 it -- label, `defaultLanguage`, `languages`, description -- and offer
@@ -59,8 +62,13 @@ is silently off. That is not a cosmetic gap.
 `anchor` (+ `anchorType`), and `project_attach_anchor`/`project_update`/
 `project_rename` an optional `callerAnchor`. Both exist for clients that
 cannot supply their own origin directory. Claude Code does supply it, so
-**omit them** -- except `project_attach_anchor`'s required `anchor`, which is
-the *new* directory being attached, not the calling one.
+**omit them** -- with one exception that is the whole point of the second
+row: `project_attach_anchor` finds the project to extend through the
+*caller's* anchor, and from a worktree the caller's anchor is the very
+directory that is not registered yet. So from the new directory the call
+needs both `anchor` (the new directory) **and** `callerAnchor` (an anchor
+the project already has, copied from `project_list`). Without
+`callerAnchor` it fails as "not registered with any project".
 
 ## Step 2: the fields
 

@@ -62,10 +62,12 @@ store. That is a choice between three tools, not one call: `project_add` for a
 genuinely new project, `project_attach_anchor` when the same project is
 already registered under another directory (a git worktree, a second
 checkout, another IDE workspace), and `project_adopt` for a dataset that
-already holds data but no registration. All three succeed from an
-unregistered directory, so the wrong one does not fail -- `project_add` from a
-worktree silently creates a *second* project, and the tool surface has no
-`project_delete` to undo it. The skill proposes the case it reads from
+already holds data but no registration. The wrong one does not fail --
+`project_add` from a worktree silently creates a *second* project, and the
+tool surface has no `project_delete` to undo it -- while the right one, called
+naively, does: `project_attach_anchor` resolves the project through the
+caller's own anchor and needs `callerAnchor` from a directory that is not
+registered yet. The skill proposes the case it reads from
 `project_list` and lets the user confirm it before writing. For a project that
 already resolves, it shows the state and offers `project_update` -- in
 particular for an absent `languages` set, without which `store_check`'s
@@ -448,7 +450,9 @@ them is right in a given situation, and there is no `project_delete`.
 - `project_attach_anchor` -- attach a further `anchor` to the caller's
   project, for a second directory working on the same project (a git
   worktree, another checkout, another IDE workspace). This, not
-  `project_add`, is the call from a second directory.
+  `project_add`, is the call from a second directory -- and from there it
+  needs `callerAnchor` (an anchor the project already has), because the
+  caller's own directory does not resolve to any project yet.
 - `project_update` -- correct the caller's project: `description` (+
   `language`), `defaultLanguage`, and `languages`, the set the project
   undertakes to maintain its model in. `languages` is the target state
