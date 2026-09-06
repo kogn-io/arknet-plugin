@@ -1,5 +1,5 @@
 ---
-description: "Relentless requirements-interview skill -- elicits FR/NFR/Constraint (req_add/constraint_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (attach an existing project to arknet -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/constraint/use case/glossary term', 'interview me about X', 'attach this project to arknet', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich'. NOT for HOW/architecture (use /arknet:adr for that), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
+description: "Relentless requirements-interview skill -- elicits FR/NFR/Constraint (req_add/constraint_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (an existing project, already registered via /arknet:init, is interrogated -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/constraint/use case/glossary term', 'interview me about X', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich'. NOT for HOW/architecture (use /arknet:adr for that), NOT for registering the project itself or writing its CLAUDE.md routing block ('attach this project to arknet' -- that is /arknet:init, which runs first), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
 ---
 
 # /arknet:req-interview -- Elicit Requirements, Use Cases and Glossary
@@ -61,8 +61,15 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
 
 - **Greenfield** -- an idea/wish comes from the user, the interview interrogates
   it until a testable "done when" is reached.
-- **Brownfield** -- an existing project is attached to arknet. Code delivers
+- **Brownfield** -- an existing project is interrogated. Code delivers
   **questions, never answers**.
+
+**Precondition (brownfield and greenfield alike): the project has to resolve
+to a project in the store.** Run `project_list` before the first write and
+check that an anchor matches the directory you are working in. If none does,
+stop and point the user at `/arknet:init` -- registering it here would mean
+guessing between `project_add`, `project_adopt` and `project_attach_anchor`,
+and a wrong guess silently creates a second project that no tool can delete.
 
 **Elicitation order is not write order** -- two different orders, and mixing
 them up is the standard failure of this skill. *Elicited* along flows: use
