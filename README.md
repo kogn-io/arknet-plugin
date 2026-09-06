@@ -267,10 +267,14 @@ across all projects on the machine, one project per repository.
 This plugin and the arknet MCP server release independently, so a skill can
 occasionally expect a tool an older connected server doesn't have yet. A
 `SessionStart` hook checks the live tool set against what the shipped skills
-need and, once per session, warns if something's missing -- naming the
-affected skill so you know to update the arknet-mcp daemon rather than
-wonder why a skill is failing. The check is silent otherwise: no server
-reachable, or everything present, produces no extra output.
+need and warns if something's missing -- naming the affected skill so you
+know to update the arknet-mcp daemon rather than wonder why a skill is
+failing. It runs on startup, on `--resume` and after `/clear` -- the three
+points at which the session either connects afresh or continues from an
+empty context that no longer carries an earlier warning. Context compaction
+and a forked session keep that context, so they are left out rather than
+repeating a warning the session already has. The check is silent otherwise:
+no server reachable, or everything present, produces no extra output.
 
 ## Export freshness nudge
 
