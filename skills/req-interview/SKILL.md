@@ -259,7 +259,7 @@ the draft, not after.
   project default, then to the server's own default, then to an untagged
   literal, then deterministically to any literal the term carries.
 
-### Requirements: `req_add(title, description, type, acceptanceCriteria, language?, priority?, motivatedBy?, qualityCategory?)`
+### Requirements: `req_add(title, description, type, acceptanceCriteria, language?, priority?, qualityCategory?)`
 
 - `title` (required) -- short summary.
 - `description` (required) -- the normative statement ("The system shall
@@ -276,7 +276,6 @@ the draft, not after.
   rather than writing an untagged literal.
 - `priority` (optional, MoSCoW) -- `MUST_HAVE` | `SHOULD_HAVE` |
   `COULD_HAVE` | `WONT_HAVE`.
-- `motivatedBy` (optional) -- IRI of an `arkreq:Goal`.
 - `qualityCategory` (optional, **only** for `NON_FUNCTIONAL`) -- free text,
   e.g. "performance", "security".
 - Result: `FR-n`/`NFR-n` code.
