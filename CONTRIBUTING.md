@@ -67,15 +67,23 @@ Things to raise in an issue first:
   Claude Code caches skill content by version, so a bump only buys anything for
   a version that ships. While `main` carries an unreleased version, further
   changes accumulate under it: one bump per release, not per pull request.
-- **A skill that starts calling an arknet MCP tool not already covered in
-  `hooks/required-tools.json`:** add it there (`"plugin:skill": ["tool", ...]`).
-  This is a process reflex, not an automated check -- nothing enforces that the
-  list stays accurate, the same tradeoff already made for the mirror-image
-  problem on the `arknet` side (its issue tracker: does a changed MCP tool
-  layer touch a plugin skill? -- no contract test, a reminder in the review
-  path instead, because both repos are small enough to mostly be maintained
-  together). Keep it in mind at the same points: when touching a skill's tool
-  table, and at a `/wrapup`-style session close.
+- **A skill that starts calling an arknet MCP tool needs nothing extra here** --
+  naming the tool as a whole word in the skill's `SKILL.md` is enough; the
+  compatibility hook derives which tools a skill needs from that text against
+  `hooks/arknet-tools-baseline.json`, a generated snapshot of the arknet
+  server's `tools/list`, not from a hand-maintained list. When the arknet
+  server itself changes (a tool or parameter added, renamed or dropped), run
+  `scripts/refresh-arknet-baseline.sh` by hand against a running daemon and
+  review the resulting diff of the baseline file as part of the pull request
+  -- that diff is the actual review artifact, not the file's content in
+  isolation. Never run the refresh script unattended (a release workflow, a
+  hook): an automatic regeneration would make the baseline track the server
+  it exists to be checked against, silently absorbing exactly the drift the
+  mechanism is meant to surface. `scripts/refresh-arknet-baseline.sh --check`
+  reports the opposite direction -- tools or parameters the server now offers
+  that the baseline (and by extension the shipped skills) does not mention
+  yet -- without writing anything; run it when you suspect the server has
+  moved ahead of what the plugin documents.
 - **A skill change that changes the flow or rules a skill describes pulls the
   matching `README.md` section along, in the same pull request.** The same
   drift as above, mirrored within this repo: `README.md` summarizes a
