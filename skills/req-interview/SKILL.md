@@ -44,10 +44,11 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   one exception to the restate rule below, which governs prose fields
   (`title`, `description`, use-case text) only.
 - **One write call carries one language tag**, across every write tool
-  (`req_`, `constraint_`, `term_`, `uc_`). A second language therefore takes
-  a second call: create it in the first language, then restate it under the
-  second via the matching `*_update` -- a term's `label` excepted, see the
-  rule above. That is a decision for the whole store, not for a single entry
+  (`req_`, `constraint_`, `term_`, `uc_`, `role_`). A second language
+  therefore takes a second call: create it in the first language, then
+  restate it under the second via the matching `*_update` -- a term's
+  `label` excepted, see the rule above. That is a decision for the whole
+  store, not for a single entry
   (see the split rule above), so settle it with the user before writing the
   second variant. Two silent failure modes live there, both from omitting
   `language`, which falls the call back to the project's
@@ -73,19 +74,23 @@ and a wrong guess silently creates a second project that no tool can delete.
 
 **Elicitation order is not write order** -- two different orders, and mixing
 them up is the standard failure of this skill. *Elicited* along flows: use
-cases first, vocabulary (and the actors who drive it) emerges out of them.
-*Written* along dependencies: actors and terms, then requirements, then use
-cases (see "Writing it in" below).
-**Actors** are no exception to the elicitation order -- they surface
-with the use case they serve, like any glossary term -- only to the write
-order: they have to exist (`actor_add`) before `uc_add`, because the tool
-resolves `primaryActor`/`supportingActors` against the actor register. An
-actor is its own resource, not a glossary term (see "Actors" below) --
-naming it does not, by itself, put a word into the glossary. Every other
-term surfaces in a concrete use case's goal or steps and is written from
-there. A glossary round pulled forward -- terms proposed in advance, off
-class or package names -- is not a shortcut but the reverse-engineering
-"code delivers questions, never answers" forbids below.
+cases first, vocabulary (and the role that drives it) emerges out of them.
+*Written* along dependencies: roles (and, once known, the actors that fill
+them) and terms, then requirements, then use cases (see "Writing it in"
+below).
+**Roles** are no exception to the elicitation order -- the function that
+drives a use case surfaces with the use case itself, like any glossary
+term -- only to the write order: it has to exist (`role_add`) before
+`uc_add`, because the tool resolves `primaryRole`/`supportingRoles` against
+the role register. A role is its own resource, not a glossary term (see
+"Actor vs. role" below) -- naming it does not, by itself, put a word into
+the glossary. **Actors** (the carriers a role may be filled by) follow the
+same write-before-use rule only when a role is created already filled
+(`filledBy`); an unfilled role is a complete, valid use-case driver on its
+own. Every other term surfaces in a concrete use case's goal or steps and
+is written from there. A glossary round pulled forward -- terms proposed in
+advance, off class or package names -- is not a shortcut but the
+reverse-engineering "code delivers questions, never answers" forbids below.
 
 ### Brownfield: order (signal strength, not artifact hierarchy)
 
@@ -111,19 +116,22 @@ signals conflict, trust this order:
 2. **Filter noise before treating a hit as a use-case candidate.** Not
    every entry point is a business use case -- health checks,
    metrics/actuator endpoints, generated CRUD boilerplate, admin/ops
-   utility routes are technical, not actor-triggered domain flows. This
-   filter is framework-independent; do not skip it.
-3. **Use case and actor surface together.** Who calls an entry point is
-   usually visible right there (caller, auth context, trigger) --
-   recognise both in the same pass. The *write* order stays unchanged
-   though: `actor_add` before `uc_add`, because the tool resolves
-   `primaryActor`/`supportingActors` by name against the actor register
-   (see "Ordering consequence" below).
-4. **Vocabulary beyond actors surfaces in context**, as terms appear in a
-   use case's goal/steps -- not mined wholesale from class/package names
-   in advance. Check every candidate against the load-bearing bar (used
-   in more than one place) before writing it in; a term that only echoes
-   a single class name is not yet earned.
+   utility routes are technical, not actor/role-triggered domain flows.
+   This filter is framework-independent; do not skip it.
+3. **Use case and the role that drives it surface together.** Who calls an
+   entry point is usually visible right there (caller, auth context,
+   trigger) -- recognise both in the same pass, then ask which *function*
+   is acting, not only who the caller happens to be (see "Actor vs. role"
+   below). The *write* order stays unchanged though: `role_add` before
+   `uc_add`, because the tool resolves `primaryRole`/`supportingRoles`
+   against the role register (see "Ordering consequence" below). The actor
+   behind that role -- if one is already known -- is a separate, optional
+   fact (`filledBy`), not a precondition for writing the use case.
+4. **Vocabulary beyond roles and actors surfaces in context**, as terms
+   appear in a use case's goal/steps -- not mined wholesale from
+   class/package names in advance. Check every candidate against the
+   load-bearing bar (used in more than one place) before writing it in; a
+   term that only echoes a single class name is not yet earned.
 5. **FRs/NFRs/Constraints last and thin.** Weakest signal; a requirement
    or constraint derived from code is always just a conversation starter,
    never a finished answer. Externally-imposed, non-negotiable code
@@ -166,9 +174,36 @@ the decision -- intentional / grown / accidental -- stays with the user.
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` (both `displayLocale?`) | `req_set_status`, `req_link_term`, `req_update` |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` (both `displayLocale?`) | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
-| Use case | `uc_add` | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryActor` (replaces, cannot be cleared), `supportingActors` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
+| Use case | `uc_add` | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` (both `displayLocale?`) | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
-| Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a use case still names it) |
+| Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
+| Role | `role_add` | `role_get`, `role_list` (both `displayLocale?`) | `role_update` (name/description/`filledBy` -- not the code), `role_delete` (whole resource) |
+
+### Actor vs. role: which resource applies
+
+Two different questions, easy to conflate into one "who's involved"
+register -- keep them apart:
+
+- **Actor** -- the *carrier*: someone or something that exists whether or
+  not this project ever models it. A person, an organisation, a piece of
+  software. Rigid: a person does not stop being a person. Register with
+  `actor_add`.
+- **Role** -- the *function*: a named capacity in which a carrier acts or
+  holds an interest, defined independently of who currently fills it.
+  Anti-rigid: it exists only while occupied, and a functional designation
+  (never a proper name) -- "Requirements Engineer" stays a role whoever
+  fills it this year. Register with `role_add`; occupy it (optionally) via
+  `filledBy`.
+
+**When capturing a use case, ask which *function* drives it, not which
+carrier does.** `uc_add`/`uc_update` bind to a role (`primaryRole`,
+`supportingRoles`), never to an actor directly -- the tool itself now
+enforces the distinction (see "Ordering consequence" below). A role may
+stay unfilled; do not force an actor into existence just to satisfy a use
+case draft. A carrier is worth its own `actor_add` call once it is known
+who/what actually occupies the role, or when the carrier itself is a
+distinct topic (e.g. an external system with its own SLAs) independent of
+any role it fills.
 
 ### Actors: `actor_add(type, name, description?)`
 
@@ -186,18 +221,56 @@ forces the pairing.
   change it.
 - `name` (required) -- what the actor is called, e.g. "Sachbearbeiter" or
   "PaymentService". Plain text, no language tag (unlike a glossary term's
-  `skos:prefLabel`) -- an actor is a structural identity, not prose whose
-  wording is the deliverable.
+  `skos:prefLabel`, and unlike a role's `name`, see below) -- an actor is a
+  structural identity, not prose whose wording is the deliverable.
 - `description` (optional) -- free text.
 - Result: `ACTOR-n` code.
 - `actor_update(id, name?, description?)` -- corrects an already-created
   actor's name/description in place, keeping its identity (and every
   existing link into it) unchanged. Cannot change `type` or the code.
 - `actor_delete(id)` -- removes the whole actor resource, not just a
-  correction. Rejected while a use case still names it as `primaryActor` or
-  `supportingActor` -- re-point that use case first (`uc_update`). An actor
-  that is also a glossary term keeps its glossary entry; only the actor
-  resource goes away.
+  correction. Rejected while a role still lists it among its `filledBy`
+  occupants -- remove it there first (`role_update`). An actor that is
+  also a glossary term keeps its glossary entry; only the actor resource
+  goes away.
+
+### Roles: `role_add(name, description?, filledBy?, language?)`
+
+A role is its own resource, not a subtype of actor and not a glossary term
+-- a named function in which someone or something acts or holds an
+interest, named independently of who fills it (see "Actor vs. role"
+above). A role may start, and stay, unfilled.
+
+- `name` (required, min. 2 characters) -- what the role is called, e.g.
+  "Requirements Engineer". Unlike an actor's `name`, this **is** prose
+  carrying a language tag (see below) -- a functional designation, not a
+  proper name, and one that can genuinely read differently in two
+  languages.
+- `description` (optional) -- free text.
+- `filledBy` (optional) -- `ACTOR-n` codes of the actors occupying this
+  role from the start; each must already exist (`actor_add`). Omit to
+  leave the role unfilled.
+- `language` (optional) -- BCP-47 tag `name`/`description` are written in,
+  behaving as in `term_add`: falls back to the project's configured
+  default language, and if the project has no default either, the call is
+  rejected rather than writing an untagged literal.
+- Result: `ROLE-n` code -- its own counter, independent of `ACTOR-n`.
+- `role_update(id, name?, description?, filledBy?, language?)` -- corrects
+  an already-created role's name/description in place. `filledBy` carries
+  its own tri-state: a given list replaces the occupancy wholesale, an
+  empty list clears every occupant, omitting it leaves occupancy
+  unchanged. Cannot change the code. `language` behaves as in
+  `term_update`: it replaces only the literal carrying the resolved tag,
+  every other language variant survives untouched -- this is also the way
+  to make an existing, single-language role bilingual (restate `name`/
+  `description` under the second tag).
+- `role_delete(id)` -- removes the whole role resource and every triple it
+  carries, not just a correction. The code stays taken so it never later
+  names a different role.
+- `role_get(id, displayLocale?)` -- `displayLocale` behaves as in
+  `term_get`. `role_list(displayLocale?)` takes it too and flags a
+  fallen-back entry with the same inline `[fallback: ...]` tag as
+  `term_list`.
 
 ### Glossary terms: `term_add(label, definition, broader?, related?, language?)`
 
@@ -224,15 +297,15 @@ forces the pairing.
   call is rejected rather than writing an untagged literal.
 - Result: `TERM-n` code.
 
-**Ordering consequence:** generalises beyond actors. Any reference a draft
-makes to another resource -- an actor/term by name, a requirement by code,
-or another use case by its capability (e.g. a step reading "checks against
-the tenant register -- uses UC 'look up'") -- must exist **before** the draft that
-depends on it is presented. Actors before `uc_add` is the case the tool
-itself enforces (see below); a use-case step presupposing a *different* use
-case's capability is not resolved or validated by any tool argument, so that
-existence check is on you -- verify via `uc_list`/`uc_get` before presenting
-the draft, not after.
+**Ordering consequence:** generalises beyond roles. Any reference a draft
+makes to another resource -- a role/actor/term by name or code, a
+requirement by code, or another use case by its capability (e.g. a step
+reading "checks against the tenant register -- uses UC 'look up'") -- must
+exist **before** the draft that depends on it is presented. Roles before
+`uc_add` is the case the tool itself enforces (see below); a use-case step
+presupposing a *different* use case's capability is not resolved or
+validated by any tool argument, so that existence check is on you -- verify
+via `uc_list`/`uc_get` before presenting the draft, not after.
 
 - `term_update(id, label?, definition?, broader?, related?, language?)` --
   corrects an already-created term's label/definition/broader/related in
@@ -255,7 +328,8 @@ the draft, not after.
   the resolved tag equals the project's default.
 - `term_delete(id)` -- removes the whole term resource, label and
   definition in every language, not just a correction -- for a term created
-  by mistake (a duplicate, an actor that should have been `actor_add`).
+  by mistake (a duplicate, an actor or role that should have been
+  `actor_add`/`role_add`).
   Rejected while anything still references it: a requirement's or use
   case's `arkreq:usesTerm`, an architecture decision's `arkarch:usesTerm`,
   a bounded context's `ubiquitousLanguageTerm`, or another term's `broader`
@@ -413,21 +487,25 @@ and ask for the source before calling `constraint_add`.
   constraint that binds it (`oslc_rm:constrainedBy`), analogous to
   `req_link_term`. Idempotent no-op if already linked.
 
-### Use cases: `uc_add(title, goal, primaryActor, steps, language?, scope?, trigger?, supportingActors?, precondition?, postcondition?, extensions?)`
+### Use cases: `uc_add(title, goal, primaryRole, steps, language?, scope?, trigger?, supportingRoles?, precondition?, postcondition?, extensions?)`
 
 Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
 - `title`, `goal` (required) -- goal-in-context.
-- `primaryActor` (required) -- **name** of an existing actor (see above:
-  must already exist via `actor_add`; an unknown name is rejected
-  didactically, never silently created).
+- `primaryRole` (required) -- **business code** of an existing role (e.g.
+  `ROLE-4`; see "Actor vs. role" above: must already exist via `role_add`,
+  see `role_list` for what is registered; an unknown code is rejected
+  didactically, never silently created). Note the reference form: a role
+  is named by its `ROLE-n` code, never by its name -- unlike an actor's
+  plain-text `name`, a role's `name` is language-tagged and therefore
+  ambiguous as a lookup key.
 - `steps` (required, at least 1) -- list of `{position, text, realises?}`:
   `position` 1-based and gapless, `text` the step description, `realises`
   optionally a list of requirement codes (`FR-n`/`NFR-n`) that this step
   fulfils.
-- `scope`, `trigger`, `supportingActors` (list of actor names),
-  `precondition`, `postcondition`, `extensions` (list of free-text
-  alternative/exception-flow lines) -- all optional.
+- `scope`, `trigger`, `supportingRoles` (list of role codes, e.g.
+  `ROLE-7`), `precondition`, `postcondition`, `extensions` (list of
+  free-text alternative/exception-flow lines) -- all optional.
 - `language` (optional) -- BCP-47 tag that title, goal, scope, trigger,
   pre-/postcondition and every step's and extension's text are written in,
   behaving as in `term_add`: falls back to the project's configured default
@@ -437,7 +515,7 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
 - `uc_update(id, title?, goal?, scope?, trigger?, precondition?,
   postcondition?, extensions?, stepTextPatches?, stepRealisesPatches?,
-  primaryActor?, supportingActors?, language?)` -- corrects an
+  primaryRole?, supportingRoles?, language?)` -- corrects an
   already-created use case's title/goal/scope/trigger/pre-/postcondition in
   place; `extensions` replaces the alternative/exception flows wholesale
   (omitted leaves them unchanged); `stepTextPatches` (list of
@@ -446,10 +524,11 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   of `{position, realises}`) corrects a step's `realises` references by the
   same position -- a listed position's requirement codes replace that
   step's entire `realises` set wholesale, an empty list explicitly clears
-  it, and a position omitted from either list stays untouched. `primaryActor`
-  replaces the current primary actor (it cannot be cleared -- a use case
-  always has exactly one); `supportingActors` replaces the current list
-  wholesale, an empty array clearing it. Every argument but `id` is optional
+  it, and a position omitted from either list stays untouched. `primaryRole`
+  (business code, e.g. `ROLE-4`) replaces the current primary role (it
+  cannot be cleared -- a use case always has exactly one); `supportingRoles`
+  (list of role codes) replaces the current list wholesale, an empty array
+  clearing it. Every argument but `id` is optional
   and an omitted one leaves that field unchanged -- use this to fix a use
   case found wanting during a full-set audit instead of creating a
   duplicate. `language` is the tag every field this call actually touches is
@@ -471,11 +550,11 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   constraint that binds it (`oslc_rm:constrainedBy`), analogous to
   `req_link_constraint`. Idempotent no-op if already linked.
 
-arknet already resolves `primaryActor`/`supportingActors` and
+arknet already resolves `primaryRole`/`supportingRoles` and
 `steps[].realises` **schema-independently and with didactic rejection of
 unknown/ambiguous references** -- that rigor is already wired **into the
 tool itself**. The skill therefore does not need to invent this discipline,
-only observe the write order (actors and terms before use cases, requirements
+only observe the write order (roles and terms before use cases, requirements
 before `realises` references).
 
 ## The interrogation -- protocol
@@ -501,7 +580,7 @@ entry points (see above), same protocol:
   Treat every finding they report as a mandatory interrogation point, not
   an optional footnote. **Then** walk every requirement/use case/term
   systematically, one at a time, and interrogate the user relentlessly on
-  the gaps you find (missing scenarios/actors/edge cases, conflicts,
+  the gaps you find (missing scenarios/actors/roles/edge cases, conflicts,
   untestable descriptions, unspecified failure behaviour). A full-set audit
   that only reads content against source documents and never calls
   `orphan_check`/`trace_matrix` has not audited the graph structure, only
@@ -555,7 +634,7 @@ engine, not a vague "is it ambiguous?"):
 
 Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
 
-- **Completeness** -- missing scenarios, edge cases, actors, or
+- **Completeness** -- missing scenarios, edge cases, actors/roles, or
   empty/failure/timeout paths?
 - **Unambiguity** -- can this be read in more than one way?
 - **Consistency** -- conflict with another requirement/use case/term?
@@ -584,8 +663,9 @@ Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
 
 Cockburn completeness:
 
-- **Trigger** clear? **Actor** (primary + supporting) correct and existing
-  as a term?
+- **Trigger** clear? **Role** (primary + supporting) correct and existing
+  (`role_add`/`role_list`) -- the function driving the use case, not just
+  whichever carrier happened to call it (see "Actor vs. role" above)?
 - **Goal-in-context** in one sentence, no technical how.
 - **Main flow** (`steps`) gaplessly numbered, each step a testable system
   state transition?
@@ -595,12 +675,12 @@ Cockburn completeness:
   If the link is entirely missing, ask whether a requirement is missing or
   the use case stands on its own.
 - **Title differentiation** -- does the use case's title read as a
-  distinguishable actor goal/process, or was the realised requirement's
+  distinguishable role goal/process, or was the realised requirement's
   title just carried over? A requirement title names a narrow system
-  capability; a use-case title names the broader actor goal it serves. An
+  capability; a use-case title names the broader role goal it serves. An
   identical title against a linked FR/NFR/Constraint is a signal the
   goal-in-context was never actually restated -- go back and ask what the
-  actor is really trying to accomplish.
+  role is really trying to accomplish.
 
 ### Checklist per glossary term
 
@@ -616,11 +696,14 @@ Cockburn completeness:
   `term_list` check alone cannot catch this; it takes deliberately asking
   "what does this label already mean out there?"
 - Definition precise enough that two people understand the same thing?
-- **Is this candidate actually an actor** (something that can act on the
-  system, hold an interest in it, or both)? If so it belongs as its own
-  `actor_add` resource, not a glossary term -- create the actor separately,
-  and only *also* write a glossary term for it if its meaning is itself
-  worth defining (the two are independent; neither implies the other).
+- **Is this candidate actually an actor or a role** (see "Actor vs. role"
+  above)? An actor -- something that can act on the system, hold an
+  interest in it, or both -- belongs as its own `actor_add` resource; a
+  named function someone/something fills belongs as its own `role_add`
+  resource. Either way it is not a glossary term -- create the resource
+  separately, and only *also* write a glossary term for it if its meaning
+  is itself worth defining (the resource and the term are independent;
+  neither implies the other).
 - **Before discarding a category/classification candidate as "not
   load-bearing"** -- check the actual ontology/schema (grep the vocabulary
   source, not just judge from prose mentions) for whether it is already a
@@ -663,7 +746,7 @@ Cockburn completeness:
 Once a requirement/use case/term is settled with the user -- literal draft
 text shown and confirmed, per the definition above, not merely discussed:
 
-- Order by dependency, not by elicitation order: actors and terms first,
+- Order by dependency, not by elicitation order: roles and terms first,
   then requirements, then use cases (which reference both). The elicitation
   order runs the other way round -- see "Elicitation order is not write
   order" at the top.
@@ -683,7 +766,7 @@ another FR/NFR/UC/term?
 requirement/use-case/term as the first, automated step -- it walks
 references backwards and returns everything that transitively depends on
 it. Follow up with `orphan_check`/`trace_matrix` if the change touched
-links (`usesTerm`, `realises`, actor references). Only fall back to
+links (`usesTerm`, `realises`, actor/role references). Only fall back to
 re-reading `req_list`/`uc_list`/`term_list` from memory for aspects these
 tools do not cover (e.g. wording conflicts between two requirements that
 share no explicit link) -- do not use manual re-reading as the primary
@@ -721,6 +804,7 @@ of two outcomes:
   `/arknet:adr`. If the user drifts into HOW: name it and offer the handoff
   to the ADR skill, keep this conversation on WHAT & WHY.
 - Use cases belong here (Cockburn flows, linked to requirements via
-  `realises`). User stories do not -- arknet has no separate role layer that
-  would justify an "as X I want" framing; it has actors (`actor_add`) and
-  flows.
+  `realises`). User stories do not -- `role_add` (see "Actor vs. role"
+  above) is a modelling distinction for who/what drives a use case, not an
+  "as X I want" story format; the goal belongs in `uc_add`'s `goal` field,
+  in Cockburn's goal-in-context form.
