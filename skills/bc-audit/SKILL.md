@@ -1,5 +1,5 @@
 ---
-description: "Audits an already-filled arknet store (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads actor_usecase_matrix/term_cooccurrence as raw data, presents each candidate collision to the user with its own assessment first, then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term store is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
+description: "Audits an already-filled arknet store (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads actor_usecase_matrix/term_cooccurrence as raw data, tests each cluster for a language break (the same fact getting different rules on each side), presents only candidates that clear that test to the user with its own assessment first, and reports a clustering that traces only to responsibility/module split/data volume as an observation without a context proposal; then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term store is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
 ---
 
 # /arknet:bc-audit -- Bounded Context Candidates from the Existing Store
@@ -45,13 +45,26 @@ agent and the user.
    store does not hold in that language at all. A term you are about to weigh
    as a naming collision may just be the same concept surfacing under two
    languages, so resolve the tags before reading anything into the wording.
-2. **Find candidate collisions.** Call `actor_usecase_matrix` and
-   `term_cooccurrence` and look for language that clusters or splits: an
-   actor whose use cases fall into two unrelated groups, a term that never
-   co-occurs with another term used right next to it elsewhere, two terms
-   that always appear together and might be the same concept named twice.
-   These tools hand you structure, not a verdict -- the boundary judgement
-   is yours to draw, then the user's to confirm.
+2. **Find candidate collisions, then test each one for a language break.**
+   Call `actor_usecase_matrix` and `term_cooccurrence` and look for language
+   that clusters or splits: an actor whose use cases fall into two unrelated
+   groups, a term that never co-occurs with another term used right next to
+   it elsewhere, two terms that always appear together and might be the same
+   concept named twice. These tools hand you structure, not a verdict -- the
+   boundary judgement is yours to draw, then the user's to confirm.
+
+   Every cluster or split found this way still needs one more test before it
+   becomes a candidate: is there a single fact or concept that gets
+   different rules on each side of the split -- the same word carrying two
+   meanings, the same thing subject to different constraints depending on
+   who is talking about it? That difference in rules for the same fact is
+   the language break, and it is the evidence step 3 presents. A clustering
+   that traces only to who is responsible for it, which module it lives in,
+   or how much data passes through it -- with no fact that changes meaning
+   or rule across the split -- is not a context candidate. Note it as an
+   observation without a context proposal instead: still worth surfacing to
+   the user, but explicitly labelled as such, never offered for
+   confirmation as a Bounded Context in step 3.
 3. **Present each candidate, one at a time.** Before presenting a
    candidate's name, run a short naming self-check:
    - Where does this name come from -- the collision just found in step 2,
@@ -69,12 +82,18 @@ agent and the user.
      (e.g. one "-assistenz", one "-verwaltung" with no reason for the
      difference) is a signal to fix before presenting, not after.
 
-   Then give your own assessment first ("these use cases split along
-   actor X, which reads as two contexts to me because ..."), and ask the
-   user directly: is this a deliberate boundary, or a coincidental
-   clustering that doesn't warrant a context split? Same pacing
-   discipline as `/arknet:req-interview`: one candidate, one question,
-   wait for the answer.
+   Then give your own assessment first, and open it with the language
+   break the candidate rests on: name the fact or concept, and the
+   different rules it gets on each side of the split ("X means/requires
+   ... here, but .../... there, and that's why these use cases read as
+   two contexts to me"). An assessment that cannot name that difference
+   has not found a language break -- fall back to reporting it as an
+   observation without a context proposal (see step 2) instead of
+   presenting it as a candidate. Then ask the user directly: is this a
+   deliberate boundary, or a coincidental clustering that doesn't
+   warrant a context split? Same pacing discipline as
+   `/arknet:req-interview`: one candidate, one question, wait for the
+   answer.
 4. **On confirmation, write it in.** `bc_add` with a `domainVision`
    phrased from what the user just said, not invented to satisfy the
    field's minimum length. Then `bc_link_term` for every glossary term the

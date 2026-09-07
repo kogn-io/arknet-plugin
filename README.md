@@ -204,15 +204,21 @@ Reads `actor_usecase_matrix` (which use cases share an actor) and
 `term_cooccurrence` (which glossary terms are named together, and which
 never are) as raw, unclustered data -- the same "facts in, judgement stays
 with the agent and the user" discipline `orphan_check`/`trace_matrix`
-already apply in `/arknet:req-interview`. Presents each candidate
-collision one at a time, own assessment first, then asks whether it is a
-deliberate boundary or a coincidental clustering; only on confirmation
-does it write a Bounded Context (`bc_add`) and link its glossary terms
-(`bc_link_term`), followed by an `impact_analysis` ripple check. Out of
-scope: tactical design (Aggregate/Entity/Value Object/Domain Event), which
-has no tool surface yet, and context-map relationship types
-(Partnership/Anti-Corruption Layer/...), which `/arknet:context-map` covers
-instead.
+already apply in `/arknet:req-interview`. Every cluster found this way is
+then tested for a language break before it becomes a candidate: does the
+same fact or concept get different rules on each side of the split? A
+clustering that traces only to who is responsible for it, which module it
+lives in, or how much data passes through it -- with no such rule
+difference -- is reported as an observation without a context proposal,
+not presented for confirmation. Candidates that do clear the test are
+presented one at a time, own assessment first naming the language break;
+the skill then asks whether it is a deliberate boundary or a coincidental
+clustering, and only on confirmation does it write a Bounded Context
+(`bc_add`) and link its glossary terms (`bc_link_term`), followed by an
+`impact_analysis` ripple check. Out of scope: tactical design
+(Aggregate/Entity/Value Object/Domain Event), which has no tool surface
+yet, and context-map relationship types (Partnership/Anti-Corruption
+Layer/...), which `/arknet:context-map` covers instead.
 
 ### `/arknet:context-map`
 
