@@ -350,11 +350,13 @@ visible before that mistake happens.
 
 It runs on startup, on `--resume`, after `/clear` and after context
 compaction -- one point more than the compatibility check above, because
-what it reports is orientation information the session may no longer be
-carrying in its own context: `/clear` empties the context outright, and
-compaction may drop the report from its summary, so both repeat it. A
-forked session keeps the context it forked from, so that case is left out,
-same as for the compatibility check. The check is silent otherwise: no
+what it reports is orientation information rather than a warning: its value
+depends on the line still being in front of the session. `/clear` empties
+the context outright, and compaction keeps the context only as a rewritten
+summary, from which a one-line orientation note can fall out without
+anything about the anchor having changed -- so both repeat it. A forked
+session takes its context along verbatim, so that case is left out, same
+as for the compatibility check. The check is silent otherwise: no
 server reachable, or the response is malformed, produces no extra output.
 
 ## Export freshness nudge
