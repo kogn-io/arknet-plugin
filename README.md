@@ -461,6 +461,12 @@ them is right in a given situation, and there is no `project_delete`.
   untouched.
 - `project_rename` -- change the project's human-readable `label`. Identity
   and anchors are unaffected.
+- `project_export` -- back up the store as a timestamped `.trig` file (with
+  provenance, self-description and a trailing export-metadata graph naming
+  the server version, build time, export time and every shipped ontology
+  module's version) into the server's export directory. Exports every
+  registered project by default; `projectOnly` narrows it to the project
+  this call addresses. No matching import/restore tool yet.
 
 ### Requirements
 
@@ -648,6 +654,15 @@ them is right in a given situation, and there is no `project_delete`.
 
 - `store_overview` -- workspace-wide digest (resource/triple/type counts, one
   line per resource) plus a self-contained HTML report written to disk.
+- `store_check` -- check this project's stored model against what it
+  declares about itself; read-only, changes and refuses nothing. `checks`
+  selects which checks to run (a list of names, omit or pass an empty list
+  to run all -- today there is exactly one). `LANGUAGE` reports every field
+  carrying at least one language-tagged value but not one for each language
+  `project_update`'s `languages` declares, one row per resource and field
+  naming the missing tags; with no declared `languages` set there is no
+  target state to compare against, so it reports `LANGUAGE: not checked`
+  instead of a clean result.
 - `resource_get` -- fetch all statements (outgoing and incoming) of a single
   resource.
 
