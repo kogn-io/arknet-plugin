@@ -1,5 +1,5 @@
 {
-  "description": "Warn on session start, on resume and after /clear if the connected arknet MCP server is missing a tool or a tool parameter a shipped skill needs, and nudge once per session if arknet's store was written but a discovered export snapshot in the project was not regenerated.",
+  "description": "Two SessionStart hooks -- warn on session start, on resume and after /clear if the connected arknet MCP server is missing a tool or a tool parameter a shipped skill needs, and separately report which registered arknet project (if any) the current directory resolves to as an anchor, on startup, resume, /clear and after compaction -- plus nudge once per session if arknet's store was written but a discovered export snapshot in the project was not regenerated.",
   "hooks": {
     "SessionStart": [
       {
@@ -8,6 +8,15 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/check-arknet-compat.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/report-project-anchor.sh"
           }
         ]
       }
