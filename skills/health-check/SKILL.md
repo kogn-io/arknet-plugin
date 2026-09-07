@@ -51,9 +51,10 @@ already use them.
      an accept/reject decision. **"Waiting" is not "waiting to be accepted."**
      `/arknet:adr` weighs a record against R0 -- worth recording at all --
      before it weighs its status, and deleting a record that should never
-     have been an ADR is a legitimate outcome while it is still `PROPOSED`
-     (`adr_delete` takes no other status). Report the record as open; do not
-     phrase it as a pending accept, and do not suggest one.
+     have been an ADR is a legitimate outcome -- while it is still
+     `PROPOSED`, and equally for an `ACCEPTED` record no other decision
+     points at. Report the record as open; do not phrase it as a pending
+     accept, and do not suggest one.
    - `adr_check` -- report the `Facts` block as-is, each a hard fact the same
      way `orphan_check`/`trace_matrix` findings are. Its `Suspicions` and
      not-checked list are not hard facts -- route them to `/arknet:adr` as a
