@@ -57,6 +57,33 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   instead of adding a second variant -- the first language is then gone,
   without an error. Name the `language` whenever the point of the call *is*
   the language.
+- **A correction under one language reports which language it left behind.**
+  In a project that maintains more than one language, every `*_update` that
+  writes a multilingual field (`req_`, `constraint_`, `term_`, `uc_`,
+  `role_`, `project_`, and `adr_update`, see `/arknet:adr`) appends a
+  `Possibly stale translations` block naming the maintained language this
+  call did **not** write and the fields that carry it. It never blocks, and
+  it arrives *after* the formatted result -- which is exactly why it gets
+  skimmed past as noise. Act on it: repeat the same call under the named
+  language, while the corrected wording is still in front of you. What the
+  block does **not** claim is that the other variant is wrong or older: the
+  store records one revision per *resource*, never one per literal, so no
+  timestamp attaches to a single language variant. All it knows is that some
+  earlier call wrote it.
+- **The block's silence is not a clean bill of health.** It is defined to
+  stay quiet in two cases that look alike from the outside. A write that
+  *adds* a language the field did not carry before is a **translation**, the
+  second half of the two-call workflow above, and leaves nothing behind. A
+  field that does not carry the other language at all is a **gap**, not a
+  stale variant -- that is what `store_check`'s `LANGUAGE` check reports,
+  and it needs the project's declared `languages` set to report anything at
+  all. Two more fields stay out of it: a term's `label`, because a
+  `term_update` renaming it without a `language` rewrites every tag at once,
+  and a list a call *removes* from in the same
+  breath (`removeAcceptanceCriterionPositions`, `removeMainStepPositions`) --
+  a removal can take the last carrier of a language with it, so the block
+  says nothing about that list rather than describe a state the call no
+  longer left.
 
 ## Two entry points, one protocol
 

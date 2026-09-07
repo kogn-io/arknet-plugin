@@ -291,6 +291,31 @@ calling `adr_add`** rather than write speculatively and plan to fix it up afterw
 correction path exists, but only for as long as the decision stays `PROPOSED` (translations
 aside).
 
+**The stale-translation block, and how the status rule mutes it.** In a project that maintains
+more than one language, an `adr_update` writing a text field the written language already
+carried appends a `Possibly stale translations` block after its result, naming the maintained
+language this call did *not* write and the fields that carry it. Act on it -- repeat the same
+call under that language -- rather than report it and move on. It never blocks, and it claims
+nothing about whether the other variant is wrong: the store records one revision per
+*resource*, never one per literal, so no timestamp attaches to a single language variant.
+
+Its **silence** needs reading with the status rule above in hand, because the two interlock.
+The block is defined to skip a write that *adds* a language a field did not carry before -- a
+translation, not a correction -- and from `ACCEPTED` on a translation is the only text write
+the aggregate still accepts. So correcting `name`/`adrContext`/`decision` or an existing
+consequence or option can only ever raise the block while the record is `PROPOSED`; past that,
+the block would recommend the very call the aggregate rejects, and stays quiet by design. What
+does still raise it past `ACCEPTED` is `newConsequences`/`newConsideredOptions`, which are
+allowed in every status: appending one consequence in a single language to an edge whose
+existing entries carry both leaves the same gap a correction would. One case reports nothing
+either way: an `adr_update` that removes a position under an edge also suppresses the block for
+that edge, because a removal can take the last carrier of a language with it and the snapshot
+the block rests on no longer describes what the call left behind.
+
+Read a silent answer as "nothing to report", never as "the languages agree". A field missing
+the other language altogether is a gap rather than a stale variant, and `store_check`'s
+`LANGUAGE` check is what reports that.
+
 ## Related decisions (`relatedTo`)
 
 A loose "see also" cross-reference between decisions of equal rank -- unlike `supersededBy`, it

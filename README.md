@@ -144,10 +144,14 @@ the named successor untouched -- a correction, never a way to reverse a valid
 supersession.
 
 **Corrections are narrower than they look.** `adr_update` corrects text fields
-only while a decision is `PROPOSED` -- from `ACCEPTED` on, only its reference
-lists (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) stay editable.
-The same window applies to taking a consequence or considered option out again
-by position (`removeConsequencePositions`/`removeConsideredOptionPositions`).
+only while a decision is `PROPOSED` -- from `ACCEPTED` on, what stays writable is
+its reference lists (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`),
+a further language for a field that never carried it (a translation, not a
+correction), and a consequence or considered option *appended* to what is
+already recorded. The `PROPOSED` window applies to taking a consequence or
+considered option out again by position
+(`removeConsequencePositions`/`removeConsideredOptionPositions`), with no
+translation exemption.
 `adr_delete` removes a decision entered by mistake -- a `PROPOSED` one, or an
 `ACCEPTED` one no other decision points at -- but explicitly not a `REJECTED`
 one: "considered and rejected" is itself a decision worth keeping. The skill
