@@ -389,19 +389,26 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   check: does a term already exist for it? If not, `term_add` first, then
   `req_link_term`.
 - `req_update(id, title?, description?, rationale?, priority?,
-  newAcceptanceCriteria?, acceptanceCriteriaTextPatches?, language?)`
+  newAcceptanceCriteria?, acceptanceCriteriaTextPatches?,
+  removeAcceptanceCriterionPositions?, language?)`
   -- patches fields of an existing requirement (partial update, not
   replace-by-identity) -- use this to fix a requirement found wanting during
   a full-set audit instead of leaving it inconsistent. An omitted `rationale`
   never clears one already recorded -- this is also the way a requirement
   found without one during a full-set audit gets its reason recorded after
   the fact, once the user has answered why it exists. Acceptance criteria
-  are reached through two independent, narrow parameters:
-  `newAcceptanceCriteria` appends criteria after the existing ones, and
+  are reached through three independent, narrow parameters:
+  `newAcceptanceCriteria` appends criteria after the existing ones,
   `acceptanceCriteriaTextPatches` (list of `{position, text}`) corrects the
-  wording of existing ones by their 1-based position -- neither can insert
-  mid-list, delete or reorder a criterion, and a position with no matching
-  criterion is rejected. `language` is the tag a non-omitted
+  wording of existing ones by their 1-based position (as `req_get` currently
+  shows it), and `removeAcceptanceCriterionPositions` (list of 1-based
+  positions) takes criteria out -- the ones after a removed criterion move
+  up so the survivors stay gap-free, and every language variant of the
+  removed position goes with it. A position cannot be both corrected and
+  removed in one call, removing every remaining criterion is rejected (at
+  least one must stay), and a position with no matching criterion is
+  rejected. None of the three can insert mid-list or reorder criteria.
+  `language` is the tag a non-omitted
   `title`/`description`/`rationale` and any acceptance criterion this call
   touches are written in, and behaves as in `term_update`: it replaces only
   the literal carrying the resolved tag, every other language variant
@@ -515,7 +522,8 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
 
 - `uc_update(id, title?, goal?, scope?, trigger?, precondition?,
   postcondition?, extensions?, stepTextPatches?, stepRealisesPatches?,
-  primaryRole?, supportingRoles?, language?)` -- corrects an
+  newMainSteps?, removeMainStepPositions?, primaryRole?, supportingRoles?,
+  language?)` -- corrects an
   already-created use case's title/goal/scope/trigger/pre-/postcondition in
   place; `extensions` replaces the alternative/exception flows wholesale
   (omitted leaves them unchanged); `stepTextPatches` (list of
@@ -524,7 +532,16 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   of `{position, realises}`) corrects a step's `realises` references by the
   same position -- a listed position's requirement codes replace that
   step's entire `realises` set wholesale, an empty list explicitly clears
-  it, and a position omitted from either list stays untouched. `primaryRole`
+  it, and a position omitted from either list stays untouched.
+  `newMainSteps` (list of `{text, realises?}`) appends steps after the
+  existing ones, positions continuing from the current highest;
+  `removeMainStepPositions` (list of 1-based positions, as `uc_get`
+  currently shows them) takes steps out -- the ones after a removed step
+  move up so the survivors stay gap-free, and every language variant of the
+  removed position goes with it. A position cannot be both corrected
+  (`stepTextPatches`/`stepRealisesPatches`) and removed in one call, and
+  removing every remaining step is rejected (at least one must stay).
+  `primaryRole`
   (business code, e.g. `ROLE-4`) replaces the current primary role (it
   cannot be cleared -- a use case always has exactly one); `supportingRoles`
   (list of role codes) replaces the current list wholesale, an empty array
@@ -536,8 +553,11 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   carrying the resolved tag, every other language variant survives untouched
   -- except a stale untagged one, swept away once the resolved tag equals the
   project's default. It is also the only way to state an existing use case in
-  a second language. It does **not** touch the step list's structure
-  (add/remove/reorder) -- that still requires a fresh `uc_add`.
+  a second language. The one thing it does **not** do to the main flow is
+  reorder it: appending and removing are covered above, but moving a step
+  to a different position still requires a fresh `uc_add` -- at the price
+  of a new use-case code and no inbound references carried over, so prefer
+  append/remove-and-append where that expresses the same flow.
 - `uc_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `uc_list(displayLocale?)` takes it too and flags a fallen-back entry with
   the same inline `[fallback: ...]` tag as `term_list`.
