@@ -96,7 +96,7 @@ already use them.
   `/arknet:req-interview`, `/arknet:bc-audit`, and `/arknet:context-map`
   respectively; this skill only reports what their underlying fact-tools
   already show.
-- **No staleness heuristic against `actor_usecase_matrix`/`term_cooccurrence`.**
+- **No staleness heuristic against `role_usecase_matrix`/`term_cooccurrence`.**
   Deliberately out of scope for now: neither tool carries a timestamp, and a
   "since the last `/arknet:bc-audit` run" signal would need one. Inventing a
   store-size threshold instead would fake a precision the store cannot

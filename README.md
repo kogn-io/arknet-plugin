@@ -26,6 +26,7 @@ its own release cycle.
   - [Requirements](#requirements-1)
   - [Constraints](#constraints)
   - [Actors](#actors)
+  - [Roles](#roles)
   - [Use cases](#use-cases)
   - [Glossary](#glossary)
   - [Bounded contexts](#bounded-contexts)
@@ -200,7 +201,7 @@ Context boundaries are meant to emerge from language collisions already
 present in a filled store, not be drawn on a blank whiteboard before
 the domain vocabulary exists.
 
-Reads `actor_usecase_matrix` (which use cases share an actor) and
+Reads `role_usecase_matrix` (which use cases share a role) and
 `term_cooccurrence` (which glossary terms are named together, and which
 never are) as raw, unclustered data -- the same "facts in, judgement stays
 with the agent and the user" discipline `orphan_check`/`trace_matrix`
@@ -271,7 +272,7 @@ resolve it (`/arknet:req-interview` full-set-audit mode, `/arknet:adr`,
 `/arknet:context-map`) rather than starting that skill's dialogue itself.
 
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
-(reading `actor_usecase_matrix`/`term_cooccurrence` for collisions that
+(reading `role_usecase_matrix`/`term_cooccurrence` for collisions that
 emerged "since the last audit run") -- neither tool carries a timestamp, and
 a store-size heuristic would fake a precision the store cannot back up.
 
@@ -430,8 +431,8 @@ Later, three more entry points build on the same store:
 arknet manages DDD architecture models -- requirements, use cases, a
 ubiquitous-language glossary, and bounded contexts -- as an RDF/SKOS store with
 SHACL write validation. All writes are validated against arknet's shapes;
-unknown or ambiguous references (e.g. an actor label that does not exist yet)
-are rejected with a didactic error rather than silently accepted.
+unknown or ambiguous references (e.g. a role or actor code that does not
+exist yet) are rejected with a didactic error rather than silently accepted.
 
 ### Projects
 
@@ -531,23 +532,49 @@ them is right in a given situation, and there is no `project_delete`.
   description in place. The type, and the `ACTOR-n` code, stay fixed at
   creation.
 - `actor_delete` -- remove the whole actor resource, not just a correction;
-  rejected while a use case still references it as its primary or
-  supporting actor. An actor that is also a glossary term keeps its glossary
-  entry.
+  rejected while a role still lists it among its `filledBy` occupants. An
+  actor that is also a glossary term keeps its glossary entry.
+
+### Roles
+
+A role is a resource in its own right, distinct from an actor: the actor is
+the carrier (a person, an organisation, a piece of software -- exists
+whether or not the project models it), the role is the named function it
+acts in (exists only while occupied, defined independently of who fills
+it). A use case binds to a role, never directly to an actor.
+
+- `role_add` -- register a role: a named function in which someone or
+  something acts or holds an interest, named independently of who fills it.
+  Takes a name (min. 2 characters, prose -- unlike an actor's plain-text
+  name, this carries a language tag), an optional description, an optional
+  `filledBy` (`ACTOR-n` codes of the actors occupying it from the start --
+  a role may stay unfilled) and an optional `language`; the result is a
+  `ROLE-n` code, its own counter independent of `ACTOR-n`.
+- `role_get` / `role_list` -- fetch one / list all roles; both take an
+  optional `displayLocale`, and the list marks a fallen-back entry as
+  described under `req_list`.
+- `role_update` -- correct an already-created role's name and/or
+  description in place, state either in a further language, and/or replace
+  its occupants (`filledBy`, replaced wholesale; an empty list clears every
+  occupant, omitting it leaves occupancy unchanged). The `ROLE-n` code stays
+  fixed at creation.
+- `role_delete` -- remove the whole role resource and every triple it
+  carries, not just a correction; the `ROLE-n` code stays taken.
 
 ### Use cases
 
 - `uc_add` -- register a complete Cockburn-style use case in a single call
-  (goal-in-context, primary/supporting actors, ordered main flow, optional
+  (goal-in-context, primary/supporting roles, ordered main flow, optional
   precondition/postcondition/extensions); steps can reference the
-  requirements they realise.
+  requirements they realise. Primary/supporting roles are given as
+  `ROLE-n` codes (see Roles above), not actor codes or names.
 - `uc_get` / `uc_list` -- fetch one / list all use cases; both take an
   optional `displayLocale`, and the list marks a fallen-back entry as
   described under `req_list`.
 - `uc_update` -- correct an existing use case's title/goal/scope/trigger/
   pre-/postcondition, its extensions, the text or `realises` references of
-  individual steps, and its primary/supporting actors (each replaced
-  wholesale; the primary actor cannot be cleared, an empty supporting-actors
+  individual steps, and its primary/supporting roles (each replaced
+  wholesale; the primary role cannot be cleared, an empty supporting-roles
   list clears it), or state the fields it touches in a further language --
   not the step list's structure.
 - `uc_link_term` -- link a use case to a glossary term it uses.
@@ -646,12 +673,13 @@ them is right in a given situation, and there is no `project_delete`.
   related term);
   text that names a term without its backing edge -- a use case's goal,
   scope, trigger, precondition, postcondition and every step/extension text
-  count as its text, and naming its own primary/supporting actor there is
+  count as its text, and naming its own primary/supporting role there is
   not a gap; an ADR's context, decision, consequences, and options are scanned
   as well; and constraints that no requirement or use case is bound by.
-- `actor_usecase_matrix` -- raw bipartite view: which use cases each actor
-  appears in (`primaryActor`/`supportingActor`), and which actors each use
-  case names. No clustering or judgement -- data for `/arknet:bc-audit`.
+- `role_usecase_matrix` -- raw bipartite view: which use cases each role
+  appears in (`primaryRole`/`supportingRole`), which roles each use case
+  names, and which actors occupy each role (`filledBy`). No clustering or
+  judgement -- data for `/arknet:bc-audit`.
 - `term_cooccurrence` -- which glossary terms are named together in the same
   requirement/use-case text, and which never are -- raw data for spotting a
   homonym (same term, different meaning per context) vs. a true duplicate.

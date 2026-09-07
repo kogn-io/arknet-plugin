@@ -1,5 +1,5 @@
 ---
-description: "Audits an already-filled arknet store (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads actor_usecase_matrix/term_cooccurrence as raw data, tests each cluster for a language break (the same fact getting different rules on each side), presents only candidates that clear that test to the user with its own assessment first, and reports a clustering that traces only to responsibility/module split/data volume as an observation without a context proposal; then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term store is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
+description: "Audits an already-filled arknet store (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads role_usecase_matrix/term_cooccurrence as raw data, tests each cluster for a language break (the same fact getting different rules on each side), presents only candidates that clear that test to the user with its own assessment first, and reports a clustering that traces only to responsibility/module split/data volume as an observation without a context proposal; then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term store is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
 ---
 
 # /arknet:bc-audit -- Bounded Context Candidates from the Existing Store
@@ -24,13 +24,13 @@ the greenfield BDUF this skill is designed not to do.
 | Tool | Role |
 |---|---|
 | `term_list`, `req_list`, `uc_list` | Read the whole requirements/use-case/glossary set before anything else. Each takes `displayLocale?`; a line carrying an inline `[fallback: ...]` tag is an entry **missing** in that language, shown under another one. |
-| `actor_usecase_matrix` | Raw bipartite data: which use cases each actor appears in (`primaryActor`/`supportingActor`), and vice versa. No clustering, no judgement -- that stays with you and the user. |
+| `role_usecase_matrix` | Raw bipartite data: which use cases each role appears in (`primaryRole`/`supportingRole`), and vice versa, plus which actors occupy each role (`filledBy`). No clustering, no judgement -- that stays with you and the user. |
 | `term_cooccurrence` | Raw data: which glossary terms are named together in the same requirement/use-case text, and which never co-occur -- the material for "is this one term or a homonym with two meanings per context?". |
 | `bc_add(name, domainVision, subdomain?, ownedBy?)` | Register a confirmed Bounded Context. `domainVision` must come out of the discussion with the user, never be invented to fill the field. |
 | `bc_link_term` | Link the new context to each glossary term the user confirmed belongs to it. |
 | `impact_analysis` | Ripple check on every term just linked. |
 
-`actor_usecase_matrix` and `term_cooccurrence` are raw-data read tools by
+`role_usecase_matrix` and `term_cooccurrence` are raw-data read tools by
 design (see `kogn-io/arknet#108`) -- they never propose a boundary
 themselves, matching how `orphan_check`/`trace_matrix` already work in
 `/arknet:req-interview`: facts in, judgement stays with the interviewing
@@ -46,8 +46,8 @@ agent and the user.
    as a naming collision may just be the same concept surfacing under two
    languages, so resolve the tags before reading anything into the wording.
 2. **Find candidate collisions, then test each one for a language break.**
-   Call `actor_usecase_matrix` and `term_cooccurrence` and look for language
-   that clusters or splits: an actor whose use cases fall into two unrelated
+   Call `role_usecase_matrix` and `term_cooccurrence` and look for language
+   that clusters or splits: a role whose use cases fall into two unrelated
    groups, a term that never co-occurs with another term used right next to
    it elsewhere, two terms that always appear together and might be the same
    concept named twice. These tools hand you structure, not a verdict -- the

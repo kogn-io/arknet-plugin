@@ -28,8 +28,8 @@ cwd=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null) || exit 0
 # "mcp__<server>__<tool>" -- the server segment varies per installation
 # (e.g. "arknet", "plugin_arknet_arknet"), so match on the tool suffix
 # only. Kept in sync with the write-tool families used across the shipped
-# skills (adr/req/uc/term/bc/constraint/actor/project).
-WRITE_TOOL_REGEX='^mcp__[A-Za-z0-9_]+__(adr_(add|update|delete|set_status|supersede)|req_(add|update|set_status|link_[a-z_]+)|uc_(add|update|link_[a-z_]+)|term_(add|update|delete)|bc_(add|link_[a-z_]+)|constraint_(add|update)|actor_(add|update|delete)|project_(add|adopt|attach_anchor|rename|update))$'
+# skills (adr/req/uc/term/bc/constraint/actor/role/project).
+WRITE_TOOL_REGEX='^mcp__[A-Za-z0-9_]+__(adr_(add|update|delete|set_status|supersede)|req_(add|update|set_status|link_[a-z_]+)|uc_(add|update|link_[a-z_]+)|term_(add|update|delete)|bc_(add|link_[a-z_]+)|constraint_(add|update)|actor_(add|update|delete)|role_(add|update|delete)|project_(add|adopt|attach_anchor|rename|update))$'
 
 # Read the transcript line by line rather than as one multi-document jq
 # input -- fromjson? turns a malformed line into `empty` instead of
