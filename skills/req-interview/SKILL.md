@@ -153,7 +153,12 @@ signals conflict, trust this order:
    `uc_add`, because the tool resolves `primaryRole`/`supportingRoles`
    against the role register (see "Ordering consequence" below). The actor
    behind that role -- if one is already known -- is a separate, optional
-   fact (`filledBy`), not a precondition for writing the use case.
+   fact (`filledBy`), not a precondition for writing the use case. When
+   the actor/role/boundary question is genuinely open, do not debate it
+   before a draft exists: sketch the use case with `scope`, `primaryRole`
+   and `supportingRoles` filled in as a proposal and let the user correct
+   the draft (see "Shape questions are asked at a draft" in the
+   interrogation protocol below).
 4. **Vocabulary beyond roles and actors surfaces in context**, as terms
    appear in a use case's goal/steps -- not mined wholesale from
    class/package names in advance. Check every candidate against the
@@ -661,6 +666,21 @@ Protocol (the user's standing "relentless" instruction, treat as binding):
 - Resolve by research/context/existing docs whatever *can* be resolved that
   way. Reserve questions for genuine **scope/priority/shape** decisions --
   those are the user's.
+- **Shape questions are asked at a draft, never before one.** When a
+  modelling question arises -- is this an actor or a role? where is the
+  system boundary? is this one use case or two? -- do not settle it in
+  the abstract. Put a concrete use-case or requirement draft on the table
+  first, with the disputed field (`scope`, `primaryRole`,
+  `supportingRoles`, the requirement `type`, ...) filled in as *your
+  proposal*, and let the user correct *that*. The draft forces the
+  question into a field the tool actually models, and often dissolves it:
+  "is the system X or X+Y?" is `scope` per use case, not a foundational
+  either/or; "is this CRM an actor or an interface?" is answered by which
+  role it fills in *this* use case, and the answer may differ in the
+  next. An abstract answer to a shape question is not reusable; a
+  corrected draft is. This is the same mechanism "settled" already relies
+  on for *content* (literal draft text shown and confirmed), extended to
+  *structure*.
 - **Do not** produce a final summary or a settled version until the user
   confirms that all open points are resolved. **Settled** means concretely:
   the literal draft text (the definition/requirement text/use-case text, not
