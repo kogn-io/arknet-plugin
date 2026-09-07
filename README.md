@@ -19,6 +19,7 @@ its own release cycle.
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Compatibility check](#compatibility-check)
+- [Project anchor report](#project-anchor-report)
 - [Export freshness nudge](#export-freshness-nudge)
 - [Getting started](#getting-started)
 - [MCP Tools](#mcp-tools)
@@ -333,6 +334,31 @@ that context, so they are left out rather than repeating a warning the
 session already has. The check is silent otherwise: no server reachable,
 or everything present, produces no extra output.
 
+## Project anchor report
+
+A second, separate `SessionStart` hook reports which registered arknet
+project the current directory resolves to as an anchor -- "this directory
+resolves to project X", or, if no registered project has this directory as
+an anchor, that it has no project and a pointer at `/arknet:init`, plus a
+hint if a parent directory is a registered anchor of some project (you
+probably started in a subdirectory of it). This matters because a git
+worktree or a second checkout of an already-registered project is not
+itself a registered anchor, and a plain `project_add` from there would
+silently create a second project -- there is no `project_delete` to undo
+that. Seeing the resolved label (or its absence) makes the missing anchor
+visible before that mistake happens.
+
+It runs on startup, on `--resume`, after `/clear` and after context
+compaction -- one point more than the compatibility check above, because
+what it reports is orientation information rather than a warning: its value
+depends on the line still being in front of the session. `/clear` empties
+the context outright, and compaction keeps the context only as a rewritten
+summary, from which a one-line orientation note can fall out without
+anything about the anchor having changed -- so both repeat it. A forked
+session takes its context along verbatim, so that case is left out, same
+as for the compatibility check. The check is silent otherwise: no
+server reachable, or the response is malformed, produces no extra output.
+
 ## Export freshness nudge
 
 If your project keeps a reproducible export of the arknet store in the
@@ -352,7 +378,9 @@ it does not create one.
 
 Once the daemon is running and the plugin is installed and configured (see
 above), start Claude Code from your project's directory -- that directory is
-the anchor every call is routed by.
+the anchor every call is routed by. Session start reports which project (if
+any) that directory resolved to, see [Project anchor
+report](#project-anchor-report).
 
 **Onboard the project, once:**
 
