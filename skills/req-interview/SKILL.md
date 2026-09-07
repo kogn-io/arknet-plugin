@@ -417,7 +417,7 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   `req_link_term`.
 - `req_update(id, title?, description?, rationale?, priority?,
   newAcceptanceCriteria?, acceptanceCriteriaTextPatches?,
-  removeAcceptanceCriterionPositions?, language?)`
+  removeAcceptanceCriterionPositions?, usesTermCodes?, language?)`
   -- patches fields of an existing requirement (partial update, not
   replace-by-identity) -- use this to fix a requirement found wanting during
   a full-set audit instead of leaving it inconsistent. An omitted `rationale`
@@ -442,8 +442,12 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   survives untouched -- except a stale untagged one, swept away once the
   resolved tag equals the project's default. It is also the only way to state
   an existing requirement in a second language, the same two-call pattern as
-  for terms and constraints. It does **not** touch status (`req_set_status`)
-  or linked terms (`req_link_term`).
+  for terms and constraints. `usesTermCodes` (list of `TERM-N` codes)
+  replaces the requirement's `arkreq:usesTerm` links wholesale: omitted
+  leaves them untouched, an empty list clears them all, a non-empty list is
+  the full set going forward (kogn-io/arknet#540). It is the only way to
+  unlink a term -- `req_link_term` only ever adds one. It does **not** touch
+  status (`req_set_status`).
 - `req_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `req_list(displayLocale?)` takes it too and flags a fallen-back entry with
   the same inline `[fallback: ...]` tag as `term_list`.
@@ -550,7 +554,7 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
 - `uc_update(id, title?, goal?, scope?, trigger?, precondition?,
   postcondition?, extensions?, stepTextPatches?, stepRealisesPatches?,
   newMainSteps?, removeMainStepPositions?, primaryRole?, supportingRoles?,
-  language?)` -- corrects an
+  usesTermCodes?, language?)` -- corrects an
   already-created use case's title/goal/scope/trigger/pre-/postcondition in
   place; `extensions` replaces the alternative/exception flows wholesale
   (omitted leaves them unchanged); `stepTextPatches` (list of
@@ -572,7 +576,10 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   (business code, e.g. `ROLE-4`) replaces the current primary role (it
   cannot be cleared -- a use case always has exactly one); `supportingRoles`
   (list of role codes) replaces the current list wholesale, an empty array
-  clearing it. Every argument but `id` is optional
+  clearing it; `usesTermCodes` (list of `TERM-N` codes) does the same for
+  the use case's `arkreq:usesTerm` links (kogn-io/arknet#540) and is the
+  only way to unlink a term -- `uc_link_term` only ever adds one. Every
+  argument but `id` is optional
   and an omitted one leaves that field unchanged -- use this to fix a use
   case found wanting during a full-set audit instead of creating a
   duplicate. `language` is the tag every field this call actually touches is
