@@ -211,14 +211,14 @@ clustering that traces only to who is responsible for it, which module it
 lives in, or how much data passes through it -- with no such rule
 difference -- is reported as an observation without a context proposal,
 not presented for confirmation. Candidates that do clear the test are
-presented one at a time, own assessment first naming the language break,
-then asks whether it is a deliberate boundary or a coincidental clustering;
-only on confirmation does it write a Bounded Context (`bc_add`) and link
-its glossary terms (`bc_link_term`), followed by an `impact_analysis`
-ripple check. Out of scope: tactical design (Aggregate/Entity/Value
-Object/Domain Event), which has no tool surface yet, and context-map
-relationship types (Partnership/Anti-Corruption Layer/...), which
-`/arknet:context-map` covers instead.
+presented one at a time, own assessment first naming the language break;
+the skill then asks whether it is a deliberate boundary or a coincidental
+clustering, and only on confirmation does it write a Bounded Context
+(`bc_add`) and link its glossary terms (`bc_link_term`), followed by an
+`impact_analysis` ripple check. Out of scope: tactical design
+(Aggregate/Entity/Value Object/Domain Event), which has no tool surface
+yet, and context-map relationship types (Partnership/Anti-Corruption
+Layer/...), which `/arknet:context-map` covers instead.
 
 ### `/arknet:context-map`
 
