@@ -31,7 +31,7 @@ under the rules below; the files are the user's to retire.
 | `adr_unsupersede` | Regret path for a mistyped `adr_supersede` call -- reverts a `SUPERSEDED` decision back to `ACCEPTED` and drops its `supersededBy` edge (see "Un-superseding a decision" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
 | `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context, an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
-| `adr_delete` | Removes a `PROPOSED` decision entered by mistake -- see "Deleting a decision" below. |
+| `adr_delete` | Removes a record entered by mistake: a `PROPOSED` decision, or an `ACCEPTED` one no other decision points at -- see "Deleting a decision" below. |
 
 `adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
 
@@ -238,9 +238,9 @@ What this means in practice:
 older one. **Both must already be `ACCEPTED`** -- write the new ADR first (`adr_add`, then
 `adr_set_status` to `ACCEPTED` once it is genuinely decided), then link it. The call is
 idempotent (recording the same pair twice is a no-op) and rejects a decision superseding
-itself. **Naming a different successor for an already-superseded decision is refused** -- there
-is no tool to change or remove a `supersededBy` edge once set, so double-check `id`/
-`supersededId` before calling; a mistyped call is effectively permanent.
+itself. **Naming a different successor for an already-superseded decision is refused** -- the
+edge is never changed in place: undo the wrong one with `adr_unsupersede` (see below), then call
+`adr_supersede` again with the right pair.
 
 ## Un-superseding a decision
 
@@ -307,16 +307,20 @@ deliberately no `adr_link_related` tool -- the relation is set only through `adr
 record is gone. The freed code is **not** handed out again; the next `adr_add` continues above
 it.
 
-- **Only `PROPOSED` is deletable.** This undoes a record entered by mistake -- a duplicate, a
-  draft that belongs elsewhere. From `ACCEPTED` on the record stays: what was decided is
-  exactly what an ADR exists to keep. Use `adr_supersede` or
-  `adr_set_status(id, "DEPRECATED")` instead.
-- **`REJECTED` is explicitly not deletable either** -- see "Lifecycle" above: it means the
-  option was considered and turned down, a decision worth keeping, not a mistake to undo.
+- **`PROPOSED` and `ACCEPTED` are deletable, no other status is.** Both undo a record entered
+  by mistake -- a duplicate, a draft that belongs elsewhere, or a record that was accepted
+  although it never really was an architecture decision (an R0 failure, see "What follows from
+  a finding"). What stays is what has a place in the model's history: a decision that really
+  was decided and has merely become obsolete is superseded or marked `DEPRECATED`, not deleted.
+- **`REJECTED` is explicitly not deletable** -- see "Lifecycle" above: it means the option was
+  considered and turned down, a decision worth keeping, not a mistake to undo. Neither is a
+  `SUPERSEDED` record that got there by mistake -- undo the supersession with `adr_unsupersede`,
+  which restores it to `ACCEPTED`, rather than delete it.
 - **Refused while another decision still points at this one** -- named as its own successor
-  (`supersededBy`) or via `relatedTo`; the refusal names those decisions. There is no tool to
-  remove a `supersededBy` edge, so that block can only be cleared by removing the pointing
-  decision itself (or, for `relatedTo`, correcting it away with `adr_update`).
+  (`supersededBy`) or via `relatedTo`; the refusal names those decisions. Clear a `supersededBy`
+  edge with `adr_unsupersede` on the decision that carries it, a `relatedTo` edge by correcting
+  it away with `adr_update`. A record that is itself `ACCEPTED` never carries a `supersededBy`
+  edge of its own -- that edge and the `SUPERSEDED` status are one fact.
 
 ## Reviewing the ADRs in the store
 
@@ -379,10 +383,12 @@ of the table is that the gap is visible.
 - **An R0 finding on a `PROPOSED` record: propose `adr_delete`.** That is precisely the "draft
   that belongs elsewhere" case the delete path exists for (see "Deleting a decision"). Propose
   it and name where the content belongs instead; the user deletes, you do not decide it away.
-- **An R0 finding on an `ACCEPTED` record: report it, do not act.** There is no status for
-  "should never have been an ADR" -- `DEPRECATED` says "no longer in force", a different
-  statement about a real decision. Report the finding and leave the choice between leaving it
-  standing and `adr_set_status(id, "DEPRECATED")` to the user.
+- **An R0 finding on an `ACCEPTED` record: propose `adr_delete` here too, do not act.** There
+  is still no status for "should never have been an ADR" -- `DEPRECATED` says "no longer in
+  force", a different statement about a real decision -- but the delete path is open for an
+  `ACCEPTED` record as well, as long as no other decision points at it (clear a `relatedTo`
+  edge with `adr_update` first). Report the finding and leave the choice between leaving the
+  record standing and deleting it to the user; the user deletes, you do not decide it away.
 - A finding on R1-R7 is a text correction: possible **only while the record is `PROPOSED`**
   (translations aside, see "Correcting a decision"). Raise them before any status transition,
   not after -- from `ACCEPTED` on the only remaining route is a successor record.

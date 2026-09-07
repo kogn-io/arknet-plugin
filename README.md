@@ -110,11 +110,12 @@ requirement in its first half hands that half to `/arknet:req-interview`
 (`req_add`/`constraint_add`) and keeps the ADR for the HOW remainder, linked
 back via `addressesRequirements`.
 
-The same check is **R0 of the review**, ahead of R1-R8: a `PROPOSED` record
-that fails it is proposed for `adr_delete`, an `ACCEPTED` one is reported and
-left to the user, since there is no status for "should never have been an
-ADR" -- `DEPRECATED` says something else. And it is stated once more before
-`adr_set_status` moves a decision to `ACCEPTED`, the moment its text freezes.
+The same check is **R0 of the review**, ahead of R1-R8: a record that fails it
+is proposed for `adr_delete` -- a `PROPOSED` one, and an `ACCEPTED` one no
+other decision points at. There is no status for "should never have been an
+ADR" (`DEPRECATED` says something else), and the deletion stays the user's
+call. And it is stated once more before `adr_set_status` moves a decision to
+`ACCEPTED`, the moment its text freezes.
 
 **One decision per record**, still enforced by discipline rather than the
 store -- and before the write rather than in the review afterwards: the
@@ -147,10 +148,11 @@ only while a decision is `PROPOSED` -- from `ACCEPTED` on, only its reference
 lists (`addressesRequirements`/`affectsContexts`/`usesTerms`/`relatedTo`) stay editable.
 The same window applies to taking a consequence or considered option out again
 by position (`removeConsequencePositions`/`removeConsideredOptionPositions`).
-`adr_delete` removes a `PROPOSED` decision entered by mistake, but explicitly
-not a `REJECTED` one -- "considered and rejected" is itself a decision worth
-keeping. The skill still confirms content with the user before writing,
-rather than relying on the correction window.
+`adr_delete` removes a decision entered by mistake -- a `PROPOSED` one, or an
+`ACCEPTED` one no other decision points at -- but explicitly not a `REJECTED`
+one: "considered and rejected" is itself a decision worth keeping. The skill
+still confirms content with the user before writing, rather than relying on
+the correction window.
 
 **No `ADR-n` codes in the prose.** A peer decision is connected via
 `relatedTo` (or `supersededBy`/`addressesRequirements`), never by naming its
@@ -693,9 +695,10 @@ it). A use case binds to a role, never directly to an actor.
   near-identical titles -- each a hint, not a defect). Names, in its own
   output, what it does not check: bundled decisions, contradiction between
   records, whether a consequence has substance.
-- `adr_delete` -- remove a `PROPOSED` decision entered by mistake;
-  `REJECTED` is explicitly not deletable, nor is a decision another one
-  still points at via `supersededBy`/`relatedTo`.
+- `adr_delete` -- remove a decision entered by mistake: `PROPOSED`, or
+  `ACCEPTED` with no other decision pointing at it; `REJECTED`,
+  `DEPRECATED` and `SUPERSEDED` are explicitly not deletable, nor is a
+  decision another one still points at via `supersededBy`/`relatedTo`.
 
 ### Traceability and analysis
 
