@@ -521,9 +521,10 @@ them is right in a given situation, and there is no `project_delete`.
   language is shown under another one with an inline `[fallback: ...]` tag, so
   a gap in the kept language no longer looks like a present translation.
 - `req_update` -- correct an existing requirement's title, description,
-  rationale, priority or acceptance criteria (append new ones, or patch the
-  wording of existing ones by position), or state the fields it touches in a
-  further language. Also the way a requirement gets its rationale recorded
+  rationale, priority or acceptance criteria (append new ones, patch the
+  wording of existing ones by position, or remove them by position -- the
+  ones after a removed criterion move up, at least one must stay), or state
+  the fields it touches in a further language. Also the way a requirement gets its rationale recorded
   after the fact if it was registered without one.
 - `req_set_status` -- change lifecycle status (`PROPOSED` -> `ACCEPTED`).
 - `req_link_term` -- link a requirement to a glossary term it uses.
@@ -608,8 +609,10 @@ it). A use case binds to a role, never directly to an actor.
   pre-/postcondition, its extensions, the text or `realises` references of
   individual steps, and its primary/supporting roles (each replaced
   wholesale; the primary role cannot be cleared, an empty supporting-roles
-  list clears it), or state the fields it touches in a further language --
-  not the step list's structure.
+  list clears it), append main-flow steps after the existing ones or remove
+  them by position (the ones after a removed step move up, at least one must
+  stay), or state the fields it touches in a further language -- reordering
+  the main flow is still out of scope.
 - `uc_link_term` -- link a use case to a glossary term it uses.
 - `uc_link_constraint` -- link a use case to the constraint that binds it.
 
@@ -724,12 +727,16 @@ it). A use case binds to a role, never directly to an actor.
 - `store_check` -- check this project's stored model against what it
   declares about itself; read-only, changes and refuses nothing. `checks`
   selects which checks to run (a list of names, omit or pass an empty list
-  to run all -- today there is exactly one). `LANGUAGE` reports every field
+  to run all -- today there are two). `LANGUAGE` reports every field
   carrying at least one language-tagged value but not one for each language
   `project_update`'s `languages` declares, one row per resource and field
   naming the missing tags; with no declared `languages` set there is no
   target state to compare against, so it reports `LANGUAGE: not checked`
-  instead of a clean result.
+  instead of a clean result. `ROLE_TERM_DUPLICATE` reports every role and
+  glossary term that carry the same name, compared case-insensitively and
+  trimmed across every language variant of the role's name against the
+  term's label -- a report only, never a rejection, since the two resource
+  types stay independent of each other.
 - `resource_get` -- fetch all statements (outgoing and incoming) of a single
   resource.
 
