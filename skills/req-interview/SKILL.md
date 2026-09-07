@@ -197,7 +197,7 @@ register -- keep them apart:
 
 **When capturing a use case, ask which *function* drives it, not which
 carrier does.** `uc_add`/`uc_update` bind to a role (`primaryRole`,
-`supportingRoles`), never to an actor directly -- the tool itself now
+`supportingRoles`), never to an actor directly -- the tool itself
 enforces the distinction (see "Ordering consequence" below). A role may
 stay unfilled; do not force an actor into existence just to satisfy a use
 case draft. A carrier is worth its own `actor_add` call once it is known
