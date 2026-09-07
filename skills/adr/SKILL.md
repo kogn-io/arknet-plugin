@@ -238,9 +238,9 @@ What this means in practice:
 older one. **Both must already be `ACCEPTED`** -- write the new ADR first (`adr_add`, then
 `adr_set_status` to `ACCEPTED` once it is genuinely decided), then link it. The call is
 idempotent (recording the same pair twice is a no-op) and rejects a decision superseding
-itself. **Naming a different successor for an already-superseded decision is refused** -- there
-is no tool to change or remove a `supersededBy` edge once set, so double-check `id`/
-`supersededId` before calling; a mistyped call is effectively permanent.
+itself. **Naming a different successor for an already-superseded decision is refused** -- the
+edge is never changed in place: undo the wrong one with `adr_unsupersede` (see below), then call
+`adr_supersede` again with the right pair.
 
 ## Un-superseding a decision
 
