@@ -144,15 +144,15 @@ report=$(jq -n \
 baseline_version=$(jq -r '.serverInfo.version // empty' "$BASELINE" 2>/dev/null)
 semver_re='^v?[0-9]+\.[0-9]+\.[0-9]+'
 if printf '%s' "$live_version" | grep -Eq "$semver_re" && printf '%s' "$baseline_version" | grep -Eq "$semver_re"; then
-  version_line="daemon reports $live_version, baseline was taken against $baseline_version."
+  version_line="the daemon reports $live_version, the baseline was taken against $baseline_version"
 else
-  version_line="the connected arknet server appears to be a different build than the one the baseline was taken against."
+  version_line="the daemon is a different build than the baseline was taken against"
 fi
 
 lines_text=$(printf '%s' "$report" | jq -r '.lines[]')
 more=$(printf '%s' "$report" | jq -r '.more')
 
-context="arknet compatibility check: the connected arknet MCP server no longer matches the baseline some installed skills were verified against ($version_line):
+context="arknet compatibility check: the connected arknet MCP server is behind what the installed skills were verified against ($version_line):
 $lines_text"
 if [ "$more" -gt 0 ] 2>/dev/null; then
   context="$context
@@ -160,7 +160,7 @@ if [ "$more" -gt 0 ] 2>/dev/null; then
 fi
 context="$context
 
-These skills may fail or behave unexpectedly until the arknet-mcp daemon is updated, or the baseline is refreshed if the server is intentionally ahead."
+These skills may fail or behave unexpectedly until the arknet-mcp daemon and this plugin are on matching versions."
 
 jq -n --arg text "$context" '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $text}}'
 exit 0
