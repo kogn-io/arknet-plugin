@@ -268,16 +268,21 @@ itself; it reads the existing fact-tools and routes to the skill that
 actually resolves each finding.
 
 Reports two kinds of finding, always visibly separated: **hard facts** --
-`orphan_check`/`trace_matrix` (dangling links, orphaned terms, untraced
-requirements), `adr_list` filtered to `PROPOSED` (decisions still open --
-open, not waiting to be accepted: `/arknet:adr` weighs a record's right to
-exist before its status, and deleting one is a legitimate outcome while it is
-still `PROPOSED`), and `adr_check`'s `Facts` block (what is mechanically
-decidable about the ADR corpus) -- stated plainly, no judgement needed; and
-**hints** -- a Bounded Context with no `bc_link_context` edge recorded
-(`bc_list` against `resource_get`), and `adr_check`'s `Suspicions`/
-not-checked list, each phrased as a question ("worth a look with
-`/arknet:context-map`?"/"worth a look with `/arknet:adr`?"), never as a
+`orphan_check`'s orphaned-requirements, unreferenced-terms and
+unbound-constraints lists, `trace_matrix` (untraced requirements), `adr_list`
+filtered to `PROPOSED` (decisions still open -- open, not waiting to be
+accepted: `/arknet:adr` weighs a record's right to exist before its status,
+and deleting one is a legitimate outcome while it is still `PROPOSED`), and
+`adr_check`'s `Facts` block (what is mechanically decidable about the ADR
+corpus) -- stated plainly, no judgement needed; and **hints** -- a Bounded
+Context with no `bc_link_context` edge recorded (`bc_list` against
+`resource_get`), `orphan_check`'s fourth list (terms named in text without a
+backing edge -- its word-boundary match is deliberately left unsharpened,
+because a wrong edge costs more than a missed one, so it recurs on an
+everyday word used in its ordinary sense as often as on a real gap), and
+`adr_check`'s `Suspicions`/not-checked list, each phrased as a question
+("worth a look with `/arknet:context-map`?"/"worth a look with
+`/arknet:req-interview`?"/"worth a look with `/arknet:adr`?"), never as a
 defect on par with an orphaned requirement or a `Fact` -- and never as a
 proposed status change. Each finding names the specialist skill that would
 resolve it (`/arknet:req-interview` full-set-audit mode, `/arknet:adr`,
