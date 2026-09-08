@@ -1,5 +1,5 @@
 ---
-description: "Read-only triage layer for vague overall-status questions ('is everything okay?', 'is the model consistent?', 'anything left to do?') that match no specific skill by name. Bundles orphan_check/trace_matrix (structural facts), open PROPOSED ADRs (adr_list) and mechanical ADR corpus findings (adr_check), and Bounded Contexts with no recorded context-map relationship (bc_list vs bc_link_context edges) into one report, clearly split into hard facts vs. judgement candidates, then points at the matching specialist skill (/arknet:req-interview full-set-audit mode, /arknet:bc-audit, /arknet:context-map, /arknet:adr) instead of duplicating its dialogue. Trigger (also DE, since the user may phrase it in German): /arknet:health-check, 'is everything okay', 'is the model/store consistent', 'anything left to do', 'give me a status overview', 'what's the state of the architecture model'; DE: 'ist alles in Ordnung', 'ist das Modell konsistent', 'gibt es noch was zu tun', 'wie ist der Stand', 'Statusuebersicht'. NOT a replacement for the interactive audits themselves (/arknet:bc-audit, /arknet:context-map, /arknet:req-interview full-set-audit mode) -- overview and routing only, this skill never writes and never runs an interrogation dialogue. NOT for a request that already names a specific concern (a BC boundary, a context relationship, one requirement) -- go straight to the matching skill instead."
+description: "Read-only triage layer for vague overall-status questions ('is everything okay?', 'is the model consistent?', 'anything left to do?') that match no specific skill by name. Bundles orphan_check/trace_matrix (structural facts), open PROPOSED ADRs (adr_list) and mechanical ADR corpus findings (adr_check), and Bounded Contexts with no recorded context-map relationship (bc_list vs bc_link_context edges) into one report, clearly split into hard facts vs. judgement candidates, then routes on to /arknet:store-review -- the one pass that runs every resource type's reader-level rules over the whole store -- instead of duplicating any review or dialogue itself. Trigger (also DE, since the user may phrase it in German): /arknet:health-check, 'is everything okay', 'is the model/store consistent', 'anything left to do', 'give me a status overview', 'what's the state of the architecture model'; DE: 'ist alles in Ordnung', 'ist das Modell konsistent', 'gibt es noch was zu tun', 'wie ist der Stand', 'Statusuebersicht'. NOT the review itself (/arknet:store-review) and not a replacement for the interactive audits (/arknet:bc-audit, /arknet:context-map, /arknet:req-interview full-set-audit mode) -- overview and routing only, this skill never writes, never runs an interrogation dialogue and never applies a reader-level rule table. NOT for a request that already names a specific concern (a BC boundary, a context relationship, one requirement) -- go straight to the matching skill instead."
 ---
 
 # /arknet:health-check -- Read-Only Status Overview and Routing
@@ -8,9 +8,10 @@ A **triage layer**, not an audit. When the user's question is vague enough that
 it does not name which specific concern they mean -- consistency of the whole
 store, an open architecture decision, a missing Bounded Context boundary --
 this skill reads the existing fact-tools, reports what they show, and routes
-the user to the specialist skill that actually resolves each finding. It never
-writes to the store and never runs an interrogation dialogue itself; the
-dialogue belongs to the skill it routes to.
+the user on to `/arknet:store-review`, the pass that actually reviews what the
+findings point at. It never writes to the store, never runs an interrogation
+dialogue and never applies a reader-level rule table itself; all three belong
+to the skills it routes to.
 
 ## Is this the right skill?
 
@@ -19,6 +20,14 @@ boundary, a context-map relationship, one requirement/use case/term, an ADR --
 go straight to the matching skill (`/arknet:bc-audit`, `/arknet:context-map`,
 `/arknet:req-interview`, `/arknet:adr`) instead. This skill exists only for the
 case where the question is too vague to name one.
+
+If the user asks for a **review** rather than a status -- the whole store gone
+through against every rule it has, before a set of records is accepted or a
+release is cut -- that is `/arknet:store-review`, the pass that runs the
+mechanical checks and each type's reader-level rules in one go and returns a
+table per resource type. This skill is the cheap read; that one is the
+expensive pass, and the routing below hands over to it rather than
+approximating it here.
 
 ## The tools
 
@@ -83,14 +92,21 @@ already use them.
      plainly.
    - **Hinweise** -- the step-2 candidates. These need a human judgement call;
      phrase them as questions, not conclusions.
-4. **Route, don't resolve.** For each finding, name which specialist skill
-   would resolve it -- `/arknet:req-interview` (full-set-audit mode) for
-   orphaned/untraced requirements or terms, or an `orphan_check` unbacked-
-   mention hint, `/arknet:adr` for open `PROPOSED` decisions or an
-   `adr_check` `Fact`/`Suspicion`, `/arknet:context-map` for a Bounded
-   Context with no recorded relationship. Offer to hand off; do not
-   start that skill's dialogue yourself in the same turn unless the user
-   explicitly asks you to continue straight into it.
+4. **Route, don't resolve -- to one skill, not four.** Every finding this
+   skill produces is a candidate for the same next step: `/arknet:store-review`,
+   which runs the reader-level rules of each resource type over the whole store
+   and reports one table per type. Name it once for the set, rather than
+   sending the user to a different specialist skill per finding -- picking the
+   right one per finding is the work this skill exists to spare them, and a
+   review assembled from four separate invocations is the one that ends up
+   partly skipped. Two cases still go straight to a specialist skill instead:
+   the user names one concrete resource they want dealt with now -- an
+   `orphan_check` unbacked-mention hint the user reads as a genuinely missing
+   edge is the common one, and `/arknet:req-interview` records it -- or they
+   ask to write something, in which case `/arknet:req-interview`,
+   `/arknet:adr`, `/arknet:bc-audit` and `/arknet:context-map` own that write.
+   Either way, offer the hand-off; do not start the other skill in the same
+   turn unless the user asks you to continue straight into it.
 5. **Empty store.** If `orphan_check`/`trace_matrix` return nothing and
    `bc_list` is empty, say so plainly and point at `/arknet:req-interview`
    (greenfield or brownfield entry point) as the place to start -- an empty
