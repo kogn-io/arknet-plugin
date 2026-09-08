@@ -15,6 +15,7 @@ its own release cycle.
   - [`/arknet:bc-audit`](#arknetbc-audit)
   - [`/arknet:context-map`](#arknetcontext-map)
   - [`/arknet:health-check`](#arknethealth-check)
+  - [`/arknet:store-review`](#arknetstore-review)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -274,14 +275,45 @@ decidable about the ADR corpus) -- stated plainly, no judgement needed; and
 not-checked list, each phrased as a question ("worth a look with
 `/arknet:context-map`?"/"worth a look with `/arknet:adr`?"), never as a
 defect on par with an orphaned requirement or a `Fact` -- and never as a
-proposed status change. Each finding names the specialist skill that would
-resolve it (`/arknet:req-interview` full-set-audit mode, `/arknet:adr`,
-`/arknet:context-map`) rather than starting that skill's dialogue itself.
+proposed status change. Every finding names the same next step --
+`/arknet:store-review`, the pass that applies each resource type's
+reader-level rules -- rather than a different specialist skill per finding,
+and the triage never starts that pass or any dialogue itself.
 
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
 (reading `role_usecase_matrix`/`term_cooccurrence` for collisions that
 emerged "since the last audit run") -- neither tool carries a timestamp, and
 a store-size heuristic would fake a precision the store cannot back up.
+
+### `/arknet:store-review`
+
+The **full review pass** over a project's store: every rule the model has,
+run in one go, returned as one report. The review rules live on two levels,
+and before this skill only one of them ran on a single call -- the
+mechanical level in the tools (`adr_check`, `orphan_check`, `store_check`,
+`trace_matrix`), one call each and complete; the reader level in the
+specialist skills, running only when somebody invokes that one skill for
+that one resource type. A review that has to be assembled from four separate
+invocations is a review that is quietly skipped in parts.
+
+Five rules carry it. The **mechanical level runs first and its findings are
+facts** -- carried into the report as the tools reported them, never
+re-derived, with each tool's own not-checked list kept as the boundary the
+reader level has to cover. The **reader level runs per resource type and
+always ends in a table**, one row per resource, one column per rule of that
+type's review mode; an empty cell means "not checked", never "fine", so an
+incomplete review is visible as incomplete. **The reviewer is never the
+author**: each type's review runs in its own subagent, briefed with the
+quoted rules and the resource codes and explicitly not with the reasoning,
+drafts or prior verdicts of the session that wrote them -- an agent that
+argued for a wording finds nothing wrong with it. **Findings stay in the
+report**: no write tool of any kind is called, and the report goes where the
+user says (a file, or a comment on an issue they name), never posted on the
+skill's own initiative. And the **gaps are reported as gaps** -- the reader
+level's review modes are unevenly developed, so every report carries a
+coverage table naming which resource types were reviewed, which were not,
+and what a reader would still have to do by hand. Where a type has no review
+mode at all, no rule set is improvised for it; it is reported as unreviewed.
 
 ## Requirements
 
@@ -462,8 +494,13 @@ Later, three more entry points build on the same store:
 - `/arknet:health-check` -- for a vague "is everything okay?"/"what's the
   status?" question that names none of the above by itself. Reads the same
   fact-tools (`orphan_check`, `trace_matrix`, `adr_list`, `adr_check`,
-  `bc_list`) and routes to whichever of the skills above resolves each
-  finding, instead of making you know which one to pick first.
+  `bc_list`) and routes on, instead of making you know which skill to pick
+  first.
+- `/arknet:store-review` -- the full review pass the triage routes to: the
+  mechanical checks plus each resource type's reader-level rules in one go,
+  one table per type, run by subagents that did not write what they review.
+  Writes nothing; the report is yours to act on. Worth running before a set
+  of records is accepted or a release is cut.
 
 ## MCP Tools
 
