@@ -572,15 +572,22 @@ them is right in a given situation, and there is no `project_delete`.
 - `actor_add` -- register an actor: someone or something that can act on the
   system under description, hold an interest in it, or both (a regulator or
   a department that never touches the system counts as much as a user).
-  Takes a type (`HUMAN`, `SYSTEM`, `LEGAL` or `GROUP`), a plain-text name
-  (no language tag, unlike a glossary term) and an optional description; the
-  result is an `ACTOR-n` code. An actor is a resource in its own right and
-  needs no glossary entry -- `term_add` it separately if its name is also a
-  term worth defining.
-- `actor_get` / `actor_list` -- fetch one / list all actors.
+  Takes a type (`HUMAN`, `SYSTEM`, `LEGAL` or `GROUP`), a name and an
+  optional description, and an optional `language`. `language` is the
+  BCP-47 tag `name`/`description` are written in, falling back to the
+  project's configured default language if omitted; state the actor in a
+  second language with `actor_update` afterwards. Unlike a glossary term's
+  `skos:prefLabel`, an actor's `name` is not required to be the same word
+  under every language tag -- it may be worded differently per language.
+  The result is an `ACTOR-n` code. An actor is a resource in its own right
+  and needs no glossary entry -- `term_add` it separately if its name is
+  also a term worth defining.
+- `actor_get` / `actor_list` -- fetch one / list all actors; both take an
+  optional `displayLocale`, and the list marks a fallen-back entry as
+  described under `req_list`.
 - `actor_update` -- correct an already-created actor's name and/or
-  description in place. The type, and the `ACTOR-n` code, stay fixed at
-  creation.
+  description in place, or state either in a further language. The type,
+  and the `ACTOR-n` code, stay fixed at creation.
 - `actor_delete` -- remove the whole actor resource, not just a correction;
   rejected while a role still lists it among its `filledBy` occupants. An
   actor that is also a glossary term keeps its glossary entry.

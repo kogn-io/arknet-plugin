@@ -218,7 +218,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` (both `displayLocale?`) | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
 | Use case | `uc_add` | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` (both `displayLocale?`) | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
-| Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
+| Actor | `actor_add` | `actor_get`, `actor_list` (both `displayLocale?`) | `actor_update` (name/description, or either in a further language -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
 | Role | `role_add` | `role_get`, `role_list` (both `displayLocale?`) | `role_update` (name/description/`filledBy` -- not the code), `role_delete` (whole resource) |
 
 ### Actor vs. role: which resource applies
@@ -247,7 +247,7 @@ who/what actually occupies the role, or when the carrier itself is a
 distinct topic (e.g. an external system with its own SLAs) independent of
 any role it fills.
 
-### Actors: `actor_add(type, name, description?)`
+### Actors: `actor_add(type, name, description?, language?)`
 
 An actor is a resource in its own right, not a glossary term or a facet of
 one -- someone or something that can act on the system under description,
@@ -262,14 +262,29 @@ forces the pairing.
   department, committee, team). Fixed at creation; `actor_update` cannot
   change it.
 - `name` (required) -- what the actor is called, e.g. "Sachbearbeiter" or
-  "PaymentService". Plain text, no language tag (unlike a glossary term's
-  `skos:prefLabel`, and unlike a role's `name`, see below) -- an actor is a
-  structural identity, not prose whose wording is the deliverable.
+  "PaymentService". Carries a language tag (see below), same as a role's
+  `name` -- but unlike a glossary term's `skos:prefLabel`, it is not
+  required to be the same word under every tag; the name may be worded
+  differently per language.
 - `description` (optional) -- free text.
+- `language` (optional) -- BCP-47 tag `name`/`description` are written in,
+  behaving as in `term_add`: falls back to the project's configured
+  default language, and if the project has no default either, the call is
+  rejected rather than writing an untagged literal.
 - Result: `ACTOR-n` code.
-- `actor_update(id, name?, description?)` -- corrects an already-created
-  actor's name/description in place, keeping its identity (and every
-  existing link into it) unchanged. Cannot change `type` or the code.
+- `actor_update(id, name?, description?, language?)` -- corrects an
+  already-created actor's name/description in place, keeping its identity
+  (and every existing link into it) unchanged. Cannot change `type` or the
+  code. `language` behaves as in `term_update`: it replaces only the
+  literal carrying the resolved tag, every other language variant survives
+  untouched -- this is also the way to make an existing, single-language
+  actor bilingual (restate `name`/`description` under the second tag; one
+  call carries one language tag, so a second language takes a second
+  `actor_update` call).
+- `actor_get(id, displayLocale?)` -- `displayLocale` behaves as in
+  `term_get`. `actor_list(displayLocale?)` takes it too and flags a
+  fallen-back entry with the same inline `[fallback: ...]` tag as
+  `term_list`.
 - `actor_delete(id)` -- removes the whole actor resource, not just a
   correction. Rejected while a role still lists it among its `filledBy`
   occupants -- remove it there first (`role_update`). An actor that is
