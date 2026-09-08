@@ -251,19 +251,21 @@ Contexts and records confirmed ones via `bc_link_context`. Companion to
 `/arknet:bc-audit`: that skill decides *where* a boundary sits, this one
 decides *how* two already-drawn boundaries relate.
 
-Reads `bc_list` and `resource_get` as facts -- the pool of contexts to pair,
-and any relationship already recorded for a pair -- before proposing
-anything; the classification judgement stays with the user, same discipline
-as `/arknet:bc-audit`. For the five asymmetric relationship types
+Reads `bc_list`/`bc_get` as facts -- the pool of contexts to pair, and any
+relationship already recorded for a pair, shown inline on both -- before
+proposing anything; the classification judgement stays with the user, same
+discipline as `/arknet:bc-audit`. For the five asymmetric relationship types
 (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`,
 `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`) it also confirms which context is
 upstream and which is downstream before writing; for the three symmetric
 ones (`PARTNERSHIP`, `SHARED_KERNEL`, `SEPARATE_WAYS`) it says plainly that
 the tool's upstream/downstream fields are bookkeeping only, not a real
-asymmetry. `bc_link_context` is not idempotent -- calling it twice for the
-same pair creates a second edge rather than updating the first -- so the
-skill checks for an existing relationship before writing rather than after.
-Out of scope: drawing or judging where a Bounded Context boundary sits
+asymmetry. `bc_link_context` is idempotent over the exact (upstream,
+downstream, relationshipType) triple -- calling it again with the same
+three values returns the relationship already recorded rather than creating
+a second one -- and `bc_unlink_context` removes a recorded relationship by
+that same triple, rejecting one that isn't currently recorded. Out of
+scope: drawing or judging where a Bounded Context boundary sits
 (`/arknet:bc-audit`'s job) and tactical design, which has no tool surface
 yet.
 
@@ -284,18 +286,19 @@ accepted: `/arknet:adr` weighs a record's right to exist before its status,
 and deleting one is a legitimate outcome while it is still `PROPOSED`), and
 `adr_check`'s `Facts` block (what is mechanically decidable about the ADR
 corpus) -- stated plainly, no judgement needed; and **hints** -- a Bounded
-Context with no `bc_link_context` edge recorded (`bc_list` against
-`resource_get`), `orphan_check`'s fourth list (terms named in text without a
-backing edge -- its word-boundary match is deliberately left unsharpened,
-because a wrong edge costs more than a missed one, so it recurs on an
-everyday word used in its ordinary sense as often as on a real gap), and
-`adr_check`'s `Suspicions`/not-checked list, each phrased as a question
-("worth a look with `/arknet:context-map`?"/"worth a look with
-`/arknet:req-interview`?"/"worth a look with `/arknet:adr`?"), never as a
-defect on par with an orphaned requirement or a `Fact` -- and never as a
-proposed status change. Each finding names the specialist skill that would
-resolve it (`/arknet:req-interview` full-set-audit mode, `/arknet:adr`,
-`/arknet:context-map`) rather than starting that skill's dialogue itself.
+Context with no `bc_link_context` edge recorded (`bc_list` alone, which
+shows each context's edges inline), `orphan_check`'s fourth list (terms
+named in text without a backing edge -- its word-boundary match is
+deliberately left unsharpened, because a wrong edge costs more than a missed
+one, so it recurs on an everyday word used in its ordinary sense as often as
+on a real gap), and `adr_check`'s `Suspicions`/not-checked list, each
+phrased as a question ("worth a look with `/arknet:context-map`?"/"worth a
+look with `/arknet:req-interview`?"/"worth a look with `/arknet:adr`?"),
+never as a defect on par with an orphaned requirement or a `Fact` -- and
+never as a proposed status change. Each finding names the specialist skill
+that would resolve it (`/arknet:req-interview` full-set-audit mode,
+`/arknet:adr`, `/arknet:context-map`) rather than starting that skill's
+dialogue itself.
 
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
 (reading `role_usecase_matrix`/`term_cooccurrence` for collisions that
@@ -679,9 +682,10 @@ it). A use case binds to a role, never directly to an actor.
   the BCP-47 tag `name`/`domainVision` are written in, falling back to the
   project's configured default language if omitted; state the context in a
   second language with `bc_update` afterwards.
-- `bc_get` / `bc_list` -- fetch one / list all bounded contexts; both take
-  an optional `displayLocale`, and the list marks a fallen-back entry as
-  described under `req_list`.
+- `bc_get` / `bc_list` -- fetch one / list all bounded contexts, each
+  carrying every recorded `ContextRelationship` edge (both directions)
+  inline; both take an optional `displayLocale`, and the list marks a
+  fallen-back entry as described under `req_list`.
 - `bc_update` -- correct an already-registered context's name or domain
   vision in place, or state either in a further language, keeping its
   identity and every link into it unchanged.
@@ -690,7 +694,11 @@ it). A use case binds to a role, never directly to an actor.
 - `bc_link_context` -- record a directed context-map relationship
   (Partnership, Shared Kernel, Customer-Supplier, Conformist,
   Anti-Corruption Layer, Open Host Service, Published Language, or
-  Separate Ways) between two existing bounded contexts.
+  Separate Ways) between two existing bounded contexts; idempotent over the
+  exact (upstream, downstream, relationshipType) triple.
+- `bc_unlink_context` -- remove a previously recorded relationship,
+  addressed by that same triple; rejects a triple that is not currently
+  recorded rather than silently doing nothing.
 
 ### Architecture decisions
 

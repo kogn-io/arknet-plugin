@@ -28,10 +28,9 @@ case where the question is too vague to name one.
 | `trace_matrix` | Per requirement: which terms it uses, which use case(s) realise it. | Hard fact |
 | `adr_list` | Every recorded decision with its status; filter the result to `PROPOSED` yourself -- the tool has no status parameter. | Hard fact |
 | `adr_check` | Every recorded decision, checked for what is mechanically decidable and reported as `Facts`/`Suspicions` plus a not-checked list -- reads only, changes nothing. Report the `Facts` block as-is; a `Suspicion` or a not-checked entry is a candidate for `/arknet:adr`, not a finding on par with a `Fact` -- do not phrase either as a defect, and never propose a status change from either block. | Hard fact |
-| `bc_list` | Every registered Bounded Context -- the pool to check for missing relationships. | Judgement candidate |
-| `resource_get` | Per Bounded Context from `bc_list`, read its recorded `ContextRelationship` edges (see `/arknet:context-map`). | Judgement candidate |
+| `bc_list` | Every registered Bounded Context, with its recorded `ContextRelationship` edges (see `/arknet:context-map`) shown inline -- the pool to check for missing relationships. | Judgement candidate |
 
-No new MCP tools -- all six already exist and are used the same way their
+No new MCP tools -- all five already exist and are used the same way their
 owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`)
 already use them.
 
@@ -63,8 +62,8 @@ already use them.
      hint in step 2 instead of listing them here, and never propose a status
      change from either block.
 2. **Judgement candidates, hint only.** `bc_list` for every registered
-   context, then `resource_get` on each to check its recorded
-   `ContextRelationship` edges. A context with zero edges is a **hint**, not a
+   context, checking each one's `ContextRelationship` edges as shown inline
+   by that same call. A context with zero edges is a **hint**, not a
    defect -- some contexts are legitimately unrelated to any other. Report it
    as "no relationship recorded for X yet -- worth a look with
    `/arknet:context-map`?", never as a finding on par with an orphaned
