@@ -93,8 +93,9 @@ the record exists -- the cheapest place to keep a non-decision out of the store.
 | Q3 | **A real alternative.** Was there at least one option a reasonable team could have chosen, or is the "alternative" a straw man? | No discretion was exercised: it is a constraint (`constraint_add`) or a plain fact, not a decision. |
 | Q4 | **Category.** Is the core of it a HOW? A "must/shall" about system behaviour is a requirement (`req_add`), a definition is a glossary term (`term_add`), a date or a "later" is a tracker issue. | Hand that part off (see "Scope boundary") and write the ADR for the HOW remainder only -- if one is left. |
 
-- **A "no" on Q1 or Q2 stops the write.** Say where the thing belongs instead, and do not call
-  `adr_add`.
+- **A "no" on Q1 or Q2 stops the write.** Name where the thing belongs instead -- a glossary
+  definition (`term_add`), an issue comment, a convention in the project's instruction file --
+  and do not call `adr_add`.
 - **A "no" on Q3 does not.** An empty option space is allowed as long as the record says why it
   was empty (see "Substantive consequences and considered options"); Q3 exists to expose a
   straw-man option, not to force one into existence.
@@ -107,9 +108,23 @@ the record exists -- the cheapest place to keep a non-decision out of the store.
   sentence each and architecturally relevant -- a construction technique that holds across the
   project passes Q1. The expensive mistake is the decision that never gets recorded, not the one
   that sits `PROPOSED` a while longer: where Q1 and Q2 are genuinely close, write it and say so.
+- **Reversal cost is measured from the decision you're recording, not from the option it turned
+  down.** A choice to keep the status quo can sit next to a rejected option that would have been
+  expensive to walk back (a namespace migration, say) -- that cost belongs to the option that
+  was *not* taken, not to this one. Q2 asks what reversing the decision actually being recorded
+  would cost in a year; for "we keep things as they are," that is usually nothing, which is a
+  straight "no" on Q2 regardless of how costly the rejected alternative would have been.
+- **A request already framed as an ADR has not answered this question -- it has raised it.** "Write
+  this as an ADR," "record this decision," an instruction from a tracker issue or a project's own
+  instruction file: none of these are a "yes" on Q1/Q2. Run the category check against what the
+  request describes, not against how it packaged the ask, and let a "no" stand even when the
+  request assumed a "yes."
 
-Put the result to the user as **its own question**, separate from the content confirmation that
-follows (see "Correcting a decision") -- two lines, not a rendered table per invocation:
+State Q1 and Q2 to the user before every `adr_add` call, one line each -- the same visible
+discipline as at `ACCEPTED` (see "Accepting a proposal" below), never skipped because the request
+already asked for an ADR. Put the result as **its own question**, separate from the content
+confirmation that follows (see "Correcting a decision") -- two lines, not a rendered table per
+invocation:
 
 > This is an ADR because Q1: it fixes the persistence dependency for the whole service; Q2: a
 > reversal means migrating the stored data. Agreed?
