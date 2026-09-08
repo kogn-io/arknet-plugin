@@ -1,7 +1,7 @@
 {
   "serverInfo": {
     "name": "arknet",
-    "version": "dev"
+    "version": "v0.9.0"
   },
   "tools": {
     "actor_add": ["description","language","name","projectAnchor","type"],
@@ -24,7 +24,7 @@
     "bc_link_term": ["bcId","projectAnchor","termId"],
     "bc_list": ["displayLocale","projectAnchor"],
     "bc_unlink_context": ["downstreamBcId","projectAnchor","relationshipType","upstreamBcId"],
-    "bc_update": ["domainVision","id","language","name","projectAnchor"],
+    "bc_update": ["domainVision","id","language","name","projectAnchor","terms"],
     "constraint_add": ["language","projectAnchor","statement","title","type"],
     "constraint_delete": ["id","projectAnchor"],
     "constraint_get": ["displayLocale","id","projectAnchor"],
