@@ -104,9 +104,14 @@ project), cost of reversal, whether a real alternative existed, and whether
 the core is a HOW at all -- a "must/shall" about system behaviour is a
 requirement, a definition is a glossary term, a "later" is a tracker issue. A
 "no" on reach or cost of reversal stops the write and names where the thing
-belongs instead; the criterion is reach, not size, so "no Lombok" is one
-sentence and still an architecture decision. A draft that carries a
-requirement in its first half hands that half to `/arknet:req-interview`
+belongs instead -- a glossary definition, an issue comment, a convention in
+the project's instruction file; the criterion is reach, not size, so "no
+Lombok" is one sentence and still an architecture decision. A request that
+already asks to "write this as an ADR" has not answered the question, it has
+raised it -- the check runs against what is being recorded, not against how
+the request framed it, and a "no" stands even against an explicit ask. A
+draft that carries a requirement in its first half hands that half to
+`/arknet:req-interview`
 (`req_add`/`constraint_add`) and keeps the ADR for the HOW remainder, linked
 back via `addressesRequirements`. Linking a decision to a bounded context
 (`affectsContexts`) follows the same targeting discipline: only a context the
