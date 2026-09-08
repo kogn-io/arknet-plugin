@@ -671,7 +671,7 @@ it). A use case binds to a role, never directly to an actor.
   references it: a requirement's, use case's or architecture decision's
   `usesTerm`, a bounded context's ubiquitous-language link, or another
   term's `broader`/`related`. Remove those edges first (`req_update`/
-  `uc_update`, `adr_update`, `bc_link_term`, `term_update` on the other
+  `uc_update`, `adr_update`, `bc_update`, `term_update` on the other
   term).
 
 ### Bounded contexts
@@ -688,9 +688,12 @@ it). A use case binds to a role, never directly to an actor.
   fallen-back entry as described under `req_list`.
 - `bc_update` -- correct an already-registered context's name or domain
   vision in place, or state either in a further language, keeping its
-  identity and every link into it unchanged.
+  identity unchanged. Also replaces the context's glossary-term links
+  wholesale via `terms`: omitted leaves them untouched, an empty list
+  clears them all, a non-empty list is the full set going forward -- the
+  only way to unlink a term, since `bc_link_term` only ever adds one.
 - `bc_link_term` -- link a bounded context to a glossary term of its
-  ubiquitous language.
+  ubiquitous language; add-only, see `bc_update` above to unlink one.
 - `bc_link_context` -- record a directed context-map relationship
   (Partnership, Shared Kernel, Customer-Supplier, Conformist,
   Anti-Corruption Layer, Open Host Service, Published Language, or
