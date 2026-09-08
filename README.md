@@ -108,7 +108,12 @@ belongs instead; the criterion is reach, not size, so "no Lombok" is one
 sentence and still an architecture decision. A draft that carries a
 requirement in its first half hands that half to `/arknet:req-interview`
 (`req_add`/`constraint_add`) and keeps the ADR for the HOW remainder, linked
-back via `addressesRequirements`.
+back via `addressesRequirements`. Linking a decision to a bounded context
+(`affectsContexts`) follows the same targeting discipline: only a context the
+decision actually binds gets the edge, never every context that happens to
+exist, and a genuinely project-wide decision -- the composition root, the
+build technique, a project-wide convention -- gets no context edge at all,
+even though it technically touches every context.
 
 The same check is **R0 of the review**, ahead of R1-R8: a record that fails it
 is proposed for `adr_delete` -- a `PROPOSED` one, and an `ACCEPTED` one no
@@ -693,7 +698,8 @@ it). A use case binds to a role, never directly to an actor.
   decidable, without changing anything: `Facts` (a `decisionDate` on a
   decision not yet taken, no consequence/no considered option recorded, an
   option space with nothing `CHOSEN` on a decision that was taken, a
-  decision addressing no requirement and affecting no bounded context, an
+  decision addressing no requirement and affecting no bounded context --
+  expected, not a defect, for a decision that is genuinely project-wide, an
   `ADR-n` in the prose the project does not hold or no edge backs) and
   `Suspicions` (tracker references, address/port literals, status prose,
   near-identical titles -- each a hint, not a defect). Names, in its own
