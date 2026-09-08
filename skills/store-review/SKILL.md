@@ -176,7 +176,7 @@ report, filled in for the run it describes:
 | Architecture decision | The rule table of `/arknet:adr`, one row per record | -- the mode is a table already; it transfers unchanged |
 | Requirement, Constraint, Use case, Glossary term | The full-set audit checklists of `/arknet:req-interview` | The checklists are written for a dialogue, not a grid: the reviewer renders one row per resource from them, and a question the checklist would put to the user becomes a finding in a cell instead of an answer |
 | Bounded Context | `/arknet:bc-audit` finds *candidates* in the requirements/use-case/glossary set | It does not review a context already recorded -- there is no mode that puts the language-break test to an existing boundary, so a context that never was one is not found |
-| Context relationship | `/arknet:context-map` elicits a relationship | No review mode: a recorded relationship type is not re-tested, and the tool that writes it cannot correct or remove an edge either |
+| Context relationship | `/arknet:context-map` elicits a relationship | No review mode: a recorded relationship type is not re-tested |
 | Actor, Role | none | Not reviewed at all |
 
 Report the right-hand column as an open gap of the review, not as a clean
