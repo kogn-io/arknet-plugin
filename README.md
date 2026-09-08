@@ -649,8 +649,16 @@ it). A use case binds to a role, never directly to an actor.
 
 - `bc_add` -- register a bounded context (name, one-sentence domain vision,
   optional owning team and strategic classification --
-  core/supporting/generic domain).
-- `bc_get` / `bc_list` -- fetch one / list all bounded contexts.
+  core/supporting/generic domain, and an optional `language`). `language` is
+  the BCP-47 tag `name`/`domainVision` are written in, falling back to the
+  project's configured default language if omitted; state the context in a
+  second language with `bc_update` afterwards.
+- `bc_get` / `bc_list` -- fetch one / list all bounded contexts; both take
+  an optional `displayLocale`, and the list marks a fallen-back entry as
+  described under `req_list`.
+- `bc_update` -- correct an already-registered context's name or domain
+  vision in place, or state either in a further language, keeping its
+  identity and every link into it unchanged.
 - `bc_link_term` -- link a bounded context to a glossary term of its
   ubiquitous language.
 - `bc_link_context` -- record a directed context-map relationship
