@@ -30,7 +30,7 @@ under the rules below; the files are the user's to retire.
 | `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
 | `adr_unsupersede` | Regret path for a mistyped `adr_supersede` call -- reverts a `SUPERSEDED` decision back to `ACCEPTED` and drops its `supersededBy` edge (see "Un-superseding a decision" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
-| `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context, an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
+| `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context -- expected, not a defect, for a decision that is genuinely project-wide (see the `affectsContexts` bullet below) -- an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
 | `adr_delete` | Removes a record entered by mistake: a `PROPOSED` decision, or an `ACCEPTED` one no other decision points at -- see "Deleting a decision" below. |
 
 `adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
@@ -61,6 +61,12 @@ under the rules below; the files are the user's to retire.
   tool itself with a didactic error -- if a reference doesn't obviously already exist, check
   with `req_list`/`bc_list`/`term_list` first (or create it: `req_add` / `bc_add` / `term_add`)
   rather than let the call fail as a surprise.
+- `affectsContexts` is optional and set **targeted**, never exhaustively: name only the bounded
+  contexts this decision actually binds -- the ones that would have to change if the decision
+  were reversed. A project-wide decision (the composition root, the build technique, a
+  project-wide convention) gets **no** context edge, even though it technically touches every
+  context -- `affectsContexts` records a binding, not a scope, and listing every existing
+  bounded context to make the edge "complete" is exactly the mistake this rule rules out.
 - `relatedTo` (`ADR-n`) links this decision to peer decisions ("see also"), each of which must
   already exist -- see "Related decisions" below.
 
