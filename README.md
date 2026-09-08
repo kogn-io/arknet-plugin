@@ -198,8 +198,12 @@ stops and points at `/arknet:init` rather than guessing a registration call.
 The same skill also runs a **full-set audit**: on a phrasing like "review the
 requirements relentlessly" or "are they complete/consistent", it first runs
 `orphan_check`/`trace_matrix` as a mandatory automated pass -- surfacing
-dangling links and orphaned terms that a content read alone would miss --
-then walks the entire store (requirements, use cases, glossary) one item
+dangling links and orphaned terms that a content read alone would miss.
+`orphan_check`'s fourth list -- text mentions of a term missing its backing
+edge -- is the exception: its word-boundary match also catches an everyday
+word used in its ordinary sense, so the interviewer weighs each entry
+instead of treating it as a fact. It then walks the entire store
+(requirements, use cases, glossary) one item
 at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
 filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the

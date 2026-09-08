@@ -645,15 +645,20 @@ entry points (see above), same protocol:
   complete/consistent"). This is the **default reading** of any
   "review/check" phrasing -- do not collapse it into a quick summary.
   **First, automated pass:** run `orphan_check` (requirements no use case
-  realises, glossary terms never referenced, text mentions of a term missing
-  its backing edge -- including a use case's prose beyond its `goal` -- and
-  constraints no requirement or use case is bound by) and `trace_matrix` (per
-  requirement: which terms it uses, which use case(s) realise it) *before*
-  any manual reading -- these two calls surface structural gaps
-  (dangling links, orphaned terms, unrealised requirements) that a
-  content read of the requirement text will not, no matter how careful.
-  Treat every finding they report as a mandatory interrogation point, not
-  an optional footnote. **Then** walk every requirement/use case/term
+  realises, glossary terms never referenced, constraints no requirement or
+  use case is bound by) and `trace_matrix` (per requirement: which terms it
+  uses, which use case(s) realise it) *before* any manual reading -- these
+  calls surface structural gaps (dangling links, orphaned terms, unrealised
+  requirements) that a content read of the requirement text will not, no
+  matter how careful. Treat every finding from these three `orphan_check`
+  lists, and from `trace_matrix`, as a mandatory interrogation point, not
+  an optional footnote. `orphan_check` also returns a fourth list -- text
+  mentions of a term missing its backing edge, including a use case's prose
+  beyond its `goal` -- but its word-boundary match is deliberately left
+  unsharpened, so it recurs on an everyday word used in its ordinary sense
+  as often as on a real gap: read each entry yourself and discard it
+  without a question when that is what it is; open one only for a genuine
+  gap. **Then** walk every requirement/use case/term
   systematically, one at a time, and interrogate the user relentlessly on
   the gaps you find (missing scenarios/actors/roles/edge cases, conflicts,
   untestable descriptions, unspecified failure behaviour). A full-set audit
