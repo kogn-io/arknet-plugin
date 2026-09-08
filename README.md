@@ -111,8 +111,14 @@ requirement in its first half hands that half to `/arknet:req-interview`
 (`req_add`/`constraint_add`) and keeps the ADR for the HOW remainder, linked
 back via `addressesRequirements`.
 
-The same check is **R0 of the review**, ahead of R1-R8: a record that fails it
-is proposed for `adr_delete` -- a `PROPOSED` one, and an `ACCEPTED` one no
+The same check is **R0 of the review**, ahead of R1-R8, and it falls on each
+assertion the independence test splits out, not only on the record as a whole:
+a genuine decision in one half does not carry the other half through. Two
+shapes sound architectural and still fail it -- an assertion that things stay
+as they are (nothing was taken, so nothing costs anything to reverse) and an
+enumeration of which components or contexts exist, which is a building-block
+view; the decision, if there is one, is the rule the list was cut by. A record
+that fails R0 is proposed for `adr_delete` -- a `PROPOSED` one, and an `ACCEPTED` one no
 other decision points at. There is no status for "should never have been an
 ADR" (`DEPRECATED` says something else), and the deletion stays the user's
 call. And it is stated once more before `adr_set_status` moves a decision to

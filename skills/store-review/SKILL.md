@@ -126,7 +126,11 @@ things, and nothing else:
   the instruction not to re-derive them.
 - **The output contract**: the table of rule 2, one row per resource, plus the
   corpus-wide findings that have no row of their own, plus anything it could
-  not reach.
+  not reach. Where a rule says its check has to be carried out **in writing**
+  rather than by feel -- a text split into its separate assertions, a claim
+  traced back to its source -- the briefing asks for that working alongside
+  the cell. A cell reading `ok` with no working behind it is not evidence the
+  rule ran, and a rule applied by feel reliably finds nothing.
 
 And explicitly **not**: why a record was written the way it was, what was
 discussed when it was drafted, which findings you expect, or any prior review's
