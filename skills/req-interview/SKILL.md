@@ -397,10 +397,10 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   case's `arkreq:usesTerm`, an architecture decision's `arkarch:usesTerm`,
   a bounded context's `ubiquitousLanguageTerm`, or another term's `broader`
   or `related`. Remove those edges first (`req_update`/`uc_update`,
-  `adr_update`, `bc_link_term`, or `term_update` on the *other* term to
-  clear its `broader`/`related`). A term found wanting is corrected with
-  `term_update`, not deleted and re-created -- re-creating loses the code
-  and every link into it.
+  `adr_update`, `bc_update`'s `terms` list, or `term_update` on the *other*
+  term to clear its `broader`/`related`). A term found wanting is corrected
+  with `term_update`, not deleted and re-created -- re-creating loses the
+  code and every link into it.
 - `term_get(id, displayLocale?)` -- `displayLocale` (optional) overrides the
   project's configured default language for this one read, choosing which
   language variant of label/definition comes back. Falls back to the
