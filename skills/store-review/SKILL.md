@@ -112,7 +112,8 @@ their judgement lands on what the tool explicitly does not check.
 ### 3. Run the reader level, one subagent per resource type
 
 Launch them in parallel, one per type. Each briefing carries exactly four
-things, and nothing else:
+things, and nothing else -- five when the review targets a project other
+than the current directory's:
 
 - **The review rules of that type's specialist skill, quoted in full.** Quote
   them; do not summarise, and do not assume the subagent can load the skill
@@ -131,6 +132,12 @@ things, and nothing else:
   traced back to its source -- the briefing asks for that working alongside
   the cell. A cell reading `ok` with no working behind it is not evidence the
   rule ran, and a rule applied by feel reliably finds nothing.
+- **The `projectAnchor`, only when one is in play.** A subagent resolves the
+  project from its own working directory exactly like any other caller, so a
+  review running against another project's anchor has to hand it over and
+  require it on every read call. Left out, the reviewer reads a different
+  store than the one the report names it read -- and the report still looks
+  complete.
 
 And explicitly **not**: why a record was written the way it was, what was
 discussed when it was drafted, which findings you expect, or any prior review's
