@@ -23,10 +23,11 @@ the greenfield BDUF this skill is designed not to do.
 
 | Tool | Role |
 |---|---|
-| `term_list`, `req_list`, `uc_list` | Read the whole requirements/use-case/glossary set before anything else. Each takes `displayLocale?`; a line carrying an inline `[fallback: ...]` tag is an entry **missing** in that language, shown under another one. |
+| `term_list`, `req_list`, `uc_list`, `bc_list` | Read the whole requirements/use-case/glossary set and every already-registered Bounded Context before anything else. Each takes `displayLocale?`; a line carrying an inline `[fallback: ...]` tag is an entry **missing** in that language, shown under another one. |
 | `role_usecase_matrix` | Raw bipartite data: which use cases each role appears in (`primaryRole`/`supportingRole`), and vice versa, plus which actors occupy each role (`filledBy`). No clustering, no judgement -- that stays with you and the user. |
 | `term_cooccurrence` | Raw data: which glossary terms are named together in the same requirement/use-case text, and which never co-occur -- the material for "is this one term or a homonym with two meanings per context?". |
-| `bc_add(name, domainVision, subdomain?, ownedBy?)` | Register a confirmed Bounded Context. `domainVision` must come out of the discussion with the user, never be invented to fill the field. |
+| `bc_add(name, domainVision, subdomain?, ownedBy?, language?)` | Register a confirmed Bounded Context. `domainVision` must come out of the discussion with the user, never be invented to fill the field. `language` names the BCP-47 tag `name`/`domainVision` are written in, falling back to the project's configured default language if omitted. |
+| `bc_update(id, name?, domainVision?, language?)` | Correct an already-registered context's name/domain vision, or restate either in a further language -- the correction path `bc_add` alone does not have. One call carries one language tag, same discipline as the write tools in `/arknet:req-interview`. |
 | `bc_link_term` | Link the new context to each glossary term the user confirmed belongs to it. |
 | `impact_analysis` | Ripple check on every term just linked. |
 
@@ -38,13 +39,17 @@ agent and the user.
 
 ## Protocol
 
-1. **Read the requirements, use cases and glossary.** `term_list`,
-   `req_list`, `uc_list`, in full -- this is the baseline every candidate
-   gets checked against. Read them under one language (`displayLocale`) and
-   watch the inline `[fallback: ...]` tags: a tagged line is an entry the
-   store does not hold in that language at all. A term you are about to weigh
-   as a naming collision may just be the same concept surfacing under two
-   languages, so resolve the tags before reading anything into the wording.
+1. **Read the requirements, use cases, glossary and existing contexts.**
+   `term_list`, `req_list`, `uc_list`, `bc_list`, in full -- this is the
+   baseline every candidate gets checked against. Read them under one
+   language (`displayLocale`) and watch the inline `[fallback: ...]` tags: a
+   tagged line is an entry the store does not hold in that language at all.
+   A term you are about to weigh as a naming collision may just be the same
+   concept surfacing under two languages, so resolve the tags before reading
+   anything into the wording. A project maintaining more than one language
+   needs its Bounded Contexts in each of them too, the same as its
+   requirements and terms -- `store_check`'s `LANGUAGE` check reports any
+   context still missing one.
 2. **Find candidate collisions, then test each one for a language break.**
    Call `role_usecase_matrix` and `term_cooccurrence` and look for language
    that clusters or splits: a role whose use cases fall into two unrelated
@@ -96,8 +101,12 @@ agent and the user.
    answer.
 4. **On confirmation, write it in.** `bc_add` with a `domainVision`
    phrased from what the user just said, not invented to satisfy the
-   field's minimum length. Then `bc_link_term` for every glossary term the
-   user placed inside this context.
+   field's minimum length; `bc_add` writes only the language named by its
+   `language` argument (or the project default) -- in a project maintaining
+   more than one language, restate the context in each further language
+   right after with `bc_update id language=...`, one call per language,
+   before moving to the next candidate. Then `bc_link_term` for every
+   glossary term the user placed inside this context.
 5. **Ripple check.** `impact_analysis` on every term just linked to the
    new Bounded Context -- does the new boundary cut across a `usesTerm`/
    `realises` edge that used to be uncontroversial? Surface anything it
