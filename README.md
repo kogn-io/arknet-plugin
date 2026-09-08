@@ -105,11 +105,21 @@ project), cost of reversal, whether a real alternative existed, and whether
 the core is a HOW at all -- a "must/shall" about system behaviour is a
 requirement, a definition is a glossary term, a "later" is a tracker issue. A
 "no" on reach or cost of reversal stops the write and names where the thing
-belongs instead; the criterion is reach, not size, so "no Lombok" is one
-sentence and still an architecture decision. A draft that carries a
-requirement in its first half hands that half to `/arknet:req-interview`
+belongs instead -- a glossary definition, an issue comment, a convention in
+the project's instruction file; the criterion is reach, not size, so "no
+Lombok" is one sentence and still an architecture decision. A request that
+already asks to "write this as an ADR" has not answered the question, it has
+raised it -- the check runs against what is being recorded, not against how
+the request framed it, and a "no" stands even against an explicit ask. A
+draft that carries a requirement in its first half hands that half to
+`/arknet:req-interview`
 (`req_add`/`constraint_add`) and keeps the ADR for the HOW remainder, linked
-back via `addressesRequirements`.
+back via `addressesRequirements`. Linking a decision to a bounded context
+(`affectsContexts`) follows the same targeting discipline: only a context the
+decision actually binds gets the edge, never every context that happens to
+exist, and a genuinely project-wide decision -- the composition root, the
+build technique, a project-wide convention -- gets no context edge at all,
+even though it technically touches every context.
 
 The same check is **R0 of the review**, ahead of R1-R8, and it falls on each
 assertion the independence test splits out, not only on the record as a whole:
@@ -195,8 +205,12 @@ stops and points at `/arknet:init` rather than guessing a registration call.
 The same skill also runs a **full-set audit**: on a phrasing like "review the
 requirements relentlessly" or "are they complete/consistent", it first runs
 `orphan_check`/`trace_matrix` as a mandatory automated pass -- surfacing
-dangling links and orphaned terms that a content read alone would miss --
-then walks the entire store (requirements, use cases, glossary) one item
+dangling links and orphaned terms that a content read alone would miss.
+`orphan_check`'s fourth list -- text mentions of a term missing its backing
+edge -- is the exception: its word-boundary match also catches an everyday
+word used in its ordinary sense, so the interviewer weighs each entry
+instead of treating it as a fact. It then walks the entire store
+(requirements, use cases, glossary) one item
 at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
 filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the
@@ -244,19 +258,21 @@ Contexts and records confirmed ones via `bc_link_context`. Companion to
 `/arknet:bc-audit`: that skill decides *where* a boundary sits, this one
 decides *how* two already-drawn boundaries relate.
 
-Reads `bc_list` and `resource_get` as facts -- the pool of contexts to pair,
-and any relationship already recorded for a pair -- before proposing
-anything; the classification judgement stays with the user, same discipline
-as `/arknet:bc-audit`. For the five asymmetric relationship types
+Reads `bc_list`/`bc_get` as facts -- the pool of contexts to pair, and any
+relationship already recorded for a pair, shown inline on both -- before
+proposing anything; the classification judgement stays with the user, same
+discipline as `/arknet:bc-audit`. For the five asymmetric relationship types
 (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`,
 `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`) it also confirms which context is
 upstream and which is downstream before writing; for the three symmetric
 ones (`PARTNERSHIP`, `SHARED_KERNEL`, `SEPARATE_WAYS`) it says plainly that
 the tool's upstream/downstream fields are bookkeeping only, not a real
-asymmetry. `bc_link_context` is not idempotent -- calling it twice for the
-same pair creates a second edge rather than updating the first -- so the
-skill checks for an existing relationship before writing rather than after.
-Out of scope: drawing or judging where a Bounded Context boundary sits
+asymmetry. `bc_link_context` is idempotent over the exact (upstream,
+downstream, relationshipType) triple -- calling it again with the same
+three values returns the relationship already recorded rather than creating
+a second one -- and `bc_unlink_context` removes a recorded relationship by
+that same triple, rejecting one that isn't currently recorded. Out of
+scope: drawing or judging where a Bounded Context boundary sits
 (`/arknet:bc-audit`'s job) and tactical design, which has no tool surface
 yet.
 
@@ -266,25 +282,30 @@ A **read-only triage layer** for vague overall-status questions -- "is
 everything okay?", "is the model consistent?", "anything left to do?" -- that
 name no specific concern and therefore match none of the skills above by
 name. It never writes to the store and never runs an interrogation dialogue
-itself; it reads the existing fact-tools and routes to the skill that
-actually resolves each finding.
+itself; it reads the existing fact-tools and routes on to the pass that
+actually reviews what the findings point at.
 
 Reports two kinds of finding, always visibly separated: **hard facts** --
-`orphan_check`/`trace_matrix` (dangling links, orphaned terms, untraced
-requirements), `adr_list` filtered to `PROPOSED` (decisions still open --
-open, not waiting to be accepted: `/arknet:adr` weighs a record's right to
-exist before its status, and deleting one is a legitimate outcome while it is
-still `PROPOSED`), and `adr_check`'s `Facts` block (what is mechanically
-decidable about the ADR corpus) -- stated plainly, no judgement needed; and
-**hints** -- a Bounded Context with no `bc_link_context` edge recorded
-(`bc_list` against `resource_get`), and `adr_check`'s `Suspicions`/
-not-checked list, each phrased as a question ("worth a look with
-`/arknet:context-map`?"/"worth a look with `/arknet:adr`?"), never as a
-defect on par with an orphaned requirement or a `Fact` -- and never as a
-proposed status change. Every finding names the same next step --
-`/arknet:store-review`, the pass that applies each resource type's
-reader-level rules -- rather than a different specialist skill per finding,
-and the triage never starts that pass or any dialogue itself.
+`orphan_check`'s orphaned-requirements, unreferenced-terms and
+unbound-constraints lists, `trace_matrix` (untraced requirements), `adr_list`
+filtered to `PROPOSED` (decisions still open -- open, not waiting to be
+accepted: `/arknet:adr` weighs a record's right to exist before its status,
+and deleting one is a legitimate outcome while it is still `PROPOSED`), and
+`adr_check`'s `Facts` block (what is mechanically decidable about the ADR
+corpus) -- stated plainly, no judgement needed; and **hints** -- a Bounded
+Context with no `bc_link_context` edge recorded (`bc_list` alone, which
+shows each context's edges inline), `orphan_check`'s fourth list (terms
+named in text without a backing edge -- its word-boundary match is
+deliberately left unsharpened, because a wrong edge costs more than a missed
+one, so it recurs on an everyday word used in its ordinary sense as often as
+on a real gap), and `adr_check`'s `Suspicions`/not-checked list, each
+phrased as a question ("worth a look?"), never as a defect on par with an
+orphaned requirement or a `Fact` -- and never as a proposed status change.
+Every finding then names the same next step -- `/arknet:store-review`, the
+pass that applies each resource type's reader-level rules -- rather than a
+different specialist skill per finding; only a single resource the user wants
+dealt with now, or a write, goes straight to the owning skill. The triage
+never starts that pass or any dialogue itself.
 
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
 (reading `role_usecase_matrix`/`term_cooccurrence` for collisions that
@@ -605,15 +626,22 @@ them is right in a given situation, and there is no `project_delete`.
 - `actor_add` -- register an actor: someone or something that can act on the
   system under description, hold an interest in it, or both (a regulator or
   a department that never touches the system counts as much as a user).
-  Takes a type (`HUMAN`, `SYSTEM`, `LEGAL` or `GROUP`), a plain-text name
-  (no language tag, unlike a glossary term) and an optional description; the
-  result is an `ACTOR-n` code. An actor is a resource in its own right and
-  needs no glossary entry -- `term_add` it separately if its name is also a
-  term worth defining.
-- `actor_get` / `actor_list` -- fetch one / list all actors.
+  Takes a type (`HUMAN`, `SYSTEM`, `LEGAL` or `GROUP`), a name and an
+  optional description, and an optional `language`. `language` is the
+  BCP-47 tag `name`/`description` are written in, falling back to the
+  project's configured default language if omitted; state the actor in a
+  second language with `actor_update` afterwards. Unlike a glossary term's
+  `skos:prefLabel`, an actor's `name` is not required to be the same word
+  under every language tag -- it may be worded differently per language.
+  The result is an `ACTOR-n` code. An actor is a resource in its own right
+  and needs no glossary entry -- `term_add` it separately if its name is
+  also a term worth defining.
+- `actor_get` / `actor_list` -- fetch one / list all actors; both take an
+  optional `displayLocale`, and the list marks a fallen-back entry as
+  described under `req_list`.
 - `actor_update` -- correct an already-created actor's name and/or
-  description in place. The type, and the `ACTOR-n` code, stay fixed at
-  creation.
+  description in place, or state either in a further language. The type,
+  and the `ACTOR-n` code, stay fixed at creation.
 - `actor_delete` -- remove the whole actor resource, not just a correction;
   rejected while a role still lists it among its `filledBy` occupants. An
   actor that is also a glossary term keeps its glossary entry.
@@ -692,14 +720,27 @@ it). A use case binds to a role, never directly to an actor.
 
 - `bc_add` -- register a bounded context (name, one-sentence domain vision,
   optional owning team and strategic classification --
-  core/supporting/generic domain).
-- `bc_get` / `bc_list` -- fetch one / list all bounded contexts.
+  core/supporting/generic domain, and an optional `language`). `language` is
+  the BCP-47 tag `name`/`domainVision` are written in, falling back to the
+  project's configured default language if omitted; state the context in a
+  second language with `bc_update` afterwards.
+- `bc_get` / `bc_list` -- fetch one / list all bounded contexts, each
+  carrying every recorded `ContextRelationship` edge (both directions)
+  inline; both take an optional `displayLocale`, and the list marks a
+  fallen-back entry as described under `req_list`.
+- `bc_update` -- correct an already-registered context's name or domain
+  vision in place, or state either in a further language, keeping its
+  identity and every link into it unchanged.
 - `bc_link_term` -- link a bounded context to a glossary term of its
   ubiquitous language.
 - `bc_link_context` -- record a directed context-map relationship
   (Partnership, Shared Kernel, Customer-Supplier, Conformist,
   Anti-Corruption Layer, Open Host Service, Published Language, or
-  Separate Ways) between two existing bounded contexts.
+  Separate Ways) between two existing bounded contexts; idempotent over the
+  exact (upstream, downstream, relationshipType) triple.
+- `bc_unlink_context` -- remove a previously recorded relationship,
+  addressed by that same triple; rejects a triple that is not currently
+  recorded rather than silently doing nothing.
 
 ### Architecture decisions
 
@@ -736,7 +777,8 @@ it). A use case binds to a role, never directly to an actor.
   decidable, without changing anything: `Facts` (a `decisionDate` on a
   decision not yet taken, no consequence/no considered option recorded, an
   option space with nothing `CHOSEN` on a decision that was taken, a
-  decision addressing no requirement and affecting no bounded context, an
+  decision addressing no requirement and affecting no bounded context --
+  expected, not a defect, for a decision that is genuinely project-wide, an
   `ADR-n` in the prose the project does not hold or no edge backs) and
   `Suspicions` (tracker references, address/port literals, status prose,
   near-identical titles -- each a hint, not a defect). Names, in its own

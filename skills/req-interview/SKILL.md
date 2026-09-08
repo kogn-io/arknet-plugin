@@ -34,20 +34,30 @@ Writes against arknet's store tools, not against markdown tables -- `req_add`/
   word the business actually uses. If they say "Vorgangsakte", that is the
   label, even when the interview runs in English -- translating it invents a
   second vocabulary, which is precisely what a glossary exists to prevent.
-- **A second language never restates a term's `label`.** In a store that
-  deliberately carries two languages, a term's label goes in under every
-  language tag as the same word, and only its `definition` is written a
-  second time. A translated label is the second vocabulary the rule above
-  forbids -- a reader seeing `Anker`/`Anchor` cannot tell whether that is one
-  term or two, and mention detection resolves a term through one label at a
-  time, so prose naming it in the other language stays unlinked. This is the
-  one exception to the restate rule below, which governs prose fields
-  (`title`, `description`, use-case text) only.
+- **A second language never translates a term's `label`, but the store still
+  needs the word written under the second tag.** A term's label is the same
+  word under every language tag it carries -- `definition` is genuinely
+  restated in translation, while `label` is restated verbatim: the identical
+  word, passed again via `term_update(label=<that word>,
+  language=<second tag>)`. Skip that call and the literal simply is not
+  there yet -- `term_list`/`term_get` then mark the term `[fallback: ...]`
+  in the second language even though its `definition` is already
+  translated. A *different* word in that second `label` write is the second
+  vocabulary the rule above forbids -- a reader seeing `Anker`/`Anchor`
+  cannot tell whether that is one term or two, and mention detection
+  resolves a term through one label at a time, so prose naming it in the
+  other language stays unlinked. This is the one exception to the restate
+  rule below, which governs prose fields (`title`, `description`, use-case
+  text) only: the *word* stays unchanged where prose would be reworded, but
+  the write under the new tag is not skipped.
 - **One write call carries one language tag**, across every write tool
   (`req_`, `constraint_`, `term_`, `uc_`, `role_`). A second language
   therefore takes a second call: create it in the first language, then
-  restate it under the second via the matching `*_update` -- a term's
-  `label` excepted, see the rule above. That is a decision for the whole
+  restate it under the second via the matching `*_update`. A term's `label`
+  takes a *third* call of its own, not none -- see the rule above:
+  translating a term into a second language is `term_add`, then
+  `term_update(definition=...)`, then `term_update(label=<same word>)`, the
+  last two both under the second `language`. That is a decision for the whole
   store, not for a single entry
   (see the split rule above), so settle it with the user before writing the
   second variant. Two silent failure modes live there, both from omitting
@@ -208,7 +218,7 @@ the decision -- intentional / grown / accidental -- stays with the user.
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` (both `displayLocale?`) | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
 | Use case | `uc_add` | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` (both `displayLocale?`) | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
-| Actor | `actor_add` | `actor_get`, `actor_list` | `actor_update` (name/description -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
+| Actor | `actor_add` | `actor_get`, `actor_list` (both `displayLocale?`) | `actor_update` (name/description, or either in a further language -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
 | Role | `role_add` | `role_get`, `role_list` (both `displayLocale?`) | `role_update` (name/description/`filledBy` -- not the code), `role_delete` (whole resource) |
 
 ### Actor vs. role: which resource applies
@@ -237,7 +247,7 @@ who/what actually occupies the role, or when the carrier itself is a
 distinct topic (e.g. an external system with its own SLAs) independent of
 any role it fills.
 
-### Actors: `actor_add(type, name, description?)`
+### Actors: `actor_add(type, name, description?, language?)`
 
 An actor is a resource in its own right, not a glossary term or a facet of
 one -- someone or something that can act on the system under description,
@@ -252,14 +262,29 @@ forces the pairing.
   department, committee, team). Fixed at creation; `actor_update` cannot
   change it.
 - `name` (required) -- what the actor is called, e.g. "Sachbearbeiter" or
-  "PaymentService". Plain text, no language tag (unlike a glossary term's
-  `skos:prefLabel`, and unlike a role's `name`, see below) -- an actor is a
-  structural identity, not prose whose wording is the deliverable.
+  "PaymentService". Carries a language tag (see below), same as a role's
+  `name` -- but unlike a glossary term's `skos:prefLabel`, it is not
+  required to be the same word under every tag; the name may be worded
+  differently per language.
 - `description` (optional) -- free text.
+- `language` (optional) -- BCP-47 tag `name`/`description` are written in,
+  behaving as in `term_add`: falls back to the project's configured
+  default language, and if the project has no default either, the call is
+  rejected rather than writing an untagged literal.
 - Result: `ACTOR-n` code.
-- `actor_update(id, name?, description?)` -- corrects an already-created
-  actor's name/description in place, keeping its identity (and every
-  existing link into it) unchanged. Cannot change `type` or the code.
+- `actor_update(id, name?, description?, language?)` -- corrects an
+  already-created actor's name/description in place, keeping its identity
+  (and every existing link into it) unchanged. Cannot change `type` or the
+  code. `language` behaves as in `term_update`: it replaces only the
+  literal carrying the resolved tag, every other language variant survives
+  untouched -- this is also the way to make an existing, single-language
+  actor bilingual (restate `name`/`description` under the second tag; one
+  call carries one language tag, so a second language takes a second
+  `actor_update` call).
+- `actor_get(id, displayLocale?)` -- `displayLocale` behaves as in
+  `term_get`. `actor_list(displayLocale?)` takes it too and flags a
+  fallen-back entry with the same inline `[fallback: ...]` tag as
+  `term_list`.
 - `actor_delete(id)` -- removes the whole actor resource, not just a
   correction. Rejected while a role still lists it among its `filledBy`
   occupants -- remove it there first (`role_update`). An actor that is
@@ -307,8 +332,9 @@ above). A role may start, and stay, unfilled.
 ### Glossary terms: `term_add(label, definition, broader?, related?, language?)`
 
 - `label` (required) -- `skos:prefLabel`. The same word under every language
-  tag the store carries; only `definition` is restated in a second language
-  (see "Language" above).
+  tag the store carries -- `definition` is restated in translation, `label`
+  is restated verbatim via its own `term_update` call (see "Language"
+  above).
 - `definition` (required).
 - `broader` (optional) -- code of an already-existing term this one
   specializes, its superordinate term (`skos:broader`), e.g. "Human Actor"
@@ -357,7 +383,12 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   (falls back to the project's default, rejects if neither is set): it
   replaces only the literal carrying the resolved tag, every other language
   variant survives untouched -- except a stale untagged one, swept away once
-  the resolved tag equals the project's default.
+  the resolved tag equals the project's default. `label` itself carries a
+  second, tag-scoped meaning: omit it to rename the term under every tag it
+  carries at once (a rename, not a translation); give it the identical word
+  it already carries and it is added/refreshed under just the one `language`
+  tag named -- the label half of translating a term (see "Language" above),
+  a call of its own alongside the `definition` one under the same tag.
 - `term_delete(id)` -- removes the whole term resource, label and
   definition in every language, not just a correction -- for a term created
   by mistake (a duplicate, an actor or role that should have been
@@ -629,15 +660,20 @@ entry points (see above), same protocol:
   complete/consistent"). This is the **default reading** of any
   "review/check" phrasing -- do not collapse it into a quick summary.
   **First, automated pass:** run `orphan_check` (requirements no use case
-  realises, glossary terms never referenced, text mentions of a term missing
-  its backing edge -- including a use case's prose beyond its `goal` -- and
-  constraints no requirement or use case is bound by) and `trace_matrix` (per
-  requirement: which terms it uses, which use case(s) realise it) *before*
-  any manual reading -- these two calls surface structural gaps
-  (dangling links, orphaned terms, unrealised requirements) that a
-  content read of the requirement text will not, no matter how careful.
-  Treat every finding they report as a mandatory interrogation point, not
-  an optional footnote. **Then** walk every requirement/use case/term
+  realises, glossary terms never referenced, constraints no requirement or
+  use case is bound by) and `trace_matrix` (per requirement: which terms it
+  uses, which use case(s) realise it) *before* any manual reading -- these
+  calls surface structural gaps (dangling links, orphaned terms, unrealised
+  requirements) that a content read of the requirement text will not, no
+  matter how careful. Treat every finding from these three `orphan_check`
+  lists, and from `trace_matrix`, as a mandatory interrogation point, not
+  an optional footnote. `orphan_check` also returns a fourth list -- text
+  mentions of a term missing its backing edge, including a use case's prose
+  beyond its `goal` -- but its word-boundary match is deliberately left
+  unsharpened, so it recurs on an everyday word used in its ordinary sense
+  as often as on a real gap: read each entry yourself and discard it
+  without a question when that is what it is; open one only for a genuine
+  gap. **Then** walk every requirement/use case/term
   systematically, one at a time, and interrogate the user relentlessly on
   the gaps you find (missing scenarios/actors/roles/edge cases, conflicts,
   untestable descriptions, unspecified failure behaviour). A full-set audit

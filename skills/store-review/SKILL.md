@@ -83,7 +83,7 @@ checked later.
 | `trace_matrix` | Mechanical | Per requirement: which terms it uses, which use case(s) realise it. |
 | `adr_list`, `adr_get` | Reader | The decision corpus for the ADR reviewer -- the list for the overview, `adr_get` for each record's full text. |
 | `req_list`, `req_get`, `constraint_list`, `constraint_get`, `uc_list`, `uc_get`, `term_list`, `term_get` | Reader | Requirements, constraints, use cases and glossary terms, in full, for their reviewers. |
-| `bc_list`, `bc_get`, `resource_get` | Reader | Bounded Contexts and the `ContextRelationship` edges recorded on them. |
+| `bc_list`, `bc_get` | Reader | Every Bounded Context, each with its recorded `ContextRelationship` edges shown inline by both calls. |
 | `role_usecase_matrix`, `term_cooccurrence` | Reader | Raw bipartite/co-occurrence data, the material the Bounded Context reader works from. |
 | `impact_analysis` | Reader | What a resource pulls with it -- used to weigh a finding, never to act on one. |
 

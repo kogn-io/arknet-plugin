@@ -22,16 +22,17 @@ of inventing a context to complete a pair.
 
 | Tool | Role |
 |---|---|
-| `bc_list` | Read every registered Bounded Context first -- the pool of pairs this skill can map. |
-| `resource_get` | Read a Bounded Context's existing statements, including any `ContextRelationship` edges already recorded for it, before proposing a new one. |
-| `bc_link_context(upstreamBcId, downstreamBcId, relationshipType)` | Record a confirmed relationship. Pure CRUD -- it never judges which type applies, and it is **not idempotent**: calling it again for the same pair creates a second edge rather than updating the first. |
+| `bc_list` | Read every registered Bounded Context first -- the pool of pairs this skill can map. Every context's `ContextRelationship` edges, in both directions, are shown inline. |
+| `bc_get` | Read a single Bounded Context's existing statements, including every `ContextRelationship` edge already recorded for it (both directions), before proposing a new one. |
+| `bc_link_context(upstreamBcId, downstreamBcId, relationshipType)` | Record a confirmed relationship. Pure CRUD -- it never judges which type applies. Idempotent over the exact (upstream, downstream, relationshipType) triple: calling it again with the same three values returns the relationship already recorded rather than creating a second one; two different types between the same pair remain two distinct relationships. |
+| `bc_unlink_context(upstreamBcId, downstreamBcId, relationshipType)` | Remove a previously recorded relationship, addressed by the exact triple `bc_link_context` took to create it. Rejects a triple that is not currently recorded rather than silently doing nothing. |
 | `impact_analysis` | Optional context on either Bounded Context before or after linking -- what already references it -- but this tool does not itself propagate through the relationship edge just created; treat any ripple reasoning about the relationship as yours, not the tool's. |
 
 The eight `relationshipType` values `bc_link_context` accepts: `PARTNERSHIP`,
 `SHARED_KERNEL`, `CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`,
 `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`, `SEPARATE_WAYS` -- the classic
 context-map vocabulary (Evans/Vernon). Presenting this list, and any
-relationship `resource_get` already shows for the pair, is as far as the
+relationship `bc_get`/`bc_list` already shows for the pair, is as far as the
 tools go; which value fits is a judgement call for the user, not something
 either tool infers.
 
@@ -41,14 +42,14 @@ either tool infers.
    named two contexts already, confirm both exist and pull their ids; if
    they named only a domain area, ask which two contexts they mean rather
    than guessing from a name fragment.
-2. **Check what's already recorded.** `resource_get` on both contexts
-   before proposing anything new. If a relationship already exists between
-   this exact pair, surface it and ask whether the user wants to record an
-   *additional* edge (rare -- e.g. two contexts holding both a Shared
-   Kernel and a separate Open Host Service for a different concern) or
-   whether this is actually a correction to the existing one. There is no
-   update/delete tool for `bc_link_context`: a wrong edge stays in the
-   store, so confirm before writing rather than after.
+2. **Check what's already recorded.** `bc_get` (or the inline edges already
+   shown by `bc_list`) on both contexts before proposing anything new. If a
+   relationship already exists between this exact pair, surface it and ask
+   whether the user wants to record an *additional* edge (rare -- e.g. two
+   contexts holding both a Shared Kernel and a separate Open Host Service
+   for a different concern) or whether this is actually a correction to the
+   existing one -- a correction is `bc_unlink_context` on the wrong triple
+   followed by `bc_link_context` on the right one.
 3. **Elicit the relationship, one pair at a time.** Give your own read
    first, grounded in what the two contexts' `domainVision` and glossary
    terms actually say (never invented) -- e.g. "X calls Y's API and adapts

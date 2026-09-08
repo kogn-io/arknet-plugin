@@ -30,7 +30,7 @@ under the rules below; the files are the user's to retire.
 | `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
 | `adr_unsupersede` | Regret path for a mistyped `adr_supersede` call -- reverts a `SUPERSEDED` decision back to `ACCEPTED` and drops its `supersededBy` edge (see "Un-superseding a decision" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
-| `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context, an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
+| `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context -- expected, not a defect, for a decision that is genuinely project-wide (see the `affectsContexts` bullet below) -- an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
 | `adr_delete` | Removes a record entered by mistake: a `PROPOSED` decision, or an `ACCEPTED` one no other decision points at -- see "Deleting a decision" below. |
 
 `adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
@@ -61,6 +61,12 @@ under the rules below; the files are the user's to retire.
   tool itself with a didactic error -- if a reference doesn't obviously already exist, check
   with `req_list`/`bc_list`/`term_list` first (or create it: `req_add` / `bc_add` / `term_add`)
   rather than let the call fail as a surprise.
+- `affectsContexts` is optional and set **targeted**, never exhaustively: name only the bounded
+  contexts this decision actually binds -- the ones that would have to change if the decision
+  were reversed. A project-wide decision (the composition root, the build technique, a
+  project-wide convention) gets **no** context edge, even though it technically touches every
+  context -- `affectsContexts` records a binding, not a scope, and listing every existing
+  bounded context to make the edge "complete" is exactly the mistake this rule rules out.
 - `relatedTo` (`ADR-n`) links this decision to peer decisions ("see also"), each of which must
   already exist -- see "Related decisions" below.
 
@@ -93,8 +99,9 @@ the record exists -- the cheapest place to keep a non-decision out of the store.
 | Q3 | **A real alternative.** Was there at least one option a reasonable team could have chosen, or is the "alternative" a straw man? | No discretion was exercised: it is a constraint (`constraint_add`) or a plain fact, not a decision. |
 | Q4 | **Category.** Is the core of it a HOW? A "must/shall" about system behaviour is a requirement (`req_add`), a definition is a glossary term (`term_add`), a date or a "later" is a tracker issue. | Hand that part off (see "Scope boundary") and write the ADR for the HOW remainder only -- if one is left. |
 
-- **A "no" on Q1 or Q2 stops the write.** Say where the thing belongs instead, and do not call
-  `adr_add`.
+- **A "no" on Q1 or Q2 stops the write.** Name where the thing belongs instead -- a glossary
+  definition (`term_add`), an issue comment, a convention in the project's instruction file --
+  and do not call `adr_add`.
 - **A "no" on Q3 does not.** An empty option space is allowed as long as the record says why it
   was empty (see "Substantive consequences and considered options"); Q3 exists to expose a
   straw-man option, not to force one into existence.
@@ -107,9 +114,23 @@ the record exists -- the cheapest place to keep a non-decision out of the store.
   sentence each and architecturally relevant -- a construction technique that holds across the
   project passes Q1. The expensive mistake is the decision that never gets recorded, not the one
   that sits `PROPOSED` a while longer: where Q1 and Q2 are genuinely close, write it and say so.
+- **Reversal cost is measured from the decision you're recording, not from the option it turned
+  down.** A choice to keep the status quo can sit next to a rejected option that would have been
+  expensive to walk back (a namespace migration, say) -- that cost belongs to the option that
+  was *not* taken, not to this one. Q2 asks what reversing the decision actually being recorded
+  would cost in a year; for "we keep things as they are," that is usually nothing, which is a
+  straight "no" on Q2 regardless of how costly the rejected alternative would have been.
+- **A request already framed as an ADR has not answered this question -- it has raised it.** "Write
+  this as an ADR," "record this decision," an instruction from a tracker issue or a project's own
+  instruction file: none of these are a "yes" on Q1/Q2. Run the category check against what the
+  request describes, not against how it packaged the ask, and let a "no" stand even when the
+  request assumed a "yes."
 
-Put the result to the user as **its own question**, separate from the content confirmation that
-follows (see "Correcting a decision") -- two lines, not a rendered table per invocation:
+State Q1 and Q2 to the user before every `adr_add` call, one line each -- the same visible
+discipline as at `ACCEPTED` (see "Accepting a proposal" below), never skipped because the request
+already asked for an ADR. Put the result as **its own question**, separate from the content
+confirmation that follows (see "Correcting a decision") -- two lines, not a rendered table per
+invocation:
 
 > This is an ADR because Q1: it fixes the persistence dependency for the whole service; Q2: a
 > reversal means migrating the stored data. Agreed?
