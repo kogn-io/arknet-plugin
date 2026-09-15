@@ -11,7 +11,15 @@
 # compat hook, never parsed as anything more than a string.
 #
 # Regenerating replaces what the file currently says the server offers;
-# review the diff before committing it. This intentionally never runs
+# review the diff before committing it. Point it at a daemon running the
+# RELEASED arknet the plugin ships alongside -- the published image or tag a
+# user installs -- not at one built from a local checkout. The baseline is
+# what the shipped skills are checked against, so a surface nobody runs is
+# worse than a stale one, and the serverInfo.version recorded alongside says
+# which was used: "dev" is a local build. It is load-bearing beyond the
+# record, too -- hooks/check-arknet-compat.sh only names both versions in its
+# warning when both parse as semver, so a "dev" baseline degrades what a user
+# is told to "the daemon is a different build". This intentionally never runs
 # unattended -- an automatic regeneration (release workflow, hook) would
 # make the baseline track the server it is supposed to be checked against,
 # and the whole point of the file is to freeze what shipped skills were

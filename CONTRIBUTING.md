@@ -73,17 +73,25 @@ Things to raise in an issue first:
   `hooks/arknet-tools-baseline.json`, a generated snapshot of the arknet
   server's `tools/list`, not from a hand-maintained list. When the arknet
   server itself changes (a tool or parameter added, renamed or dropped), run
-  `scripts/refresh-arknet-baseline.sh` by hand against a running daemon and
-  review the resulting diff of the baseline file as part of the pull request
-  -- that diff is the actual review artifact, not the file's content in
-  isolation. Never run the refresh script unattended (a release workflow, a
-  hook): an automatic regeneration would make the baseline track the server
-  it exists to be checked against, silently absorbing exactly the drift the
-  mechanism is meant to surface. `scripts/refresh-arknet-baseline.sh --check`
-  reports the opposite direction -- tools or parameters the server now offers
-  that the baseline (and by extension the shipped skills) does not mention
-  yet -- without writing anything; run it when you suspect the server has
-  moved ahead of what the plugin documents.
+  `scripts/refresh-arknet-baseline.sh` by hand and review the resulting diff
+  of the baseline file as part of the pull request -- that diff is the
+  actual review artifact, not the file's content in isolation. Point it at a
+  daemon running the **released** arknet the plugin ships alongside -- the
+  published image or tag a user installs -- not at one built from a local
+  checkout. A local build is ahead of the last release as often as it is
+  behind it, and a baseline taken from it freezes a tool surface nobody is
+  running: the check then passes for parameters a user's daemon rejects, or
+  fails for ones it offers. The file records which daemon answered, so the
+  claim is checkable: `serverInfo.version` reading `dev` means a local
+  build, not a release. Never run the refresh script unattended (a release
+  workflow, a hook): an automatic regeneration would make the baseline track
+  the server it exists to be checked against, silently absorbing exactly the
+  drift the mechanism is meant to surface.
+  `scripts/refresh-arknet-baseline.sh --check` reports the opposite
+  direction -- tools or parameters the server now offers that the baseline
+  (and by extension the shipped skills) does not mention yet -- without
+  writing anything; run it when you suspect the server has moved ahead of
+  what the plugin documents.
 - **A skill change that changes the flow or rules a skill describes pulls the
   matching `README.md` section along, in the same pull request.** The same
   drift as above, mirrored within this repo: `README.md` summarizes a
