@@ -84,8 +84,20 @@ Things to raise in an issue first:
   behind it, and a baseline taken from it freezes a tool surface nobody is
   running: the check then passes for parameters a user's daemon rejects, or
   fails for ones it offers. The file records which daemon answered, so the
-  claim is checkable: `serverInfo.version` reading `dev` means a local
-  build, not a release. Never run the refresh script unattended (a release
+  claim is checkable, and it has three readings, not two: a semver tag
+  (`vX.Y.Z`) is a release image and the only thing the refresh may be taken
+  against; `dev` is an un-parameterized local `docker build`; a bare commit
+  sha is the continuous build published as `:latest`, which follows the
+  default branch rather than a release. The sha case is the trap, because a
+  `:latest` pulled shortly after a release carries the release commit and so
+  looks current -- it is still the wrong source, and it also degrades what a
+  user is told, since the compat hook names both versions in its warning only
+  when both parse as semver. Pin the daemon to the release tag before
+  refreshing rather than reading a sha as "close enough", and if `:latest` is
+  what this machine normally runs, keep the pin in an untracked
+  `docker-compose.override.yml` on the arknet side -- the tracked compose file
+  tells users to build locally, so a release tag written into it would label a
+  local build as a release. Never run the refresh script unattended (a release
   workflow, a hook): an automatic regeneration would make the baseline track
   the server it exists to be checked against, silently absorbing exactly the
   drift the mechanism is meant to surface.
