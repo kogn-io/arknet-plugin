@@ -1,5 +1,5 @@
 ---
-description: "Audits an already-filled arknet store (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads role_usecase_matrix/term_cooccurrence as raw data, tests each cluster for a language break (the same fact getting different rules on each side), presents only candidates that clear that test to the user with its own assessment first, and reports a clustering that traces only to responsibility/module split/data volume as an observation without a context proposal; then writes confirmed contexts via bc_add/bc_link_term. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden'. NOT for a project whose req/uc/term store is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
+description: "Audits an already-filled arknet store (requirements, use cases, glossary) for emergent Bounded Context candidates -- never a greenfield 'which contexts does your system need' interview. Reads role_usecase_matrix/term_cooccurrence as raw data, tests each cluster for a language break (the same fact getting different rules on each side), presents only candidates that clear that test to the user with its own assessment first, and reports a clustering that traces only to responsibility/module split/data volume as an observation without a context proposal; then writes confirmed contexts via bc_add/bc_link_term. Carries a second, write-free review mode that puts the same language-break test to a boundary the store already holds, plus the store-decidable checks (does it carry terms, does any context relationship touch it, is its subdomain classification consistent with its domain vision) -- the mode /arknet:store-review invokes for this resource type. Trigger (also DE, since the user may phrase it in German): /arknet:bc-audit, 'find bounded context candidates', 'audit the bounded contexts', 'where should we split contexts', 'is this a real context boundary', 'review the recorded bounded contexts', 'is BC-n still a real boundary'; DE: 'pruefe auf Bounded Contexts', 'wo trennen sich die Kontexte', 'Bounded-Context-Kandidaten finden', 'review die eingetragenen Kontexte'. NOT for a project whose req/uc/term store is still empty (use /arknet:req-interview first to fill it). NOT for tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface yet. NOT for context-map relationship types (Partnership/Anti-Corruption-Layer/...) -- see /arknet:context-map for those."
 ---
 
 # /arknet:bc-audit -- Bounded Context Candidates from the Existing Store
@@ -10,6 +10,16 @@ use-case/glossary store -- not be drawn on a blank whiteboard before the
 domain vocabulary exists (anti-BDUF). This skill therefore never asks
 "which Bounded Contexts does your system need" from nothing; it reads the
 store that already exists and finds candidates in it.
+
+Two modes, one test. **Candidate mode** (the default) looks for a boundary
+the store implies but does not yet hold, and ends in a write. **Review
+mode** takes a boundary the store already holds and puts the same
+language-break test to it, and writes nothing. Which one applies follows
+from the request: "where should we split", "find candidates" is the
+former; "review the recorded contexts", "is BC-3 a real boundary", and any
+call from `/arknet:store-review` is the latter. When the request does not
+say, ask -- the two produce different output and only one of them touches
+the store.
 
 ## Precondition: a filled store, not a blank slate
 
@@ -24,6 +34,7 @@ the greenfield BDUF this skill is designed not to do.
 | Tool | Role |
 |---|---|
 | `term_list`, `req_list`, `uc_list`, `bc_list` | Read the whole requirements/use-case/glossary set and every already-registered Bounded Context before anything else. Each takes `displayLocale?`; a line carrying an inline `[fallback: ...]` tag is an entry **missing** in that language, shown under another one. |
+| `bc_get` | A single recorded context in full -- its `domainVision`, `subdomain`, the glossary terms linked to it, and every `ContextRelationship` edge in both directions. The material review mode works from. |
 | `role_usecase_matrix` | Raw bipartite data: which use cases each role appears in (`primaryRole`/`supportingRole`), and vice versa, plus which actors occupy each role (`filledBy`). No clustering, no judgement -- that stays with you and the user. |
 | `term_cooccurrence` | Raw data: which glossary terms are named together in the same requirement/use-case text, and which never co-occur -- the material for "is this one term or a homonym with two meanings per context?". |
 | `bc_add(name, domainVision, subdomain?, ownedBy?, language?)` | Register a confirmed Bounded Context. `domainVision` must come out of the discussion with the user, never be invented to fill the field. `language` names the BCP-47 tag `name`/`domainVision` are written in, falling back to the project's configured default language if omitted. |
@@ -112,6 +123,54 @@ agent and the user.
    `realises` edge that used to be uncontroversial? Surface anything it
    finds as a decision for the user (see `/arknet:req-interview`'s ripple
    protocol for the same pattern), never resolve it silently.
+
+## Review mode: a boundary the store already holds
+
+Candidate mode asks whether a boundary *should* exist. Review mode asks
+whether one that *does* exist still earns its keep -- and it is the mode
+`/arknet:store-review` invokes. Same evidence standard, opposite direction:
+there the language break has to be found before a context is written, here
+it has to be re-found in a context already written, from the store alone.
+A boundary whose language break nobody can name today is a finding, not a
+settled fact -- it may have been named once, in a conversation that left no
+trace in the store.
+
+Read `bc_list` for the full set, then `bc_get` per context, plus
+`term_list`, `req_list`, `uc_list` and `term_cooccurrence` as the material
+the break is tested against -- the same reading candidate mode does, on the
+same store.
+
+Six rules. The review table has one row per recorded context and one column
+per rule -- the table below defines the rules, it is not the output. The
+first three are decidable from the store alone; the last three are the
+reading, and B4 is the one the mode exists for.
+
+| # | Rule | A finding reads |
+|---|---|---|
+| B1 | **Terms linked.** Does the context carry at least one `bc_link_term` edge? | No term edge -- the boundary is unbacked in the store: nothing says which language falls inside it. Whatever the break was, it is not recorded. |
+| B2 | **Related in the map.** Does at least one `ContextRelationship` edge touch it, in either direction? | No edge at all. Say which of the two it is where the material lets you: a context that genuinely stands alone (whose `SEPARATE_WAYS` edge is then simply unrecorded -- an elicitation for `/arknet:context-map`, not something this mode writes) or a map incomplete here. Unrecorded is not the same as unrelated, and the store cannot tell them apart by itself. |
+| B3 | **Subdomain classified.** Is `subdomain` set (`CORE_DOMAIN`, `SUPPORTING_DOMAIN`, `GENERIC_DOMAIN`), and does it match what `domainVision` claims? | Unset, or a `domainVision` describing off-the-shelf work filed as `CORE_DOMAIN` -- the classification drives build-vs-buy, so a wrong one is not cosmetic. Note in the cell that `bc_update` does not touch `subdomain`: it is fixed at creation, so this finding has no in-place correction and the user needs to know that before deciding. |
+| B4 | **The language break, re-found.** Name the fact or concept that gets *different rules* inside this context than outside it, working from the terms linked to it and the requirements/use cases that use them. | No such fact can be named from the store -- the strongest finding this mode produces. Do not soften it into "unclear"; report which reading was attempted and what the store gave back. Where B1 already found no term edge, B4 has nothing to read: say that rather than leaving the cell to imply a reading happened. |
+| B5 | **Not a responsibility or module split.** Does the boundary trace only to who owns it, which module it lives in, or how much data flows through it -- with no fact changing meaning or rule across it? | Yes, it does: the same exclusion candidate mode applies before proposing a context (step 2), applied here to one already recorded. A context caught by B5 necessarily has no B4 answer either -- fill both cells anyway, they are different evidence and a reader checking the grid needs to see both were asked. |
+| B6 | **Domain vision, not a component description.** Does `domainVision` say what is true *inside* the boundary, or does it enumerate what the context contains and which parts talk to it? | A vision reading as a building-block list says nothing about language, and cannot be checked against B4. |
+
+Two findings have no row of their own, because they only exist across the
+set -- report them separately:
+
+- **Terms in two contexts.** The same `TERM-n` linked to more than one
+  context is the interesting case, not an error: either the word genuinely
+  carries two meanings and each context should hold its *own* term, or the
+  boundary between them is not where the store says it is.
+- **A term in no context at all.** With contexts recorded, a term outside
+  every one of them is either an oversight or evidence that the recorded
+  set does not cover the domain. `orphan_check` reports unreferenced terms;
+  this is a different question and no tool asks it.
+
+Review mode **writes nothing** -- no `bc_add`, no `bc_update`, no
+`bc_link_term`. A confirmed finding is a candidate-mode conversation or a
+`/arknet:context-map` call afterwards, on the user's decision. When the mode
+was invoked directly by the user rather than by `/arknet:store-review`,
+offer that next step once; do not take it in the same turn.
 
 ## Scope boundary
 

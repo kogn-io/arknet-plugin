@@ -1,5 +1,5 @@
 ---
-description: "Elicits DDD context-map relationships (Partnership, Shared Kernel, Customer-Supplier, Conformist, Anti-Corruption Layer, Open Host Service, Published Language, Separate Ways) between two already-existing Bounded Contexts, and records confirmed ones via bc_link_context. Presents the relationship-type vocabulary and any already-recorded relationship as facts; the classification judgement stays with the user, same discipline as /arknet:bc-audit. Trigger (also DE, since the user may phrase it in German): /arknet:context-map, 'map the bounded contexts', 'what's the relationship between these contexts', 'is this a shared kernel or a customer-supplier', 'record a context relationship'; DE: 'erstelle die Context Map', 'welche Beziehung besteht zwischen diesen Kontexten', 'Context-Map-Beziehung erfassen'. NOT a greenfield 'which Bounded Contexts does your system need' interview -- requires at least two Bounded Contexts to already exist (bc_list); use /arknet:bc-audit first if the store holds fewer than two. NOT tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface for that yet."
+description: "Elicits DDD context-map relationships (Partnership, Shared Kernel, Customer-Supplier, Conformist, Anti-Corruption Layer, Open Host Service, Published Language, Separate Ways) between two already-existing Bounded Contexts, and records confirmed ones via bc_link_context. Presents the relationship-type vocabulary and any already-recorded relationship as facts; the classification judgement stays with the user, same discipline as /arknet:bc-audit. Carries a second, write-free review mode that puts the elicitation's own question back to each recorded edge -- is the type re-derivable from the two contexts' material, does the direction match an asymmetric type, does anything carry the obligation the type implies -- plus the map-wide reading of how many distinct types are actually in use; the mode /arknet:store-review invokes for this resource type. Trigger (also DE, since the user may phrase it in German): /arknet:context-map, 'map the bounded contexts', 'what's the relationship between these contexts', 'is this a shared kernel or a customer-supplier', 'record a context relationship', 'review the context map', 'is that really a shared kernel'; DE: 'erstelle die Context Map', 'welche Beziehung besteht zwischen diesen Kontexten', 'Context-Map-Beziehung erfassen', 'review die Context Map'. NOT a greenfield 'which Bounded Contexts does your system need' interview -- requires at least two Bounded Contexts to already exist (bc_list); use /arknet:bc-audit first if the store holds fewer than two. NOT tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface for that yet."
 ---
 
 # /arknet:context-map -- Bounded-Context Relationships
@@ -10,6 +10,14 @@ decides *how two already-drawn boundaries relate* -- upstream/downstream,
 shared model, or no relationship at all. It never invents a Bounded Context
 to fill a gap in the map; it only records relationships between contexts the
 user already confirmed via `bc_add`.
+
+Two modes. **Elicitation mode** (the default) works out the type for a pair
+that has none recorded, and ends in a `bc_link_context` call. **Review
+mode** takes the edges the store already holds and puts the elicitation's
+own question back to each recorded answer, and writes nothing. "Map these
+two contexts", "what's the relationship" is the former; "review the context
+map", "is that really a Shared Kernel", and any call from
+`/arknet:store-review` is the latter.
 
 ## Precondition: at least two existing Bounded Contexts
 
@@ -72,6 +80,53 @@ either tool infers.
    type and direction. Report back the resulting edge in plain language
    (e.g. "recorded: OrderManagement is upstream of Billing via Open Host
    Service"), not the raw tool call.
+
+## Review mode: the edges the store already holds
+
+Elicitation asks which type fits. Review asks whether the type recorded
+*does* fit -- the same question, put to an answer already given. The
+evidence is the same material elicitation works from and nothing else: the
+two contexts' `domainVision`, their linked glossary terms, and the
+requirements and use cases that cross the pair. A type that cannot be
+re-derived from that material is a finding, whatever conversation produced
+it originally.
+
+Read `bc_list` for every context with its edges shown inline, then `bc_get`
+on each context in a pair whose edge you are testing, plus `term_list`,
+`req_list` and `uc_list` as the material.
+
+Four rules. The review table has one row per recorded relationship -- not
+per context pair: two edges between the same pair are two rows -- and one
+column per rule. The table below defines the rules, it is not the output.
+
+| # | Rule | A finding reads |
+|---|---|---|
+| C1 | **The type is re-derivable.** Can you name, from the two contexts' domain visions and terms, what makes *this* type fit rather than a neighbouring one? Say which neighbour you ruled out and why. | The type cannot be grounded in the material -- report which type the material *does* suggest, as an observation, not as a correction to apply. A cell reading `ok` with no ruled-out neighbour behind it is not evidence the rule ran. |
+| C2 | **Direction matches the type.** For the five asymmetric types (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`, `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`): is `upstreamBcId` genuinely the context whose model prevails? | Direction reversed -- the map then reads the power relationship backwards, which is the one thing a context map exists to show. For the three symmetric types the cell states that the order is bookkeeping and stops there; a reversal is not a finding for them. |
+| C3 | **The type carries its own obligation.** Each type implies work: `ANTICORRUPTION_LAYER` an actual translation layer, `SHARED_KERNEL` a jointly-owned model and the coordination it takes, `PUBLISHED_LANGUAGE` a published, documented model the downstream reads. Does anything in the store carry that obligation? | The type is recorded but nothing in the store backs what it commits the project to -- an aspiration filed as a fact. |
+| C4 | **Not a restatement of "they talk to each other".** Does the recorded type distinguish this pair from any other pair, or would it fit every pair equally? | A type chosen because two contexts exchange data at all, rather than because of how their models relate. Usually shows up with the corpus-wide finding below. |
+
+Two findings only exist across the whole map -- report them separately,
+outside the table:
+
+- **Type uniformity.** Count the distinct `relationshipType` values in use.
+  Every edge carrying the same type is the map's characteristic failure: a
+  map that says the same thing everywhere distinguishes nothing, and the
+  type was most likely picked once and repeated. Report the count as the
+  fact it is (`13 edges, 1 distinct type`), then the reading. A small store
+  where two edges share a type is not that finding -- do not inflate it.
+- **Justification uniformity.** Where the same reasoning was given for
+  every edge, the reasoning was not made per pair. This is visible even
+  where the types differ.
+
+An unrelated context -- one no edge touches at all -- is
+`/arknet:bc-audit`'s B2, not a row here: this mode reviews edges that
+exist, and B2 covers the ones that do not.
+
+Review mode **writes nothing** -- no `bc_link_context`, no
+`bc_unlink_context`, not even to reverse a direction C2 shows is backwards.
+Correcting an edge is elicitation mode's unlink-then-link, on the user's
+decision, in a later turn.
 
 ## Scope boundary
 
