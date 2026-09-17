@@ -50,10 +50,12 @@ Things to raise in an issue first:
 - **Skills run in arbitrary projects -- do not encode one project's specifics.**
   No paths into another repository, no citing its instruction files as
   authority, no house conventions (artifact language, character set, section
-  names) presented as rules of the skill. Where a skill needs an example, ship
-  one beside it under `skills/<name>/reference/` rather than pointing at files
-  the reader does not have. Rules that must hold everywhere are the skill's;
-  everything else follows the project being worked on.
+  names) presented as rules of the skill. Where a skill needs an example, or a
+  self-contained variant of its checklists for a mode `SKILL.md`'s own
+  protocol does not cover, ship it beside it under `skills/<name>/references/`
+  rather than pointing at files the reader does not have. Rules that must hold
+  everywhere are the skill's; everything else follows the project being
+  worked on.
 - **A subagent this plugin ships (under an `agents/` directory) cannot declare
   its own `mcpServers` at all** -- Claude Code silently ignores that
   frontmatter field for plugin-bundled agents. Give such a subagent arknet

@@ -1,5 +1,5 @@
 ---
-description: "Relentless requirements-interview skill -- elicits FR/NFR/Constraint (req_add/constraint_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (an existing project, already registered via /arknet:init, is interrogated -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/constraint/use case/glossary term', 'interview me about X', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent', 'review the actors and roles'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich', 'review die Actors und Rollen'. Actors and roles are elicited here, so their review checklists live here too -- there is no separate actor/role skill, and /arknet:store-review runs these checklists for those two types. NOT for HOW/architecture (use /arknet:adr for that), NOT for registering the project itself or writing its CLAUDE.md routing block ('attach this project to arknet' -- that is /arknet:init, which runs first), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
+description: "Relentless requirements-interview skill -- elicits FR/NFR/Constraint (req_add/constraint_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (an existing project, already registered via /arknet:init, is interrogated -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). A third mode, autonomous, replaces the interview with a reasoned, marked-as-assumption decision wherever a question would otherwise be asked, for a run given a finished document and nobody to ask -- checklists and marking convention in `references/autonomous.md`, kept off the main protocol. Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/constraint/use case/glossary term', 'interview me about X', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent', 'review the actors and roles', 'model this from this document, nobody to ask', 'run this autonomously, no dialogue partner'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich', 'review die Actors und Rollen', 'modelliere das autonom aus diesem Dokument', 'kein Rueckkanal', 'niemand zum Fragen da'. Actors and roles are elicited here, so their review checklists live here too -- there is no separate actor/role skill, and /arknet:store-review runs these checklists for those two types. NOT for HOW/architecture (use /arknet:adr for that), NOT for registering the project itself or writing its CLAUDE.md routing block ('attach this project to arknet' -- that is /arknet:init, which runs first), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
 ---
 
 # /arknet:req-interview -- Elicit Requirements, Use Cases and Glossary
@@ -195,6 +195,20 @@ Instead: translate observed behaviour into a question. Pattern:
 
 Give your own assessment along with it (see interrogation protocol below), but
 the decision -- intentional / grown / accidental -- stays with the user.
+
+### Autonomous: no dialogue partner
+
+A third mode alongside the two entry points above -- greenfield or
+brownfield, the source does not matter, only the absence of anyone to ask
+does. A finished document (a spec, a ticket, an existing specification, a
+change notice) is interrogated exactly as above, and every rule in this
+file still holds -- write order, the project precondition, the ripple
+check -- but wherever the protocol below says *ask the user*, this mode
+makes a reasoned decision instead and marks it as an assumption, rather
+than stopping for an answer nobody can give. It does not carry the
+interrogation protocol's dialogue mechanics (pacing, draft-then-confirm)
+along -- `references/autonomous.md` holds the checklists and the marking
+convention on their own, compact, for exactly this case.
 
 ## Context discipline -- read, don't guess
 

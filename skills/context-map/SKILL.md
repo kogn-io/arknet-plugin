@@ -1,5 +1,5 @@
 ---
-description: "Elicits DDD context-map relationships (Partnership, Shared Kernel, Customer-Supplier, Conformist, Anti-Corruption Layer, Open Host Service, Published Language, Separate Ways) between two already-existing Bounded Contexts, and records confirmed ones via bc_link_context. Presents the relationship-type vocabulary and any already-recorded relationship as facts; the classification judgement stays with the user, same discipline as /arknet:bc-audit. Carries a second, write-free review mode that puts the elicitation's own question back to each recorded edge -- is the type re-derivable from the two contexts' material, does the direction match an asymmetric type, does anything carry the obligation the type implies -- plus the map-wide reading of how many distinct types are actually in use; the mode /arknet:store-review invokes for this resource type. Trigger (also DE, since the user may phrase it in German): /arknet:context-map, 'map the bounded contexts', 'what's the relationship between these contexts', 'is this a shared kernel or a customer-supplier', 'record a context relationship', 'review the context map', 'is that really a shared kernel'; DE: 'erstelle die Context Map', 'welche Beziehung besteht zwischen diesen Kontexten', 'Context-Map-Beziehung erfassen', 'review die Context Map'. NOT a greenfield 'which Bounded Contexts does your system need' interview -- requires at least two Bounded Contexts to already exist (bc_list); use /arknet:bc-audit first if the store holds fewer than two. NOT tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface for that yet."
+description: "Elicits DDD context-map relationships (Partnership, Shared Kernel, Customer-Supplier, Conformist, Anti-Corruption Layer, Open Host Service, Published Language, Separate Ways) between two already-existing Bounded Contexts, and records confirmed ones via bc_link_context. Presents the relationship-type vocabulary and any already-recorded relationship as facts; the classification judgement stays with the user, same discipline as /arknet:bc-audit. Carries a second, write-free review mode that puts the elicitation's own question back to each recorded edge -- is the type re-derivable from the two contexts' material, does the direction match an asymmetric type, does anything carry the obligation the type implies -- plus the map-wide reading of how many distinct types are actually in use; the mode /arknet:store-review invokes for this resource type. A third mode, autonomous, runs that same classification test as a decision instead of a question, for a pair whose relationship arrives via a document with nobody to ask -- compact test and assumption-marking convention in `references/autonomous.md`. Trigger (also DE, since the user may phrase it in German): /arknet:context-map, 'map the bounded contexts', 'what's the relationship between these contexts', 'is this a shared kernel or a customer-supplier', 'record a context relationship', 'review the context map', 'is that really a shared kernel', 'classify this relationship, nobody to ask'; DE: 'erstelle die Context Map', 'welche Beziehung besteht zwischen diesen Kontexten', 'Context-Map-Beziehung erfassen', 'review die Context Map', 'klassifiziere das autonom, kein Rueckkanal'. NOT a greenfield 'which Bounded Contexts does your system need' interview -- requires at least two Bounded Contexts to already exist (bc_list); use /arknet:bc-audit first if the store holds fewer than two. NOT tactical design (Aggregate/Entity/ValueObject/DomainEvent) -- no tool surface for that yet."
 ---
 
 # /arknet:context-map -- Bounded-Context Relationships
@@ -11,13 +11,19 @@ shared model, or no relationship at all. It never invents a Bounded Context
 to fill a gap in the map; it only records relationships between contexts the
 user already confirmed via `bc_add`.
 
-Two modes. **Elicitation mode** (the default) works out the type for a pair
-that has none recorded, and ends in a `bc_link_context` call. **Review
+Three modes. **Elicitation mode** (the default) works out the type for a
+pair that has none recorded, and ends in a `bc_link_context` call. **Review
 mode** takes the edges the store already holds and puts the elicitation's
-own question back to each recorded answer, and writes nothing. "Map these
-two contexts", "what's the relationship" is the former; "review the context
-map", "is that really a Shared Kernel", and any call from
-`/arknet:store-review` is the latter.
+own question back to each recorded answer, and writes nothing. **Autonomous
+mode** runs elicitation mode's own judgement as a decision instead of a
+question, for a pair whose relationship arrives via a document with nobody
+to ask, and still ends in a `bc_link_context` call -- see
+`references/autonomous.md` for the compact version of the test and how the
+resulting assumption gets marked. "Map these two contexts", "what's the
+relationship" is the first; "review the context map", "is that really a
+Shared Kernel", and any call from `/arknet:store-review` is the second; a
+document stating or implying the relationship with nobody to confirm it is
+the third.
 
 ## Precondition: at least two existing Bounded Contexts
 
@@ -127,6 +133,26 @@ Review mode **writes nothing** -- no `bc_link_context`, no
 `bc_unlink_context`, not even to reverse a direction C2 shows is backwards.
 Correcting an edge is elicitation mode's unlink-then-link, on the user's
 decision, in a later turn.
+
+## Autonomous mode: no dialogue partner
+
+Same precondition, same evidence, same tools as elicitation mode -- only
+the pacing is gone, because there is nobody to pace with. Run review
+mode's four rules (C1-C4, see above) as the decision test before writing
+instead of after: a type that cannot be re-derived from the two contexts'
+material (C1) is not written at all, never defaulted to `PARTNERSHIP` to
+have something on record; a direction that cannot be read from the
+material (C2) is decided from whatever signal exists and marked, not left
+for a type that requires one.
+
+`bc_link_context` carries no prose field, so the assumption behind a type
+choice cannot live on the edge itself -- and it does not belong in either
+context's `domainVision` either, which is exactly the component-description
+failure `/arknet:bc-audit`'s review mode (rule B6) already rules out for
+that field. It is marked instead in the run's own report back to whoever
+invoked it, one line per edge, naming the type, the direction, and the
+neighbour ruled out. See `references/autonomous.md` for the compact test
+and the marking form.
 
 ## Scope boundary
 
