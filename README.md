@@ -121,7 +121,7 @@ exist, and a genuinely project-wide decision -- the composition root, the
 build technique, a project-wide convention -- gets no context edge at all,
 even though it technically touches every context.
 
-The same check is **R0 of the review**, ahead of R1-R8, and it falls on each
+The same check is **R0 of the review**, ahead of R1-R9, and it falls on each
 assertion the independence test splits out, not only on the record as a whole:
 a genuine decision in one half does not carry the other half through. Two
 shapes sound architectural and still fail it -- an assertion that things stay
@@ -144,6 +144,17 @@ record written, not only on the ones someone flagged as candidates.
 superseded in part. Implementation detail -- class names, signatures, literal
 parameter values -- is kept out of `decision`/`consequences` for the same
 reason files were kept clean of it: a rename should never falsify a decision.
+
+**`decision` holds exactly one sentence, the determination itself.** The
+review classifies every further sentence against the first: a **Repetition**
+(restates the decision, negated or not), an **Anticipation** (states a
+consequence that belongs in, or already is in, `consequences`), or a genuine
+**Own determination**, which is a second decision and an R1 finding, not
+this one. Reported sentence by sentence, never as a single "redundant"
+verdict, because a blanket verdict does not show which sentence carried the
+finding -- and applied to every language variant a multilingual record
+carries, since a redundancy cleared in one language can stand untouched in
+the other.
 
 **`SUPERSEDED` is a real, written status.** `adr_set_status` supports
 `PROPOSED -> ACCEPTED`, `PROPOSED -> REJECTED`, and `ACCEPTED -> DEPRECATED`,
@@ -186,7 +197,9 @@ references, status prose, unresolved `ADR-n` mentions, missing edges, empty
 consequence/option lists, nothing `CHOSEN`, a stray `decisionDate`); the
 skill only judges what the tool cannot -- whether a flagged pattern is
 actually a defect, whether a record bundles more than one decision, whether
-two records contradict each other, whether a consequence says anything.
+two records contradict each other, whether a consequence says anything,
+whether a `decision` field's sentences beyond the first each add a
+determination the first does not already carry.
 `Suspicions` and the tool's own not-checked list are candidates for that
 judgement, never findings to act on directly, and neither ever triggers a
 status change by itself.

@@ -30,7 +30,7 @@ under the rules below; the files are the user's to retire.
 | `adr_supersede` | Records that one decision replaces an older one -- sets the older decision's status to `SUPERSEDED` too (see "Lifecycle" below). |
 | `adr_unsupersede` | Regret path for a mistyped `adr_supersede` call -- reverts a `SUPERSEDED` decision back to `ACCEPTED` and drops its `supersededBy` edge (see "Un-superseding a decision" below). |
 | `adr_update` | Corrects an already-recorded decision -- see "Correcting a decision" below. |
-| `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context -- expected, not a defect, for a decision that is genuinely project-wide (see the `affectsContexts` bullet below) -- an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
+| `adr_check` | Reads the whole corpus and reports what a machine can decide about it, in two separated blocks and without changing anything -- `Facts` (a `decisionDate` on a decision not yet taken, no consequence or no considered option recorded, an option space with nothing `CHOSEN` on a decision that was taken, a decision that addresses no requirement and affects no bounded context -- expected, not a defect, for a decision that is genuinely project-wide (see the `affectsContexts` bullet below) -- an `ADR-n` named in the prose the project does not hold or that no `supersedes`/`supersededBy`/`relatedTo` edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles -- each a hint, not a defect). Also names, in its own output, what it does not check: whether a record bundles more than one decision, whether two records contradict each other, whether a consequence says anything, whether a `decision` field's sentences beyond the first each add a determination the first does not already carry rather than repeating it or anticipating a consequence. Read this first (see "Read everything first" below) -- its `Facts` replace the mechanical half of several review rules below; its `Suspicions` and not-checked list still need a reader's judgement, never a status change on their own. |
 | `adr_delete` | Removes a record entered by mistake: a `PROPOSED` decision, or an `ACCEPTED` one no other decision points at -- see "Deleting a decision" below. |
 
 `adr_add(name, adrContext, decision, consequences?, consideredOptions?, language?, addressesRequirements?, affectsContexts?, usesTerms?, relatedTo?)`:
@@ -412,13 +412,14 @@ before treating a decision as safe to leave unlinked or superseded, the same way
 | R6 | References resolve | `adr_check`'s `Facts` already flag an `ADR-n` named in the prose that the store does not hold. What is left for a reader: whether `addressesRequirements`/`affectsContexts`/`usesTerms` name the *right* requirement/context/term for what the decision is actually about, not merely one that happens to exist. |
 | R7 | Prose matches the graph | `adr_check`'s `Facts` already flag an `ADR-n` named in the text with no `supersedes`/`supersededBy`/`relatedTo` edge backing it. What is left for a reader: whether an edge that does exist is the right relation for what the prose actually says -- a `relatedTo` doing the work of an unrecorded `supersededBy`, or the reverse -- since the tool checks presence, not fit. |
 | R8 | Status is honest | `adr_check`'s `Facts` already flag a `decisionDate` on a record not yet taken (still `PROPOSED`) -- a leftover, not something to act on by itself. What is left for a reader: whether a shipped decision still reads `PROPOSED`, and whether a `PROPOSED` record whose decision was never confirmed by the user is a question back to them rather than a candidate for `ACCEPTED`. Never flip a status yourself -- neither on your own reading of the build state nor on the strength of an `adr_check` finding (see below). |
+| R9 | `decision` is one sentence | The field holds exactly one determination. Split it into its sentences and classify each one, in order, as **Decision** (the one determination), **Repetition** (restates the decision, negated or not, without adding one), **Anticipation** (states a consequence that belongs in, or already is in, `consequences`), or **Own determination** (a genuine second decision -- an R1 finding, not this one). Report the classification sentence by sentence; a blanket "redundant" or "ok" verdict is not enough, because it does not show which sentence carried the finding. A sentence classified Repetition or Anticipation belongs in `adrContext` or `consequences` instead, or not in the record at all. Apply this to every language variant a multilingual record carries -- a redundancy removed in one language can still stand untouched in the other. |
 
 ### 3. Report as a table
 
-| Record | R0 | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 |
-|---|---|---|---|---|---|---|---|---|---|
-| ADR-1 | ok | ok | ok | ok | ok | ok | ok | ok | ok |
-| ADR-2 | ok | *finding* | ok | ... | | | | | |
+| Record | R0 | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ADR-1 | ok | ok | ok | ok | ok | ok | ok | ok | ok | ok |
+| ADR-2 | ok | *finding* | ok | ... | | | | | | |
 
 `ok` or a short finding per cell. Then the corpus-wide findings from step 1, then the ranked
 list of what to do. A record you did not reach gets a row too, marked as unchecked -- the point
@@ -435,9 +436,12 @@ of the table is that the gap is visible.
   `ACCEPTED` record as well, as long as no other decision points at it (clear a `relatedTo`
   edge with `adr_update` first). Report the finding and leave the choice between leaving the
   record standing and deleting it to the user; the user deletes, you do not decide it away.
-- A finding on R1-R7 is a text correction: possible **only while the record is `PROPOSED`**
-  (translations aside, see "Correcting a decision"). Raise them before any status transition,
-  not after -- from `ACCEPTED` on the only remaining route is a successor record.
+- A finding on R1-R7 or R9 is a text correction: possible **only while the record is
+  `PROPOSED`** (translations aside, see "Correcting a decision"). Raise them before any status
+  transition, not after -- from `ACCEPTED` on the only remaining route is a successor record. An
+  R9 finding classified Repetition or Anticipation is removed from `decision` (and, for
+  Anticipation, added to `consequences` if it is not already there via `newConsequences`, which
+  stays possible in every status); one classified Own determination is handed to R1 instead.
 - A decision that is `ACCEPTED` but no longer actually followed -- and not superseded -- should
   be flagged to the user for `adr_set_status` to `DEPRECATED`, not left stale. Since
   `SUPERSEDED` is a written status, `adr_list`'s status column already tells a superseded
