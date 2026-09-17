@@ -38,10 +38,11 @@ approximating it here.
 | `adr_list` | Every recorded decision with its status; filter the result to `PROPOSED` yourself -- the tool has no status parameter. | Hard fact |
 | `adr_check` | Every recorded decision, checked for what is mechanically decidable and reported as `Facts`/`Suspicions` plus a not-checked list -- reads only, changes nothing. Report the `Facts` block as-is; a `Suspicion` or a not-checked entry is a candidate for `/arknet:adr`, not a finding on par with a `Fact` -- do not phrase either as a defect, and never propose a status change from either block. | Hard fact |
 | `bc_list` | Every registered Bounded Context, with its recorded `ContextRelationship` edges (see `/arknet:context-map`) shown inline -- the pool to check for missing relationships. | Judgement candidate |
+| `text_search` | Substring search over every literal in the project, regardless of any edge. Reaches further than `orphan_check`'s fourth list (which matches on word boundaries): a hit here is the same kind of candidate, never a finding on its own -- route it to the specialist skill for the resource it names. | Judgement candidate |
 
-No new MCP tools -- all five already exist and are used the same way their
-owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`)
-already use them.
+No new MCP tools -- all six already exist and are used the same way their
+owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
+`/arknet:store-review`) already use them.
 
 ## Protocol
 
@@ -70,7 +71,11 @@ already use them.
      not-checked list are not hard facts -- route them to `/arknet:adr` as a
      hint in step 2 instead of listing them here, and never propose a status
      change from either block.
-2. **Judgement candidates, hint only.** `bc_list` for every registered
+2. **Judgement candidates, hint only.** `orphan_check`'s fourth list from
+   step 1 lands here too. `text_search` is the same category by nature, not
+   by default use -- reach for it when a specific wording is in question
+   (e.g. before answering "is X still called that anywhere?"), not as a
+   fifth call to run on every pass. `bc_list` for every registered
    context, checking each one's `ContextRelationship` edges as shown inline
    by that same call. A context with zero edges is a **hint**, not a
    defect -- some contexts are legitimately unrelated to any other. Report it

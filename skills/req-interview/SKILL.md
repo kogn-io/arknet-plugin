@@ -214,9 +214,9 @@ the decision -- intentional / grown / accidental -- stays with the user.
 
 | Artifact | Create | Read | Change |
 |---|---|---|---|
-| Requirement (FR/NFR) | `req_add` | `req_get`, `req_list` (both `displayLocale?`) | `req_set_status`, `req_link_term`, `req_update` |
+| Requirement (FR/NFR) | `req_add` (also takes `usesTermCodes` at creation) | `req_get`, `req_list` (both `displayLocale?`) | `req_set_status`, `req_link_term`/`req_unlink_term`, `req_link_constraint`/`req_unlink_constraint`, `req_update` |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` (both `displayLocale?`) | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
-| Use case | `uc_add` | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`, `uc_link_constraint` |
+| Use case | `uc_add` (also takes `usesTermCodes` at creation) | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`/`uc_unlink_term`, `uc_link_constraint`/`uc_unlink_constraint` |
 | Glossary term | `term_add` | `term_get`, `term_list` (both `displayLocale?`) | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
 | Actor | `actor_add` | `actor_get`, `actor_list` (both `displayLocale?`) | `actor_update` (name/description, or either in a further language -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
 | Role | `role_add` | `role_get`, `role_list` (both `displayLocale?`) | `role_update` (name/description/`filledBy` -- not the code), `role_delete` (whole resource) |
@@ -376,9 +376,15 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   (`related`) explicitly clears them, a value sets/replaces them wholesale.
   Rejected if a code does not resolve, if `broader` would make the term its
   own (direct or transitive) broader term, or if `related` names the term
-  itself. `related` is symmetric but written in one direction: a
-  `term_update` rewrites only the edges this term asserts itself -- an edge
-  another term asserts towards this one is cleared with a `term_update` on
+  itself. To add or remove one or more peers without restating the whole
+  set, use `term_link_related`/`term_unlink_related` (each takes a list of
+  peer term codes) instead; `term_update`'s `related` stays the way to
+  replace the whole set at once. `related` is symmetric but written in one
+  direction regardless of which tool asserts it: a peer already asserting
+  `related` towards this term from its own side is reported as already
+  linked rather than getting a second edge, and `term_update` rewrites only
+  the edges this term asserts itself -- an edge another term asserts
+  towards this one is cleared with a `term_update`/`term_unlink_related` on
   *that* term. `language` behaves as in `term_add`
   (falls back to the project's default, rejects if neither is set): it
   replaces only the literal carrying the resolved tag, every other language
@@ -447,10 +453,13 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   exist as allowed values in the SHACL shape but not (yet) in the domain
   enum/tool -- see "Interview interim state" below, which needs no reject
   status for exactly this reason).
-- `req_link_term(reqId, termId)` -- links a requirement to a glossary term
-  (`arkreq:usesTerm`). After every new domain term in the requirement text,
-  check: does a term already exist for it? If not, `term_add` first, then
-  `req_link_term`.
+- `req_link_term(reqId, termIds)` -- links a requirement to one or more
+  glossary terms (`arkreq:usesTerm`) in a single call. After every new
+  domain term in the requirement text, check: does a term already exist for
+  it? If not, `term_add` first, then `req_link_term`. `req_add` also takes
+  `usesTermCodes` directly at creation, for terms already known when the
+  requirement is written in. To remove one or more links without restating
+  the rest, use `req_unlink_term`.
 - `req_update(id, title?, description?, rationale?, priority?,
   newAcceptanceCriteria?, acceptanceCriteriaTextPatches?,
   removeAcceptanceCriterionPositions?, usesTermCodes?, language?)`
@@ -481,9 +490,10 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
   for terms and constraints. `usesTermCodes` (list of `TERM-N` codes)
   replaces the requirement's `arkreq:usesTerm` links wholesale: omitted
   leaves them untouched, an empty list clears them all, a non-empty list is
-  the full set going forward (kogn-io/arknet#540). It is the only way to
-  unlink a term -- `req_link_term` only ever adds one. It does **not** touch
-  status (`req_set_status`).
+  the full set going forward. Use it to replace the whole set at once; to
+  add or remove specific terms without restating the rest, use
+  `req_link_term`/`req_unlink_term` (both take a list of term codes). It
+  does **not** touch status (`req_set_status`).
 - `req_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `req_list(displayLocale?)` takes it too and flags a fallen-back entry with
   the same inline `[fallback: ...]` tag as `term_list`.
@@ -557,9 +567,10 @@ and ask for the source before calling `constraint_add`.
   `term_get`. `constraint_list(displayLocale?)` takes it too and flags a
   fallen-back entry with the same inline `[fallback: ...]` tag as
   `term_list`.
-- `req_link_constraint(reqId, constraintId)` -- links a requirement to the
-  constraint that binds it (`oslc_rm:constrainedBy`), analogous to
-  `req_link_term`. Idempotent no-op if already linked.
+- `req_link_constraint(reqId, constraintIds)` -- links a requirement to one
+  or more constraints that bind it (`oslc_rm:constrainedBy`), analogous to
+  `req_link_term`. Idempotent no-op for an already-linked constraint. To
+  remove one or more links, use `req_unlink_constraint`.
 
 ### Use cases: `uc_add(title, goal, primaryRole, steps, language?, scope?, trigger?, supportingRoles?, precondition?, postcondition?, extensions?)`
 
@@ -613,8 +624,9 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   cannot be cleared -- a use case always has exactly one); `supportingRoles`
   (list of role codes) replaces the current list wholesale, an empty array
   clearing it; `usesTermCodes` (list of `TERM-N` codes) does the same for
-  the use case's `arkreq:usesTerm` links (kogn-io/arknet#540) and is the
-  only way to unlink a term -- `uc_link_term` only ever adds one. Every
+  the use case's `arkreq:usesTerm` links: replaces the whole set at once.
+  To add or remove specific terms without restating the rest, use
+  `uc_link_term`/`uc_unlink_term` (both take a list of term codes). Every
   argument but `id` is optional
   and an omitted one leaves that field unchanged -- use this to fix a use
   case found wanting during a full-set audit instead of creating a
@@ -631,14 +643,18 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
 - `uc_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `uc_list(displayLocale?)` takes it too and flags a fallen-back entry with
   the same inline `[fallback: ...]` tag as `term_list`.
-- `uc_link_term(ucId, termId)` -- links a use case to a glossary term it
-  uses (`arkreq:usesTerm`), analogous to `req_link_term`. After every new
-  domain term in the use case's goal/scope/trigger/pre-postcondition/step
-  text, check: does a term already exist for it? If not, `term_add` first,
-  then `uc_link_term`. Idempotent no-op if already linked.
-- `uc_link_constraint(ucId, constraintId)` -- links a use case to the
-  constraint that binds it (`oslc_rm:constrainedBy`), analogous to
-  `req_link_constraint`. Idempotent no-op if already linked.
+- `uc_link_term(id, termIds)` -- links a use case to one or more glossary
+  terms it uses (`arkreq:usesTerm`) in a single call, analogous to
+  `req_link_term`. After every new domain term in the use case's
+  goal/scope/trigger/pre-postcondition/step text, check: does a term
+  already exist for it? If not, `term_add` first, then `uc_link_term`.
+  `uc_add` also takes `usesTermCodes` directly at creation. Idempotent
+  no-op for an already-linked term. To remove one or more links, use
+  `uc_unlink_term`.
+- `uc_link_constraint(id, constraintIds)` -- links a use case to one or
+  more constraints that bind it (`oslc_rm:constrainedBy`), analogous to
+  `req_link_constraint`. Idempotent no-op for an already-linked
+  constraint. To remove one or more links, use `uc_unlink_constraint`.
 
 arknet already resolves `primaryRole`/`supportingRoles` and
 `steps[].realises` **schema-independently and with didactic rejection of
@@ -956,9 +972,15 @@ another FR/NFR/UC/term?
 requirement/use-case/term as the first, automated step -- it walks
 references backwards and returns everything that transitively depends on
 it. Follow up with `orphan_check`/`trace_matrix` if the change touched
-links (`usesTerm`, `realises`, actor/role references). Only fall back to
-re-reading `req_list`/`uc_list`/`term_list` from memory for aspects these
-tools do not cover (e.g. wording conflicts between two requirements that
+links (`usesTerm`, `realises`, actor/role references). A rename or wording
+change needs one more step `impact_analysis` cannot cover: it only walks
+edges, so a prose mention of the old wording with no `usesTerm`/`realises`
+edge behind it stays invisible to it. Run `text_search` for the old wording
+across the whole project -- a substring match over every literal,
+regardless of any edge -- and treat every hit as a candidate to update, the
+same way an `orphan_check` hint is a candidate rather than a finding. Only
+fall back to re-reading `req_list`/`uc_list`/`term_list` from memory for
+aspects neither tool covers (e.g. wording conflicts between two requirements that
 share no explicit link) -- do not use manual re-reading as the primary
 method now that the tools exist.
 

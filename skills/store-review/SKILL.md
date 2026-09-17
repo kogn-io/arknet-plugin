@@ -90,6 +90,7 @@ checked later.
 | `actor_list`, `actor_get`, `role_list`, `role_get` | Reader | Every actor and role in full, for their reviewers. |
 | `role_usecase_matrix`, `term_cooccurrence` | Reader | Raw bipartite/co-occurrence data. The Bounded Context reader works from both; the role reviewer works from the matrix, which also reports per actor which roles it occupies. |
 | `impact_analysis` | Reader | What a resource pulls with it -- used to weigh a finding, never to act on one. |
+| `text_search` | Reader | Substring search over every literal in the project, regardless of any edge -- finds a prose mention `orphan_check`'s hint list or `impact_analysis`'s edge-walk cannot see (e.g. a term or requirement named in an ADR's consequences, or a use case's extensions, with no backing link). Use it to check a suspicious wording (a near-identical title `adr_check` flagged, a renamed term) against the rest of the store; a hit is a candidate for the relevant reviewer, not a finding of its own. |
 
 Read-only, all of them. No tool this skill calls changes anything.
 

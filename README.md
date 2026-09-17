@@ -354,6 +354,9 @@ one, so it recurs on an everyday word used in its ordinary sense as often as
 on a real gap), and `adr_check`'s `Suspicions`/not-checked list, each
 phrased as a question ("worth a look?"), never as a defect on par with an
 orphaned requirement or a `Fact` -- and never as a proposed status change.
+`text_search` (a project-wide substring search over every literal) is the
+same kind of hint, reached for on demand to check a specific wording rather
+than run on every pass.
 Every finding then names the same next step -- `/arknet:store-review`, the
 pass that applies each resource type's reader-level rules -- rather than a
 different specialist skill per finding; only a single resource the user wants
@@ -647,7 +650,8 @@ them is right in a given situation, and there is no `project_delete`.
   normative "the system shall ..." description, type, at least one testable
   acceptance criterion; optional MoSCoW priority, quality category and
   rationale -- why the requirement exists, not a restatement of what it
-  does).
+  does; optional `usesTermCodes` to link already-existing glossary terms
+  from the start).
 - `req_get` / `req_list` -- fetch one / list all requirements; both take an
   optional `displayLocale` choosing which language variant is shown. The list
   tools also say when they fell back: an entry missing in the requested
@@ -660,7 +664,11 @@ them is right in a given situation, and there is no `project_delete`.
   the fields it touches in a further language. Also the way a requirement gets its rationale recorded
   after the fact if it was registered without one.
 - `req_set_status` -- change lifecycle status (`PROPOSED` -> `ACCEPTED`).
-- `req_link_term` -- link a requirement to a glossary term it uses.
+- `req_link_term` / `req_unlink_term` -- link or remove one or more glossary
+  terms a requirement uses, each call taking a list of term codes; not
+  atomic across the list, and unlinking a term that is not currently linked
+  is rejected rather than a silent no-op. `req_update`'s `usesTermCodes`
+  remains the way to replace the whole set at once.
 - `req_schema` -- describe the requirement vocabulary (types, statuses,
   priorities) as data, so a client does not have to guess the accepted values.
 
@@ -681,8 +689,10 @@ them is right in a given situation, and there is no `project_delete`.
   `adr_add` or `req_add` instead. Rejected while a requirement or use case
   still references it via `constrainedBy`. The `TCON-`/`BCON-`/`RCON-` code
   stays taken.
-- `req_link_constraint` -- link a requirement to the constraint that binds
-  it.
+- `req_link_constraint` / `req_unlink_constraint` -- link or remove one or
+  more constraints that bind a requirement, each call taking a list of
+  constraint codes; not atomic across the list, and unlinking a constraint
+  that is not currently linked is rejected rather than a silent no-op.
 
 ### Actors
 
@@ -741,7 +751,8 @@ it). A use case binds to a role, never directly to an actor.
   (goal-in-context, primary/supporting roles, ordered main flow, optional
   precondition/postcondition/extensions); steps can reference the
   requirements they realise. Primary/supporting roles are given as
-  `ROLE-n` codes (see Roles above), not actor codes or names.
+  `ROLE-n` codes (see Roles above), not actor codes or names. Optional
+  `usesTermCodes` links already-existing glossary terms from the start.
 - `uc_get` / `uc_list` -- fetch one / list all use cases; both take an
   optional `displayLocale`, and the list marks a fallen-back entry as
   described under `req_list`.
@@ -753,8 +764,13 @@ it). A use case binds to a role, never directly to an actor.
   them by position (the ones after a removed step move up, at least one must
   stay), or state the fields it touches in a further language -- reordering
   the main flow is still out of scope.
-- `uc_link_term` -- link a use case to a glossary term it uses.
-- `uc_link_constraint` -- link a use case to the constraint that binds it.
+- `uc_link_term` / `uc_unlink_term` -- link or remove one or more glossary
+  terms a use case uses, each call taking a list of term codes; not atomic
+  across the list. `uc_update`'s `usesTermCodes` remains the way to
+  replace the whole set at once.
+- `uc_link_constraint` / `uc_unlink_constraint` -- link or remove one or
+  more constraints that bind a use case, each call taking a list of
+  constraint codes; not atomic across the list.
 
 ### Glossary
 
@@ -770,7 +786,11 @@ it). A use case binds to a role, never directly to an actor.
   term or related peers in place, or state label/definition in a further
   language, keeping its identity and every link into it. `broader` and
   `related` are the exceptions to "omitted = unchanged": an empty string
-  (`broader`) or an empty list (`related`) explicitly clears what is set.
+  (`broader`) or an empty list (`related`) explicitly clears what is set,
+  a non-empty `related` replaces the whole set at once. To add or remove
+  one or more `related` peers without restating the rest, use
+  `term_link_related` / `term_unlink_related` instead, each taking a list
+  of peer term codes.
 - `term_delete` -- remove the whole term resource (label and definition in
   every language), not just a correction; rejected while anything still
   references it: a requirement's, use case's or architecture decision's
@@ -795,10 +815,14 @@ it). A use case binds to a role, never directly to an actor.
   vision in place, or state either in a further language, keeping its
   identity unchanged. Also replaces the context's glossary-term links
   wholesale via `terms`: omitted leaves them untouched, an empty list
-  clears them all, a non-empty list is the full set going forward -- the
-  only way to unlink a term, since `bc_link_term` only ever adds one.
-- `bc_link_term` -- link a bounded context to a glossary term of its
-  ubiquitous language; add-only, see `bc_update` above to unlink one.
+  clears them all, a non-empty list is the full set going forward. Use it
+  to replace the whole set at once; to remove a single term without
+  restating the rest, use `bc_unlink_term` instead.
+- `bc_link_term` / `bc_unlink_term` -- link or remove a bounded context's
+  link to one glossary term of its ubiquitous language, one code per call
+  -- unlike the requirement/use-case term-link tools, these have not moved
+  to a list. Unlinking a term that is not currently linked is rejected
+  rather than a silent no-op.
 - `bc_link_context` -- record a directed context-map relationship
   (Partnership, Shared Kernel, Customer-Supplier, Conformist,
   Anti-Corruption Layer, Open Host Service, Published Language, or
@@ -877,6 +901,14 @@ it). A use case binds to a role, never directly to an actor.
 - `term_cooccurrence` -- which glossary terms are named together in the same
   requirement/use-case text, and which never are -- raw data for spotting a
   homonym (same term, different meaning per context) vs. a true duplicate.
+- `text_search` -- free-text, case-insensitive substring search over every
+  literal in the project, across every field and language tag. Finds a
+  prose mention `impact_analysis` cannot see, since that tool only follows
+  a fixed set of edges: a mention with no backing `usesTerm`/
+  `addressesRequirement`/... edge is invisible to it. Each hit names the
+  resource it was found under, the matched field, and a short snippet;
+  a hit on a step or acceptance criterion is reported under its owning use
+  case or requirement instead.
 
 ### Generic store access
 
