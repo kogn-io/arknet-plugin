@@ -244,6 +244,16 @@ roles; is its occupancy deliberately open rather than simply never asked
 about). It
 interrogates the user on every gap it finds.
 
+A third mode, **autonomous**, is for exactly the case dialogue cannot cover:
+a finished document (a spec, a ticket, a change notice) and nobody to ask.
+It keeps every rule above -- write order, the project precondition, the
+ripple check -- and replaces only the questions with a reasoned decision,
+marked as an assumption (`ASSUMPTION: ...`, in whichever field already
+carries reasoning, so a later `text_search` finds every one) rather than a
+silent pick. The full checklists and the marking convention live on their
+own in `skills/req-interview/references/autonomous.md`, so a run in this
+mode does not have to carry the dialogue protocol along to use them.
+
 ### `/arknet:bc-audit`
 
 Audits an already-filled requirements/use-case/glossary store for
@@ -328,6 +338,16 @@ Out of
 scope: drawing or judging where a Bounded Context boundary sits
 (`/arknet:bc-audit`'s job) and tactical design, which has no tool surface
 yet.
+
+A third mode, **autonomous**, runs the review mode's own four rules as a
+decision instead of a question, for a relationship arriving via a document
+with nobody to confirm it: a type that cannot be re-derived from the
+material is not written at all rather than defaulted to `PARTNERSHIP`, and
+a direction that cannot be read from the material is decided and marked
+rather than left open for a type that requires one. `bc_link_context`
+carries no prose field, so the assumption is marked in the run's own report
+back, never smuggled into a context's `domainVision`. Compact test and
+marking form in `skills/context-map/references/autonomous.md`.
 
 ### `/arknet:health-check`
 
