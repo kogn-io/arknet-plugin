@@ -1,5 +1,5 @@
 ---
-description: "Relentless requirements-interview skill -- elicits FR/NFR/Constraint (req_add/constraint_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (an existing project, already registered via /arknet:init, is interrogated -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/constraint/use case/glossary term', 'interview me about X', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich'. NOT for HOW/architecture (use /arknet:adr for that), NOT for registering the project itself or writing its CLAUDE.md routing block ('attach this project to arknet' -- that is /arknet:init, which runs first), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
+description: "Relentless requirements-interview skill -- elicits FR/NFR/Constraint (req_add/constraint_add), use cases (uc_add) and glossary terms (term_add) in dialogue, until a shared, testable understanding is reached, and only then writes it in. Two entry points: greenfield (an idea/wish from the user -> interview) and brownfield (an existing project, already registered via /arknet:init, is interrogated -- code delivers questions, never answers: 'was this intentional, grown, or accidental?'). Trigger (also DE, since the user may phrase it in German): /arknet:req-interview, 'elicit a requirement', 'new requirement/constraint/use case/glossary term', 'interview me about X', 'interrogate the existing codebase', 'review the requirements/use cases/glossary relentlessly', 'are the requirements complete/consistent', 'review the actors and roles'; DE: 'erhebe ein Requirement', 'neue Anforderung', 'pruefe die Requirements unerbittlich', 'review die Actors und Rollen'. Actors and roles are elicited here, so their review checklists live here too -- there is no separate actor/role skill, and /arknet:store-review runs these checklists for those two types. NOT for HOW/architecture (use /arknet:adr for that), NOT for registering the project itself or writing its CLAUDE.md routing block ('attach this project to arknet' -- that is /arknet:init, which runs first), not for plain listing without an interview (use req_list/uc_list/term_list directly for that)."
 ---
 
 # /arknet:req-interview -- Elicit Requirements, Use Cases and Glossary
@@ -673,7 +673,13 @@ entry points (see above), same protocol:
   unsharpened, so it recurs on an everyday word used in its ordinary sense
   as often as on a real gap: read each entry yourself and discard it
   without a question when that is what it is; open one only for a genuine
-  gap. **Then** walk every requirement/use case/term
+  gap. `store_check`'s `ROLE_TERM_DUPLICATE` belongs in the same automated
+  pass: it reports every role carrying the same name as a glossary term
+  (case-insensitive, across every language variant) -- a report, never a
+  rejection, since the two resource types stay independent. It is the one
+  mechanical reading the role set gets; note what it does *not* compare --
+  two roles against each other, and any actor name at all.
+  **Then** walk every requirement/use case/term/actor/role
   systematically, one at a time, and interrogate the user relentlessly on
   the gaps you find (missing scenarios/actors/roles/edge cases, conflicts,
   untestable descriptions, unspecified failure behaviour). A full-set audit
@@ -850,6 +856,80 @@ Cockburn completeness:
   dated value (amount, percentage, date) that a requirement elsewhere
   declares configurable/changeable? If the value can change through the
   system the requirement describes, the definition must not freeze it.
+
+### Checklist per actor
+
+Actors and roles are elicited here (see "Actor vs. role" above), so their
+review rules live here too -- there is no separate skill for them, and a
+store of a handful of roles and no actors does not warrant one. These two
+checklists are what `/arknet:store-review` runs for these types.
+
+- **Carrier, not function** -- is this something that exists whether or not
+  the project models it (a person, an organisation, a system), or is it a
+  named capacity someone occupies? A functional designation registered as
+  an actor is a role filed in the wrong resource. Give-away: the name
+  answers "what does it do here?" rather than "what is it?".
+- **`type` correct** -- `HUMAN` / `SYSTEM` / `LEGAL` / `GROUP`, and each
+  means something specific: `LEGAL` is a legal person (company,
+  association), `GROUP` a group without a legal form of its own
+  (department, team). A department filed as `LEGAL`, or an external service
+  filed as `HUMAN` because a person operates it, is a finding -- and one
+  with no in-place fix, since `actor_update` cannot change `type`. Say so
+  in the finding: correcting it means `actor_delete` plus a fresh
+  `actor_add`, after clearing every `filledBy` that names it.
+- **Occupies something, or is deliberately free-standing** -- does any role
+  list this actor in `filledBy`? `role_usecase_matrix` answers this
+  directly: alongside the role/use-case view it reports, per actor, which
+  roles it occupies. An actor in no role is legitimate (an external system
+  with its own SLAs, worth recording in its own right) but it should be
+  deliberate: ask which, rather than assuming either.
+- **Distinct from the other actors** -- two actors that differ only in
+  wording are one actor named twice. No tool checks this:
+  `store_check`'s `ROLE_TERM_DUPLICATE` compares roles against glossary
+  terms and never looks at an actor name, so this one is read by hand.
+- **Not a glossary term in disguise** -- and the reverse: an actor whose
+  *meaning* is itself worth defining may deserve a `term_add` as well. The
+  two are independent; neither implies the other. A finding here is "should
+  this also be a term?", never "this should have been a term instead".
+
+### Checklist per role
+
+- **Anti-rigid function, not a proper name** -- does the name survive a
+  change of occupant? "Requirements Engineer" does; a person's name, a
+  product name, or a team's internal label does not.
+- **Used by at least one use case** -- `role_usecase_matrix` shows which
+  use cases name each role as `primaryRole` or `supportingRole`. A role no
+  use case names is either a use case not yet elicited or a role invented
+  without a driving goal -- the interrogation point is which, and the
+  matrix does not answer it.
+- **Distinct from the other roles** -- no tool compares two roles, so read
+  it: two differently-named roles doing the same job across the use-case
+  set. `role_usecase_matrix` makes the candidate visible -- two roles
+  appearing in exactly the same use cases, in the same capacity, are a
+  candidate for being one role, though a genuine division of labour inside
+  one use case is the counter-case to rule out before saying so.
+- **Name not colliding with a glossary term** -- carry over
+  `store_check`'s `ROLE_TERM_DUPLICATE` finding rather than re-deriving it.
+  The collision is not itself an error (a role and a term of the same name
+  may both be right), but it is worth one question: is the term defining
+  the function this role names, in which case one of the two is redundant,
+  or do they genuinely mean different things under one word?
+- **Occupancy stated or deliberately open** -- `filledBy` empty is allowed
+  and often right (a role exists independently of who fills it). The
+  finding is not "unfilled" but "unfilled and nobody asked": where the
+  carrier is known, recording it costs one `actor_add` and one
+  `role_update`.
+- **Description carries the function** -- does `description` say what this
+  role is responsible for, or does it restate the name? A role whose
+  description adds nothing cannot be told apart from a similar one by a
+  later reader.
+
+Both checklists are read against the whole set, same as every other
+checklist here: a role is judged against the other roles and the use-case
+set, never in isolation. A store holding roles but no actors at all is a
+reading, not a defect -- every role is unfilled, which is allowed; the
+question for the user is whether the carriers were never elicited or
+deliberately left out.
 
 ## Writing it in only happens after that
 

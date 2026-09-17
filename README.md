@@ -222,15 +222,26 @@ dangling links and orphaned terms that a content read alone would miss.
 `orphan_check`'s fourth list -- text mentions of a term missing its backing
 edge -- is the exception: its word-boundary match also catches an everyday
 word used in its ordinary sense, so the interviewer weighs each entry
-instead of treating it as a fact. It then walks the entire store
-(requirements, use cases, glossary) one item
+instead of treating it as a fact. `store_check`'s `ROLE_TERM_DUPLICATE`
+runs in the same pass -- every role carrying the same name as a glossary
+term, a report and never a rejection, since the two resource types stay
+independent. It then walks the entire store
+(requirements, use cases, glossary, actors, roles) one item
 at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
 filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the
 ISO/IEC/IEEE 29148 quality attributes (completeness, unambiguity,
 consistency, testability, dependencies, priority differentiation), and --
 for glossary terms -- implementation-free, architecture-decision-free and
-config-free definitions. It
+config-free definitions. Actors and roles are elicited here, so their review
+checklists live here too rather than in a skill of their own: an actor is
+read as a *carrier* (is its `type` right -- and `actor_update` cannot change
+one, so a wrong `type` has no in-place fix; does a role occupy it; is it
+distinct from the other actors, which no tool checks), a role as an
+anti-rigid *function* (does the name survive a change of occupant; does any
+use case name it, per `role_usecase_matrix`; is it distinct from the other
+roles; is its occupancy deliberately open rather than simply never asked
+about). It
 interrogates the user on every gap it finds.
 
 ### `/arknet:bc-audit`
@@ -257,7 +268,23 @@ presented one at a time, own assessment first naming the language break;
 the skill then asks whether it is a deliberate boundary or a coincidental
 clustering, and only on confirmation does it write a Bounded Context
 (`bc_add`) and link its glossary terms (`bc_link_term`), followed by an
-`impact_analysis` ripple check. Out of scope: tactical design
+`impact_analysis` ripple check.
+
+That is **candidate mode**. The skill carries a second, write-free **review
+mode** for a boundary the store already holds -- the mode
+`/arknet:store-review` invokes, and the one a phrasing like "review the
+recorded contexts" selects. Three of its rules are decidable from the store
+alone: does the context carry any `bc_link_term` edge at all (without one,
+nothing says which language falls inside the boundary), does any
+`ContextRelationship` touch it, and is its `subdomain`
+(`CORE_DOMAIN`/`SUPPORTING_DOMAIN`/`GENERIC_DOMAIN`) consistent with what its
+`domainVision` claims -- a finding with no in-place fix, since `bc_update`
+leaves `subdomain` and `ownedBy` fixed since creation. The other three are
+the reading: the language break re-found from the store alone, the same
+responsibility/module/data-volume exclusion candidate mode applies, and a
+`domainVision` that states what holds inside the boundary rather than
+enumerating what the context contains. Across the set it also reports a term
+linked to two contexts and a term in none. Out of scope: tactical design
 (Aggregate/Entity/Value Object/Domain Event), which has no tool surface
 yet, and context-map relationship types (Partnership/Anti-Corruption
 Layer/...), which `/arknet:context-map` covers instead.
@@ -284,7 +311,20 @@ asymmetry. `bc_link_context` is idempotent over the exact (upstream,
 downstream, relationshipType) triple -- calling it again with the same
 three values returns the relationship already recorded rather than creating
 a second one -- and `bc_unlink_context` removes a recorded relationship by
-that same triple, rejecting one that isn't currently recorded. Out of
+that same triple, rejecting one that isn't currently recorded.
+
+Like `/arknet:bc-audit`, it carries a second, write-free **review mode** for
+the edges already recorded -- the elicitation's own question put back to each
+answer given. Per edge: can the type be re-derived from the two contexts'
+domain visions and terms, and which neighbouring type was ruled out; does the
+direction match, for the five asymmetric types; does anything in the store
+carry the obligation the type implies (an `ANTICORRUPTION_LAYER` a
+translation layer, a `SHARED_KERNEL` a jointly-owned model, a
+`PUBLISHED_LANGUAGE` a published one); and does the type distinguish this
+pair from any other. Across the map it counts the distinct types actually in
+use -- every edge carrying the same type is the map's characteristic
+failure, a map that says the same thing everywhere distinguishing nothing.
+Out of
 scope: drawing or judging where a Bounded Context boundary sits
 (`/arknet:bc-audit`'s job) and tactical design, which has no tool surface
 yet.
@@ -351,9 +391,15 @@ report**: no write tool of any kind is called, and the report goes where the
 user says (a file, or a comment on an issue they name), never posted on the
 skill's own initiative. And the **gaps are reported as gaps** -- the reader
 level's review modes are unevenly developed, so every report carries a
-coverage table naming which resource types were reviewed, which were not,
-and what a reader would still have to do by hand. Where a type has no review
-mode at all, no rule set is improvised for it; it is reported as unreviewed.
+coverage table naming which resource types were reviewed, what each mode does
+*not* reach, and what a reader would still have to do by hand. Every resource
+type the store holds has a reader-level mode today -- Bounded Context and
+context relationship in the review modes of `/arknet:bc-audit` and
+`/arknet:context-map`, actor and role in the checklists of
+`/arknet:req-interview` -- so the coverage table's job is now the reach of
+each mode rather than a list of types nobody reviews. The rule outlives that:
+where a type has no review mode at all, no rule set is improvised for it; it
+is reported as unreviewed.
 
 ## Requirements
 
@@ -531,6 +577,10 @@ Later, three more entry points build on the same store:
   how they relate (Partnership, Customer-Supplier, Anti-Corruption Layer,
   ...) and records the confirmed relationship. See below for the full
   protocol.
+- Asking either of those two to **"review the recorded contexts"** or
+  **"review the context map"** runs its write-free review mode over what the
+  store already holds, instead of eliciting something new -- the same modes
+  `/arknet:store-review` runs for those two resource types.
 - `/arknet:health-check` -- for a vague "is everything okay?"/"what's the
   status?" question that names none of the above by itself. Reads the same
   fact-tools (`orphan_check`, `trace_matrix`, `adr_list`, `adr_check`,
