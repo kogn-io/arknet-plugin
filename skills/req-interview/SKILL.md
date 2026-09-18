@@ -228,9 +228,9 @@ convention on their own, compact, for exactly this case.
 
 | Artifact | Create | Read | Change |
 |---|---|---|---|
-| Requirement (FR/NFR) | `req_add` (also takes `usesTermCodes` at creation) | `req_get`, `req_list` (both `displayLocale?`) | `req_set_status`, `req_link_term`/`req_unlink_term`, `req_link_constraint`/`req_unlink_constraint`, `req_update` |
+| Requirement (FR/NFR) | `req_add` (also takes `usesTermCodes` at creation) | `req_get`, `req_list` (both `displayLocale?`) | `req_set_status`, `req_link_term`/`req_unlink_term`, `req_link_constraint`/`req_unlink_constraint`, `req_update`, `req_delete` (whole resource, acceptance criteria included; status is not consulted -- an `ACCEPTED` requirement deletes like a `PROPOSED` one; refused while a decision, a use case, a use-case step or another requirement still points at it) |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` (both `displayLocale?`) | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
-| Use case | `uc_add` (also takes `usesTermCodes` at creation) | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`/`uc_unlink_term`, `uc_link_constraint`/`uc_unlink_constraint` |
+| Use case | `uc_add` (also takes `usesTermCodes` at creation) | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`/`uc_unlink_term`, `uc_link_constraint`/`uc_unlink_constraint`, `uc_delete` (whole resource, flow steps included; refused while another use case includes or extends it) |
 | Glossary term | `term_add` | `term_get`, `term_list` (both `displayLocale?`) | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
 | Actor | `actor_add` | `actor_get`, `actor_list` (both `displayLocale?`) | `actor_update` (name/description, or either in a further language -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
 | Role | `role_add` | `role_get`, `role_list` (both `displayLocale?`) | `role_update` (name/description/`filledBy` -- not the code), `role_delete` (whole resource) |
@@ -511,6 +511,20 @@ via `uc_list`/`uc_get` before presenting the draft, not after.
 - `req_get(id, displayLocale?)` -- `displayLocale` behaves as in `term_get`.
   `req_list(displayLocale?)` takes it too and flags a fallen-back entry with
   the same inline `[fallback: ...]` tag as `term_list`.
+- `req_delete(id)` -- removes the whole requirement and every triple it
+  carries, its acceptance criteria included. Not a correction: `req_update`
+  rewords one that stays. The intended use is a duplicate, or a promise the
+  project withdrew rather than reworded. **Status is deliberately not
+  consulted** -- an `ACCEPTED` requirement deletes just like a `PROPOSED`
+  one, because a requirement is a promise that changes, not a decision that
+  was taken, and the duplicate that prompts this is usually an accepted one.
+  (This is where requirements and decisions part ways: `adr_delete` does
+  weigh status.) Refused while a decision addresses it
+  (`arkarch:addressesRequirement`), a use case satisfies it or one of its
+  steps realises it, or another requirement depends on it -- what actually
+  carries something is held by those edges, and they have to go first. The
+  `FR-`/`NFR-n` code stays taken, so it never names a different requirement
+  later.
 
 ### Deciding FR vs. NFR vs. Constraint
 
@@ -669,6 +683,17 @@ Coarse-grained write: **one** `uc_add` call creates the complete use case.
   more constraints that bind it (`oslc_rm:constrainedBy`), analogous to
   `req_link_constraint`. Idempotent no-op for an already-linked
   constraint. To remove one or more links, use `uc_unlink_constraint`.
+- `uc_delete(id)` -- removes the whole use case and every triple it
+  carries, its flow steps included. A use case carries no status, so a
+  deleted one leaves no trace of ever having been specified: this is for one
+  that should never have been written -- a duplicate, or a flow that belongs
+  to another use case -- not a way to retire one the system still has. Use
+  `uc_update` for one that merely drifted. Refused while another use case
+  points at it via `includesUseCase`/`extendsUseCase`. Everything the use
+  case itself points at (`satisfies`, `usesTerm`, `constrainedBy`,
+  `primaryRole`, `supportingRole`, a step's `realises`) simply goes with it:
+  the requirement, term, constraint or role at the far end is left alone.
+  The `UCn` code stays taken, so it never names a different use case later.
 
 arknet already resolves `primaryRole`/`supportingRoles` and
 `steps[].realises` **schema-independently and with didactic rejection of

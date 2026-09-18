@@ -689,6 +689,14 @@ them is right in a given situation, and there is no `project_delete`.
   atomic across the list, and unlinking a term that is not currently linked
   is rejected rather than a silent no-op. `req_update`'s `usesTermCodes`
   remains the way to replace the whole set at once.
+- `req_delete` -- remove the whole requirement resource, its acceptance
+  criteria included, not just a correction; the intended use is a duplicate,
+  or a promise the project withdrew rather than reworded. The status is
+  deliberately not consulted -- an `ACCEPTED` requirement deletes just like a
+  `PROPOSED` one, because a requirement is a promise that changes, not a
+  decision that was taken. Rejected while a decision addresses it, a use case
+  satisfies it or one of its steps realises it, or another requirement
+  depends on it. The `FR-`/`NFR-` code stays taken.
 - `req_schema` -- describe the requirement vocabulary (types, statuses,
   priorities) as data, so a client does not have to guess the accepted values.
 
@@ -791,6 +799,13 @@ it). A use case binds to a role, never directly to an actor.
 - `uc_link_constraint` / `uc_unlink_constraint` -- link or remove one or
   more constraints that bind a use case, each call taking a list of
   constraint codes; not atomic across the list.
+- `uc_delete` -- remove the whole use case resource, its flow steps
+  included, not just a correction. A use case carries no status, so a
+  deleted one leaves no trace of ever having been specified: this is for one
+  that should never have been written, not a way to retire one the system
+  still has. Rejected while another use case includes or extends it.
+  Everything the use case itself points at -- requirements, terms,
+  constraints, roles -- is left alone. The `UC` code stays taken.
 
 ### Glossary
 
@@ -843,6 +858,15 @@ it). A use case binds to a role, never directly to an actor.
   -- unlike the requirement/use-case term-link tools, these have not moved
   to a list. Unlinking a term that is not currently linked is rejected
   rather than a silent no-op.
+- `bc_delete` -- remove the whole bounded context resource, not just a
+  correction; the intended use is a boundary that turned out not to be one,
+  drawn before the language break was understood. Rejected while anything
+  still points at it -- a context relationship via `upstream`/`downstream`
+  (drop it with `bc_unlink_context` first: a relationship is its own
+  resource and is never deleted along with a context), a decision via
+  `affectsContext`, a requirement via `scopedTo`, a domain via `hasContext`.
+  The terms it links hold nothing: those are its own edges and go with it,
+  the glossary terms themselves stay. The `BC-` code stays taken.
 - `bc_link_context` -- record a directed context-map relationship
   (Partnership, Shared Kernel, Customer-Supplier, Conformist,
   Anti-Corruption Layer, Open Host Service, Published Language, or
