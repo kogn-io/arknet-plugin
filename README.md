@@ -937,7 +937,7 @@ it). A use case binds to a role, never directly to an actor.
 - `store_check` -- check this project's stored model against what it
   declares about itself; read-only, changes and refuses nothing. `checks`
   selects which checks to run (a list of names, omit or pass an empty list
-  to run all -- today there are two). `LANGUAGE` reports every field
+  to run all -- today there are three). `LANGUAGE` reports every field
   carrying at least one language-tagged value but not one for each language
   `project_update`'s `languages` declares, one row per resource and field
   naming the missing tags; with no declared `languages` set there is no
@@ -946,7 +946,15 @@ it). A use case binds to a role, never directly to an actor.
   glossary term that carry the same name, compared case-insensitively and
   trimmed across every language variant of the role's name against the
   term's label -- a report only, never a rejection, since the two resource
-  types stay independent of each other.
+  types stay independent of each other. `STEP_ACCEPTANCE` reports every
+  main-flow use-case step that no acceptance criterion stands behind, along
+  the two-hop backwards path step -> `stepRealises` -> requirement ->
+  `acceptanceCriterion` (the criterion hangs off the requirement, not off the
+  step), and keeps its two cases in two tables: a step realising no
+  requirement at all is a missing edge, a step whose realised requirements
+  carry no criterion is an incomplete requirement. Extension steps are out of
+  scope rather than reported, and that limit travels in the check's own
+  output.
 - `resource_get` -- fetch all statements (outgoing and incoming) of a single
   resource.
 

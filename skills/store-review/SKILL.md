@@ -82,7 +82,7 @@ checked later.
 | `project_list` | -- | Which projects and anchors exist -- only needed when the review targets a project other than the current directory's. |
 | `adr_check` | Mechanical | The whole decision corpus, checked for what is mechanically decidable: `Facts` (a date on a decision not taken, no consequence or considered option recorded, nothing `CHOSEN` on a taken decision, a decision addressing no requirement and affecting no context, an `ADR-n` in the prose the project does not hold or no edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles). Names its own not-checked list in its output. |
 | `orphan_check` | Mechanical | Requirements no use case realises; glossary terms never referenced; a term named in text without the backing edge; constraints nothing is bound by. |
-| `store_check` | Mechanical | The stored model against what the project declares about itself -- today the maintained-language set and role/term name duplicates. |
+| `store_check` | Mechanical | The stored model against what the project declares about itself -- today the maintained-language set, role/term name duplicates, and main-flow use-case steps no acceptance criterion stands behind (extension steps out of scope). |
 | `trace_matrix` | Mechanical | Per requirement: which terms it uses, which use case(s) realise it. |
 | `adr_list`, `adr_get` | Reader | The decision corpus for the ADR reviewer -- the list for the overview, `adr_get` for each record's full text. |
 | `req_list`, `req_get`, `constraint_list`, `constraint_get`, `uc_list`, `uc_get`, `term_list`, `term_get` | Reader | Requirements, constraints, use cases and glossary terms, in full, for their reviewers. |
