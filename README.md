@@ -783,7 +783,10 @@ it). A use case binds to a role, never directly to an actor.
   `usesTermCodes` links already-existing glossary terms from the start.
 - `uc_get` / `uc_list` -- fetch one / list all use cases; both take an
   optional `displayLocale`, and the list marks a fallen-back entry as
-  described under `req_list`.
+  described under `req_list`. `uc_list` alone takes `withSteps`: off by
+  default it lists id/title/goal, on it adds every use case's numbered main
+  flow and extensions. The trigger, pre-/postcondition and role fields and
+  the per-step `realises` labels stay exclusive to `uc_get`.
 - `uc_update` -- correct an existing use case's title/goal/scope/trigger/
   pre-/postcondition, its extensions, the text or `realises` references of
   individual steps, and its primary/supporting roles (each replaced
