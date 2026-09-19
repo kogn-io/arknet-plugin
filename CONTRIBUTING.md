@@ -106,6 +106,21 @@ Things to raise in an issue first:
   (and by extension the shipped skills) does not mention yet -- without
   writing anything; run it when you suspect the server has moved ahead of
   what the plugin documents.
+- **An arknet tool's own description is documentation, not proof of
+  behaviour.** It is a layer of the server's docs like any other, and it can
+  lag the code it describes: a rule it does not mention may hold all the
+  same, so its silence settles nothing. Decide a behavioural claim against
+  the service source (`git grep` in an arknet checkout, against
+  `origin/main`) rather than against the description, and keep the two
+  questions apart -- the live schema and the baseline answer what a tool
+  *takes*, never what it *does*. Where one description departs from its
+  siblings, that departure is itself the finding, not a licence to believe
+  the minority: `actor_delete` and `term_delete` say nothing about the code
+  staying taken while the six other `*_delete` tools say it outright, and
+  the service keeps every code taken regardless. Behaviour verified that way
+  may be documented here even where the description does not carry it --
+  name the source in the pull request, and file an issue in the service repo
+  so the description catches up.
 - **A skill change that changes the flow or rules a skill describes pulls the
   matching `README.md` section along, in the same pull request.** The same
   drift as above, mirrored within this repo: `README.md` summarizes a
