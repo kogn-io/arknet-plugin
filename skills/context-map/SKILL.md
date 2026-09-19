@@ -99,7 +99,9 @@ it originally.
 
 Read `bc_list` for every context with its edges shown inline, then `bc_get`
 on each context in a pair whose edge you are testing, plus `term_list`,
-`req_list` and `uc_list` as the material.
+`req_list` and `uc_list(withSteps: true)` as the material -- this skill calls
+no `uc_get` either, and a use case that crosses the pair usually shows it in a
+step rather than in its goal line.
 
 Four rules. The review table has one row per recorded relationship -- not
 per context pair: two edges between the same pair are two rows -- and one

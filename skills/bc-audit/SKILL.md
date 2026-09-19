@@ -33,7 +33,7 @@ the greenfield BDUF this skill is designed not to do.
 
 | Tool | Role |
 |---|---|
-| `term_list`, `req_list`, `uc_list`, `bc_list` | Read the whole requirements/use-case/glossary set and every already-registered Bounded Context before anything else. Each takes `displayLocale?`; a line carrying an inline `[fallback: ...]` tag is an entry **missing** in that language, shown under another one. |
+| `term_list`, `req_list`, `uc_list`, `bc_list` | Read the whole requirements/use-case/glossary set and every already-registered Bounded Context before anything else. Each takes `displayLocale?`; a line carrying an inline `[fallback: ...]` tag is an entry **missing** in that language, shown under another one. Call `uc_list` with `withSteps: true`: this skill never calls `uc_get`, so without it a use case contributes its title and goal and nothing else, while the vocabulary a naming collision surfaces in sits in the numbered steps and extensions -- the same text `term_cooccurrence` counts over. |
 | `bc_get` | A single recorded context in full -- its `domainVision`, `subdomain`, the glossary terms linked to it, and every `ContextRelationship` edge in both directions. The material review mode works from. |
 | `role_usecase_matrix` | Raw bipartite data: which use cases each role appears in (`primaryRole`/`supportingRole`), and vice versa, plus which actors occupy each role (`filledBy`). No clustering, no judgement -- that stays with you and the user. |
 | `term_cooccurrence` | Raw data: which glossary terms are named together in the same requirement/use-case text, and which never co-occur -- the material for "is this one term or a homonym with two meanings per context?". |
@@ -53,10 +53,11 @@ agent and the user.
 ## Protocol
 
 1. **Read the requirements, use cases, glossary and existing contexts.**
-   `term_list`, `req_list`, `uc_list`, `bc_list`, in full -- this is the
-   baseline every candidate gets checked against. Read them under one
-   language (`displayLocale`) and watch the inline `[fallback: ...]` tags: a
-   tagged line is an entry the store does not hold in that language at all.
+   `term_list`, `req_list`, `uc_list(withSteps: true)`, `bc_list`, in full --
+   this is the baseline every candidate gets checked against. Read them
+   under one language (`displayLocale`) and watch the inline
+   `[fallback: ...]` tags: a tagged line is an entry the store does not
+   hold in that language at all.
    A term you are about to weigh as a naming collision may just be the same
    concept surfacing under two languages, so resolve the tags before reading
    anything into the wording. A project maintaining more than one language
@@ -138,9 +139,9 @@ settled fact -- it may have been named once, in a conversation that left no
 trace in the store.
 
 Read `bc_list` for the full set, then `bc_get` per context, plus
-`term_list`, `req_list`, `uc_list` and `term_cooccurrence` as the material
-the break is tested against -- the same reading candidate mode does, on the
-same store.
+`term_list`, `req_list`, `uc_list(withSteps: true)` and `term_cooccurrence`
+as the material the break is tested against -- the same reading candidate
+mode does, on the same store.
 
 Six rules. The review table has one row per recorded context and one column
 per rule -- the table below defines the rules, it is not the output. The

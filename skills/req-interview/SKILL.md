@@ -230,7 +230,7 @@ convention on their own, compact, for exactly this case.
 |---|---|---|---|
 | Requirement (FR/NFR) | `req_add` (also takes `usesTermCodes` at creation) | `req_get`, `req_list` (both `displayLocale?`) | `req_set_status`, `req_link_term`/`req_unlink_term`, `req_link_constraint`/`req_unlink_constraint`, `req_update`, `req_delete` (whole resource, acceptance criteria included; status is not consulted -- an `ACCEPTED` requirement deletes like a `PROPOSED` one; refused while a decision, a use case, a use-case step or another requirement still points at it) |
 | Constraint (TECHNICAL/BUSINESS/REGULATORY) | `constraint_add` | `constraint_get`, `constraint_list` (both `displayLocale?`) | `constraint_update` (title/statement -- not the type or the code that follows from it), `constraint_delete` (whole resource; refused while a requirement or use case still references it via `constrainedBy`) |
-| Use case | `uc_add` (also takes `usesTermCodes` at creation) | `uc_get`, `uc_list` (both `displayLocale?`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`/`uc_unlink_term`, `uc_link_constraint`/`uc_unlink_constraint`, `uc_delete` (whole resource, flow steps included; refused while another use case includes or extends it) |
+| Use case | `uc_add` (also takes `usesTermCodes` at creation) | `uc_get`, `uc_list` (both `displayLocale?`; `uc_list` also takes `withSteps`, off by default -- on, it adds every use case's numbered main flow and extensions to the listing, still without the trigger/pre-/postcondition/role fields and the per-step `realises` labels that stay exclusive to `uc_get`) | `uc_update` (title/goal/scope/trigger/pre-post-condition, extensions wholesale, step *text* by position, step `realises` by position (wholesale replace, empty clears), `primaryRole` (replaces, cannot be cleared), `supportingRoles` (wholesale replace, empty clears) -- not step structure), `uc_link_term`/`uc_unlink_term`, `uc_link_constraint`/`uc_unlink_constraint`, `uc_delete` (whole resource, flow steps included; refused while another use case includes or extends it) |
 | Glossary term | `term_add` | `term_get`, `term_list` (both `displayLocale?`) | `term_update`, `term_delete` (whole resource; refused while a requirement, use case, ADR, bounded context or another term's `broader`/`related` still references it) |
 | Actor | `actor_add` | `actor_get`, `actor_list` (both `displayLocale?`) | `actor_update` (name/description, or either in a further language -- not the type or the code that follows from it), `actor_delete` (whole resource; refused while a role's `filledBy` still lists it) |
 | Role | `role_add` | `role_get`, `role_list` (both `displayLocale?`) | `role_update` (name/description/`filledBy` -- not the code), `role_delete` (whole resource) |
@@ -377,7 +377,10 @@ exist **before** the draft that depends on it is presented. Roles before
 `uc_add` is the case the tool itself enforces (see below); a use-case step
 presupposing a *different* use case's capability is not resolved or
 validated by any tool argument, so that existence check is on you -- verify
-via `uc_list`/`uc_get` before presenting the draft, not after.
+via `uc_list(withSteps: true)` before presenting the draft, not after: the
+capability being presupposed is stated in the other use case's steps, not in
+its goal line, so the plain listing cannot settle the question, and `uc_get`
+pays off only once the listing has narrowed it to one candidate.
 
 - `term_update(id, label?, definition?, broader?, related?, language?)` --
   corrects an already-created term's label/definition/broader/related in
