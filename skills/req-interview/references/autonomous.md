@@ -152,7 +152,13 @@ Cockburn completeness:
 - `type` correct (`HUMAN`/`SYSTEM`/`LEGAL`/`GROUP`) -- no in-place fix once
   written, so get it right before `actor_add`; a wrong-typed actor found
   later is an `ASSUMPTION:` note plus a named correction path
-  (`actor_delete` + fresh `actor_add`), not a silent leave-as-is.
+  (`actor_delete` + fresh `actor_add`, after clearing every `filledBy` that
+  names it and restoring those occupancies), not a silent leave-as-is.
+  Price the path in the same note, since nobody is there to ask: the
+  replacement is a different resource, so the run's own earlier notes
+  naming the old actor are part of the correction. Cheap while the actor
+  is still unwired, close to prohibitive once roles lean on it -- say which
+  of the two it is.
 - Occupies a role, or is deliberately free-standing (an external system
   worth recording on its own)?
 - Distinct from every other actor already written this run.

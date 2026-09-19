@@ -236,13 +236,14 @@ for glossary terms -- implementation-free, architecture-decision-free and
 config-free definitions. Actors and roles are elicited here, so their review
 checklists live here too rather than in a skill of their own: an actor is
 read as a *carrier* (is its `type` right -- and `actor_update` cannot change
-one, so a wrong `type` has no in-place fix; does a role occupy it; is it
-distinct from the other actors, which no tool checks), a role as an
-anti-rigid *function* (does the name survive a change of occupant; does any
-use case name it, per `role_usecase_matrix`; is it distinct from the other
-roles; is its occupancy deliberately open rather than simply never asked
-about). It
-interrogates the user on every gap it finds.
+one, so correcting it means `actor_delete` plus a fresh `actor_add`, once
+every `filledBy` naming it is cleared and with those occupancies restored
+afterwards; does a role occupy it; is it distinct from the other actors,
+which no tool checks), a role as an anti-rigid *function* (does the name
+survive a change of occupant; does any use case name it, per
+`role_usecase_matrix`; is it distinct from the other roles; is its occupancy
+deliberately open rather than simply never asked about). It interrogates the
+user on every gap it finds.
 
 A third mode, **autonomous**, is for exactly the case dialogue cannot cover:
 a finished document (a spec, a ticket, a change notice) and nobody to ask.

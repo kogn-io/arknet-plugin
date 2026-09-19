@@ -930,8 +930,15 @@ checklists are what `/arknet:store-review` runs for these types.
   (department, team). A department filed as `LEGAL`, or an external service
   filed as `HUMAN` because a person operates it, is a finding -- and one
   with no in-place fix, since `actor_update` cannot change `type`. Say so
-  in the finding: correcting it means `actor_delete` plus a fresh
-  `actor_add`, after clearing every `filledBy` that names it.
+  in the finding, and say what the correction costs rather than leaving
+  "no in-place fix" to read as "no fix": `actor_delete` plus a fresh
+  `actor_add`, after clearing every `filledBy` that names it and with
+  those occupancies restored afterwards. The replacement is a different
+  resource, so whatever outside the store named the old actor -- a note, a
+  decision, a commit message -- has to follow. That is a reasonable price
+  for an actor just written and barely wired, and close to none for one a
+  grown role structure leans on: the finding says which of the two this
+  actor is, instead of leaving the user to work it out.
 - **Occupies something, or is deliberately free-standing** -- does any role
   list this actor in `filledBy`? `role_usecase_matrix` answers this
   directly: alongside the role/use-case view it reports, per actor, which
