@@ -303,7 +303,8 @@ forces the pairing.
   correction. Rejected while a role still lists it among its `filledBy`
   occupants -- remove it there first (`role_update`). An actor that is
   also a glossary term keeps its glossary entry; only the actor resource
-  goes away.
+  goes away. The `ACTOR-n` code stays taken, so it never later names a
+  different actor.
 
 ### Roles: `role_add(name, description?, filledBy?, language?)`
 
@@ -421,7 +422,8 @@ pays off only once the listing has narrowed it to one candidate.
   a bounded context's `ubiquitousLanguageTerm`, or another term's `broader`
   or `related`. Remove those edges first (`req_update`/`uc_update`,
   `adr_update`, `bc_update`'s `terms` list, or `term_update` on the *other*
-  term to clear its `broader`/`related`). A term found wanting is corrected
+  term to clear its `broader`/`related`). The `TERM-n` code stays taken, so
+  it never later names a different term. A term found wanting is corrected
   with `term_update`, not deleted and re-created -- re-creating loses the
   code and every link into it.
 - `term_get(id, displayLocale?)` -- `displayLocale` (optional) overrides the
@@ -932,16 +934,17 @@ checklists are what `/arknet:store-review` runs for these types.
   association), `GROUP` a group without a legal form of its own
   (department, team). A department filed as `LEGAL`, or an external service
   filed as `HUMAN` because a person operates it, is a finding -- and one
-  with no in-place fix, since `actor_update` cannot change `type`. Say so
-  in the finding, and say what the correction costs rather than leaving
-  "no in-place fix" to read as "no fix": `actor_delete` plus a fresh
+  with no in-place fix, since `actor_update` cannot change `type`. Say so in
+  the finding, and say what the correction costs rather than leaving "no
+  in-place fix" to read as "no fix": `actor_delete` plus a fresh
   `actor_add`, after clearing every `filledBy` that names it and with
   those occupancies restored afterwards. The replacement is a different
-  resource, so whatever outside the store named the old actor -- a note, a
-  decision, a commit message -- has to follow. That is a reasonable price
-  for an actor just written and barely wired, and close to none for one a
-  grown role structure leans on: the finding says which of the two this
-  actor is, instead of leaving the user to work it out.
+  resource under a new code: the old `ACTOR-n` stays taken and is never
+  handed out again, so whatever outside the store named it -- a note, a
+  decision, a commit message -- points at a resource that is gone. That is
+  a reasonable price for an actor just written and barely wired, and close
+  to none for one a grown role structure leans on: the finding says which
+  of the two this actor is, instead of leaving the user to work it out.
 - **Occupies something, or is deliberately free-standing** -- does any role
   list this actor in `filledBy`? `role_usecase_matrix` answers this
   directly: alongside the role/use-case view it reports, per actor, which

@@ -236,11 +236,11 @@ for glossary terms -- implementation-free, architecture-decision-free and
 config-free definitions. Actors and roles are elicited here, so their review
 checklists live here too rather than in a skill of their own: an actor is
 read as a *carrier* (is its `type` right -- and `actor_update` cannot change
-one, so correcting it means `actor_delete` plus a fresh `actor_add`, once
-every `filledBy` naming it is cleared and with those occupancies restored
-afterwards; does a role occupy it; is it distinct from the other actors,
-which no tool checks), a role as an anti-rigid *function* (does the name
-survive a change of occupant; does any use case name it, per
+one, so correcting it means `actor_delete` plus a fresh `actor_add` under a
+new code, once every `filledBy` naming it is cleared and with those
+occupancies restored afterwards; does a role occupy it; is it distinct from
+the other actors, which no tool checks), a role as an anti-rigid *function*
+(does the name survive a change of occupant; does any use case name it, per
 `role_usecase_matrix`; is it distinct from the other roles; is its occupancy
 deliberately open rather than simply never asked about). It interrogates the
 user on every gap it finds.
@@ -746,7 +746,8 @@ them is right in a given situation, and there is no `project_delete`.
   and the `ACTOR-n` code, stay fixed at creation.
 - `actor_delete` -- remove the whole actor resource, not just a correction;
   rejected while a role still lists it among its `filledBy` occupants. An
-  actor that is also a glossary term keeps its glossary entry.
+  actor that is also a glossary term keeps its glossary entry. The
+  `ACTOR-n` code stays taken.
 
 ### Roles
 
@@ -836,7 +837,7 @@ it). A use case binds to a role, never directly to an actor.
   `usesTerm`, a bounded context's ubiquitous-language link, or another
   term's `broader`/`related`. Remove those edges first (`req_update`/
   `uc_update`, `adr_update`, `bc_update`, `term_update` on the other
-  term).
+  term). The `TERM-n` code stays taken.
 
 ### Bounded contexts
 
