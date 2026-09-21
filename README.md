@@ -217,15 +217,15 @@ stops and points at `/arknet:init` rather than guessing a registration call.
 
 The same skill also runs a **full-set audit**: on a phrasing like "review the
 requirements relentlessly" or "are they complete/consistent", it first runs
-`orphan_check`/`trace_matrix` as a mandatory automated pass -- surfacing
-dangling links and orphaned terms that a content read alone would miss.
-`orphan_check`'s fourth list -- text mentions of a term missing its backing
-edge -- is the exception: its word-boundary match also catches an everyday
-word used in its ordinary sense, so the interviewer weighs each entry
-instead of treating it as a fact. `store_check`'s `ROLE_TERM_DUPLICATE`
-runs in the same pass -- every role carrying the same name as a glossary
-term, a report and never a rejection, since the two resource types stay
-independent. It then walks the entire store
+`store_check` (`checks=["ORPHAN", "ROLE_TERM_DUPLICATE"]`) together with
+`trace_matrix` as a mandatory automated pass -- surfacing dangling links and
+orphaned terms that a content read alone would miss. `ORPHAN`'s mentions
+list -- text naming a term without its backing edge -- is the exception:
+its word-boundary match also catches an everyday word used in its ordinary
+sense, so the interviewer weighs each entry instead of treating it as a
+fact. `ROLE_TERM_DUPLICATE`, run in the same call, reports every role
+carrying the same name as a glossary term, a report and never a rejection,
+since the two resource types stay independent. It then walks the entire store
 (requirements, use cases, glossary, actors, roles) one item
 at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
 filter (passive voice without an actor, nominalisation, incomplete
@@ -267,7 +267,7 @@ the domain vocabulary exists.
 Reads `role_usecase_matrix` (which use cases share a role) and
 `term_cooccurrence` (which glossary terms are named together, and which
 never are) as raw, unclustered data -- the same "facts in, judgement stays
-with the agent and the user" discipline `orphan_check`/`trace_matrix`
+with the agent and the user" discipline `store_check`/`trace_matrix`
 already apply in `/arknet:req-interview`. Every cluster found this way is
 then tested for a language break before it becomes a candidate: does the
 same fact or concept get different rules on each side of the split? A
@@ -360,29 +360,29 @@ itself; it reads the existing fact-tools and routes on to the pass that
 actually reviews what the findings point at.
 
 Reports two kinds of finding, always visibly separated: **hard facts** --
-`orphan_check`'s orphaned-requirements, unreferenced-terms and
-unbound-constraints lists, `trace_matrix` (untraced requirements), `adr_list`
-filtered to `PROPOSED` (decisions still open -- open, not waiting to be
-accepted: `/arknet:adr` weighs a record's right to exist before its status,
-and deleting one is a legitimate outcome while it is still `PROPOSED`), and
-`adr_check`'s `Facts` block (what is mechanically decidable about the ADR
-corpus) -- stated plainly, no judgement needed; and **hints** -- a Bounded
-Context with no `bc_link_context` edge recorded (`bc_list` alone, which
-shows each context's edges inline), `orphan_check`'s fourth list (terms
-named in text without a backing edge -- its word-boundary match is
-deliberately left unsharpened, because a wrong edge costs more than a missed
-one, so it recurs on an everyday word used in its ordinary sense as often as
-on a real gap), and `adr_check`'s `Suspicions`/not-checked list, each
-phrased as a question ("worth a look?"), never as a defect on par with an
-orphaned requirement or a `Fact` -- and never as a proposed status change.
-`text_search` (a project-wide substring search over every literal) is the
-same kind of hint, reached for on demand to check a specific wording rather
-than run on every pass.
-Every finding then names the same next step -- `/arknet:store-review`, the
-pass that applies each resource type's reader-level rules -- rather than a
-different specialist skill per finding; only a single resource the user wants
-dealt with now, or a write, goes straight to the owning skill. The triage
-never starts that pass or any dialogue itself.
+`store_check`'s `ORPHAN` check (`checks=["ORPHAN"]`) for its
+orphaned-requirements, unreferenced-terms and unbound-constraints lists,
+`trace_matrix` (untraced requirements), `adr_list` filtered to `PROPOSED`
+(decisions still open -- open, not waiting to be accepted: `/arknet:adr`
+weighs a record's right to exist before its status, and deleting one is a
+legitimate outcome while it is still `PROPOSED`), and `adr_check`'s `Facts`
+block (what is mechanically decidable about the ADR corpus) -- stated
+plainly, no judgement needed; and **hints** -- a Bounded Context with no
+`bc_link_context` edge recorded (`bc_list` alone, which shows each context's
+edges inline), `ORPHAN`'s mentions list (terms named in text without a
+backing edge -- its word-boundary match is deliberately left unsharpened,
+because a wrong edge costs more than a missed one, so it recurs on an
+everyday word used in its ordinary sense as often as on a real gap), and
+`adr_check`'s `Suspicions`/not-checked list, each phrased as a question
+("worth a look?"), never as a defect on par with an orphaned requirement or
+a `Fact` -- and never as a proposed status change. `text_search` (a
+project-wide substring search over every literal) is the same kind of hint,
+reached for on demand to check a specific wording rather than run on every
+pass. Every finding then names the same next step -- `/arknet:store-review`,
+the pass that applies each resource type's reader-level rules -- rather than
+a different specialist skill per finding; only a single resource the user
+wants dealt with now, or a write, goes straight to the owning skill. The
+triage never starts that pass or any dialogue itself.
 
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
 (reading `role_usecase_matrix`/`term_cooccurrence` for collisions that
@@ -394,10 +394,10 @@ a store-size heuristic would fake a precision the store cannot back up.
 The **full review pass** over a project's store: every rule the model has,
 run in one go, returned as one report. The review rules live on two levels,
 and before this skill only one of them ran on a single call -- the
-mechanical level in the tools (`adr_check`, `orphan_check`, `store_check`,
+mechanical level in the tools (`adr_check`, `store_check`,
 `trace_matrix`), one call each and complete; the reader level in the
 specialist skills, running only when somebody invokes that one skill for
-that one resource type. A review that has to be assembled from four separate
+that one resource type. A review that has to be assembled from three separate
 invocations is a review that is quietly skipped in parts.
 
 Five rules carry it. The **mechanical level runs first and its findings are
@@ -590,7 +590,7 @@ Later, three more entry points build on the same store:
   library/pattern, and why), not part of the requirements interview.
 - Asking the req-interview skill to **"review the requirements/use cases/
   glossary relentlessly"** re-runs it as a full-set audit instead of an
-  intake: it checks structural gaps (`orphan_check`/`trace_matrix`) and then
+  intake: it checks structural gaps (`store_check`/`trace_matrix`) and then
   every item against a fixed linguistic and ISO 29148 quality checklist --
   useful once the store has grown past a handful of entries.
 - `/arknet:bc-audit` -- once the store holds enough requirements/use
@@ -607,7 +607,7 @@ Later, three more entry points build on the same store:
   `/arknet:store-review` runs for those two resource types.
 - `/arknet:health-check` -- for a vague "is everything okay?"/"what's the
   status?" question that names none of the above by itself. Reads the same
-  fact-tools (`orphan_check`, `trace_matrix`, `adr_list`, `adr_check`,
+  fact-tools (`store_check`, `trace_matrix`, `adr_list`, `adr_check`,
   `bc_list`) and routes on, instead of making you know which skill to pick
   first.
 - `/arknet:store-review` -- the full review pass the triage routes to: the
@@ -934,15 +934,6 @@ it). A use case binds to a role, never directly to an actor.
   which use case(s) realise it.
 - `impact_analysis` -- what is transitively affected if a given requirement,
   term, use case or architecture decision changes.
-- `orphan_check` -- four lists: requirements that no use case realises;
-  glossary terms that are never referenced (by a requirement, a use case, a
-  bounded context's ubiquitous language, or another term's broader or
-  related term);
-  text that names a term without its backing edge -- a use case's goal,
-  scope, trigger, precondition, postcondition and every step/extension text
-  count as its text, and naming its own primary/supporting role there is
-  not a gap; an ADR's context, decision, consequences, and options are scanned
-  as well; and constraints that no requirement or use case is bound by.
 - `role_usecase_matrix` -- raw bipartite view: which use cases each role
   appears in (`primaryRole`/`supportingRole`), which roles each use case
   names, and which actors occupy each role (`filledBy`). No clustering or
@@ -966,7 +957,7 @@ it). A use case binds to a role, never directly to an actor.
 - `store_check` -- check this project's stored model against what it
   declares about itself; read-only, changes and refuses nothing. `checks`
   selects which checks to run (a list of names, omit or pass an empty list
-  to run all -- today there are three). `LANGUAGE` reports every field
+  to run all -- today there are four). `LANGUAGE` reports every field
   carrying at least one language-tagged value but not one for each language
   `project_update`'s `languages` declares, one row per resource and field
   naming the missing tags; with no declared `languages` set there is no
@@ -983,7 +974,21 @@ it). A use case binds to a role, never directly to an actor.
   requirement at all is a missing edge, a step whose realised requirements
   carry no criterion is an incomplete requirement. Extension steps are out of
   scope rather than reported, and that limit travels in the check's own
-  output.
+  output. `ORPHAN` reports every orphaned artifact: a requirement no use case
+  realises, a glossary term never referenced (by a requirement, a use case,
+  a bounded context's ubiquitous language, or another term's broader or
+  related term), a requirement's, use case's, bounded context's or
+  architecture decision's text naming a term without the matching edge
+  (`usesTerm`/`primaryRole`/`supportingRole`/ubiquitous-language term), or a
+  term's own definition naming another term without a broader or related
+  edge -- and a constraint that no requirement or use case is bound by. What
+  `ORPHAN` does not see: the text-mention match is literal and whole-word,
+  not stem-based, so it also flags an everyday word used in its ordinary
+  sense -- a hit there is a reading hint for a human, not a finding that
+  demands an edge. A future check joins this same list rather than arriving
+  as a new tool, so `checks` is where to look for one later.
+- `orphan_check` -- deprecated alias for `store_check` with
+  `checks=["ORPHAN"]` alone; kept only so an existing caller keeps working.
 - `resource_get` -- fetch all statements (outgoing and incoming) of a single
   resource.
 

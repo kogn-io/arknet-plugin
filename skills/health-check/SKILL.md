@@ -1,5 +1,5 @@
 ---
-description: "Read-only triage layer for vague overall-status questions ('is everything okay?', 'is the model consistent?', 'anything left to do?') that match no specific skill by name. Bundles orphan_check/trace_matrix (structural facts), open PROPOSED ADRs (adr_list) and mechanical ADR corpus findings (adr_check), and Bounded Contexts with no recorded context-map relationship (bc_list vs bc_link_context edges) into one report, clearly split into hard facts vs. judgement candidates, then routes on to /arknet:store-review -- the one pass that runs every resource type's reader-level rules over the whole store -- instead of duplicating any review or dialogue itself. Trigger (also DE, since the user may phrase it in German): /arknet:health-check, 'is everything okay', 'is the model/store consistent', 'anything left to do', 'give me a status overview', 'what's the state of the architecture model'; DE: 'ist alles in Ordnung', 'ist das Modell konsistent', 'gibt es noch was zu tun', 'wie ist der Stand', 'Statusuebersicht'. NOT the review itself (/arknet:store-review) and not a replacement for the interactive audits (/arknet:bc-audit, /arknet:context-map, /arknet:req-interview full-set-audit mode) -- overview and routing only, this skill never writes, never runs an interrogation dialogue and never applies a reader-level rule table. NOT for a request that already names a specific concern (a BC boundary, a context relationship, one requirement) -- go straight to the matching skill instead."
+description: "Read-only triage layer for vague overall-status questions ('is everything okay?', 'is the model consistent?', 'anything left to do?') that match no specific skill by name. Bundles store_check/trace_matrix (structural facts), open PROPOSED ADRs (adr_list) and mechanical ADR corpus findings (adr_check), and Bounded Contexts with no recorded context-map relationship (bc_list vs bc_link_context edges) into one report, clearly split into hard facts vs. judgement candidates, then routes on to /arknet:store-review -- the one pass that runs every resource type's reader-level rules over the whole store -- instead of duplicating any review or dialogue itself. Trigger (also DE, since the user may phrase it in German): /arknet:health-check, 'is everything okay', 'is the model/store consistent', 'anything left to do', 'give me a status overview', 'what's the state of the architecture model'; DE: 'ist alles in Ordnung', 'ist das Modell konsistent', 'gibt es noch was zu tun', 'wie ist der Stand', 'Statusuebersicht'. NOT the review itself (/arknet:store-review) and not a replacement for the interactive audits (/arknet:bc-audit, /arknet:context-map, /arknet:req-interview full-set-audit mode) -- overview and routing only, this skill never writes, never runs an interrogation dialogue and never applies a reader-level rule table. NOT for a request that already names a specific concern (a BC boundary, a context relationship, one requirement) -- go straight to the matching skill instead."
 ---
 
 # /arknet:health-check -- Read-Only Status Overview and Routing
@@ -33,12 +33,12 @@ approximating it here.
 
 | Tool | Role | Category |
 |---|---|---|
-| `orphan_check` | Requirements no use case realises; glossary terms never referenced; constraints no requirement or use case is bound by. Report these three lists as-is. Its fourth list -- terms named in text without a backing edge (including a use case's prose fields, not just its `goal`, and an ADR's context, decision, consequences, and options) -- matches on word boundaries without stemming, so it also surfaces an everyday word used in its ordinary sense (e.g. a common noun that happens to coincide with a glossary term) alongside real gaps; read it as a candidate list for a human, not a finding on par with the other three. | Hard fact (mentions list: hint) |
+| `store_check` (`checks=["ORPHAN"]`) | Requirements no use case realises; glossary terms never referenced; constraints no requirement or use case is bound by. Report these three lists as-is. Its mentions list -- terms named in text without a backing edge (including a use case's prose fields, not just its `goal`, and an ADR's context, decision, consequences, and options) -- matches on word boundaries without stemming, so it also surfaces an everyday word used in its ordinary sense (e.g. a common noun that happens to coincide with a glossary term) alongside real gaps; read it as a candidate list for a human, not a finding on par with the other three. | Hard fact (mentions list: hint) |
 | `trace_matrix` | Per requirement: which terms it uses, which use case(s) realise it. | Hard fact |
 | `adr_list` | Every recorded decision with its status; filter the result to `PROPOSED` yourself -- the tool has no status parameter. | Hard fact |
 | `adr_check` | Every recorded decision, checked for what is mechanically decidable and reported as `Facts`/`Suspicions` plus a not-checked list -- reads only, changes nothing. Report the `Facts` block as-is; a `Suspicion` or a not-checked entry is a candidate for `/arknet:adr`, not a finding on par with a `Fact` -- do not phrase either as a defect, and never propose a status change from either block. | Hard fact |
 | `bc_list` | Every registered Bounded Context, with its recorded `ContextRelationship` edges (see `/arknet:context-map`) shown inline -- the pool to check for missing relationships. | Judgement candidate |
-| `text_search` | Substring search over every literal in the project, regardless of any edge. Reaches further than `orphan_check`'s fourth list (which matches on word boundaries): a hit here is the same kind of candidate, never a finding on its own -- route it to the specialist skill for the resource it names. | Judgement candidate |
+| `text_search` | Substring search over every literal in the project, regardless of any edge. Reaches further than `store_check`'s `ORPHAN` mentions list (which matches on word boundaries): a hit here is the same kind of candidate, never a finding on its own -- route it to the specialist skill for the resource it names. | Judgement candidate |
 
 No new MCP tools -- all six already exist and are used the same way their
 owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
@@ -47,16 +47,16 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
 ## Protocol
 
 1. **Hard structural facts, no interpretation needed.**
-   - `orphan_check` -- report the orphaned-requirements, unreferenced-terms,
-     and unbound-constraints lists as-is. Its fourth list -- terms named in
-     text without a backing edge -- is not a hard fact; it matches on word
-     boundaries without stemming and routinely names an everyday word used in
-     its ordinary sense alongside a real gap, so it moves to step 2 instead of
-     being listed here.
+   - `store_check` (`checks=["ORPHAN"]`) -- report the orphaned-requirements,
+     unreferenced-terms, and unbound-constraints lists as-is. Its mentions
+     list -- terms named in text without a backing edge -- is not a hard
+     fact; it matches on word boundaries without stemming and routinely
+     names an everyday word used in its ordinary sense alongside a real gap,
+     so it moves to step 2 instead of being listed here.
    - `trace_matrix` -- report any requirement with no realising use case; a
-     requirement `orphan_check` already flagged does not need repeating here,
+     requirement `ORPHAN` already flagged does not need repeating here,
      but a requirement `trace_matrix` shows with an empty `realises` list and
-     `orphan_check` missed (e.g. because a use case references it in prose
+     `ORPHAN` missed (e.g. because a use case references it in prose
      without the `realises` edge) is a separate, additional finding.
    - `adr_list` -- filter to `PROPOSED` and report each one: still waiting on
      an accept/reject decision. **"Waiting" is not "waiting to be accepted."**
@@ -67,11 +67,11 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
      points at. Report the record as open; do not phrase it as a pending
      accept, and do not suggest one.
    - `adr_check` -- report the `Facts` block as-is, each a hard fact the same
-     way `orphan_check`/`trace_matrix` findings are. Its `Suspicions` and
+     way `store_check`/`trace_matrix` findings are. Its `Suspicions` and
      not-checked list are not hard facts -- route them to `/arknet:adr` as a
      hint in step 2 instead of listing them here, and never propose a status
      change from either block.
-2. **Judgement candidates, hint only.** `orphan_check`'s fourth list from
+2. **Judgement candidates, hint only.** `ORPHAN`'s mentions list from
    step 1 lands here too. `text_search` is the same category by nature, not
    by default use -- reach for it when a specific wording is in question
    (e.g. before answering "is X still called that anywhere?"), not as a
@@ -83,7 +83,7 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
    `/arknet:context-map`?", never as a finding on par with an orphaned
    requirement. Likewise, `adr_check`'s `Suspicions` and its not-checked list
    are hints, one per entry -- "worth a look with `/arknet:adr`?", never a
-   finding on par with a `Fact`. And `orphan_check`'s fourth list -- terms
+   finding on par with a `Fact`. And `ORPHAN`'s mentions list -- terms
    named in text without a backing edge -- is a hint, one per entry: the
    word-boundary match is deliberately left unsharpened, because a wrong edge
    costs more than a missed one, so one false-positive class recurs in
@@ -106,13 +106,13 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
    review assembled from four separate invocations is the one that ends up
    partly skipped. Two cases still go straight to a specialist skill instead:
    the user names one concrete resource they want dealt with now -- an
-   `orphan_check` unbacked-mention hint the user reads as a genuinely missing
+   `ORPHAN` unbacked-mention hint the user reads as a genuinely missing
    edge is the common one, and `/arknet:req-interview` records it -- or they
    ask to write something, in which case `/arknet:req-interview`,
    `/arknet:adr`, `/arknet:bc-audit` and `/arknet:context-map` own that write.
    Either way, offer the hand-off; do not start the other skill in the same
    turn unless the user asks you to continue straight into it.
-5. **Empty store.** If `orphan_check`/`trace_matrix` return nothing and
+5. **Empty store.** If `store_check`/`trace_matrix` return nothing and
    `bc_list` is empty, say so plainly and point at `/arknet:req-interview`
    (greenfield or brownfield entry point) as the place to start -- an empty
    store is not itself a finding, just a starting point.

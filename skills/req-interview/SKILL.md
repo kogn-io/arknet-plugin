@@ -719,32 +719,32 @@ entry points (see above), same protocol:
   ("review the requirements", "review the glossary relentlessly", "are they
   complete/consistent"). This is the **default reading** of any
   "review/check" phrasing -- do not collapse it into a quick summary.
-  **First, automated pass:** run `orphan_check` (requirements no use case
-  realises, glossary terms never referenced, constraints no requirement or
-  use case is bound by) and `trace_matrix` (per requirement: which terms it
-  uses, which use case(s) realise it) *before* any manual reading -- these
-  calls surface structural gaps (dangling links, orphaned terms, unrealised
-  requirements) that a content read of the requirement text will not, no
-  matter how careful. Treat every finding from these three `orphan_check`
-  lists, and from `trace_matrix`, as a mandatory interrogation point, not
-  an optional footnote. `orphan_check` also returns a fourth list -- text
-  mentions of a term missing its backing edge, including a use case's prose
-  beyond its `goal` -- but its word-boundary match is deliberately left
-  unsharpened, so it recurs on an everyday word used in its ordinary sense
-  as often as on a real gap: read each entry yourself and discard it
-  without a question when that is what it is; open one only for a genuine
-  gap. `store_check`'s `ROLE_TERM_DUPLICATE` belongs in the same automated
-  pass: it reports every role carrying the same name as a glossary term
+  **First, automated pass:** run `store_check` (`checks=["ORPHAN",
+  "ROLE_TERM_DUPLICATE"]`) and `trace_matrix` (per requirement: which terms it
+  uses, which use case(s) realise it) *before* any manual reading -- `ORPHAN`
+  reports requirements no use case realises, glossary terms never referenced,
+  and constraints no requirement or use case is bound by; these calls surface
+  structural gaps (dangling links, orphaned terms, unrealised requirements)
+  that a content read of the requirement text will not, no matter how careful.
+  Treat every finding from these three `ORPHAN` lists, and from
+  `trace_matrix`, as a mandatory interrogation point, not an optional
+  footnote. `ORPHAN` also returns a mentions list -- text mentions of a term
+  missing its backing edge, including a use case's prose beyond its `goal` --
+  but its word-boundary match is deliberately left unsharpened, so it recurs
+  on an everyday word used in its ordinary sense as often as on a real gap:
+  read each entry yourself and discard it without a question when that is what
+  it is; open one only for a genuine gap. `ROLE_TERM_DUPLICATE`, run in the
+  same call, reports every role carrying the same name as a glossary term
   (case-insensitive, across every language variant) -- a report, never a
   rejection, since the two resource types stay independent. It is the one
-  mechanical reading the role set gets; note what it does *not* compare --
-  two roles against each other, and any actor name at all.
+  mechanical reading the role set gets; note what it does *not* compare -- two
+  roles against each other, and any actor name at all.
   **Then** walk every requirement/use case/term/actor/role
   systematically, one at a time, and interrogate the user relentlessly on
   the gaps you find (missing scenarios/actors/roles/edge cases, conflicts,
   untestable descriptions, unspecified failure behaviour). A full-set audit
   that only reads content against source documents and never calls
-  `orphan_check`/`trace_matrix` has not audited the graph structure, only
+  `store_check`/`trace_matrix` has not audited the graph structure, only
   the prose -- both are required.
 
 **Hold the whole set in view -- always.** "One at a time" governs *question
@@ -1023,14 +1023,15 @@ another FR/NFR/UC/term?
 **Use `impact_analysis(resource)`** on the just-written/just-changed
 requirement/use-case/term as the first, automated step -- it walks
 references backwards and returns everything that transitively depends on
-it. Follow up with `orphan_check`/`trace_matrix` if the change touched
-links (`usesTerm`, `realises`, actor/role references). A rename or wording
-change needs one more step `impact_analysis` cannot cover: it only walks
-edges, so a prose mention of the old wording with no `usesTerm`/`realises`
-edge behind it stays invisible to it. Run `text_search` for the old wording
-across the whole project -- a substring match over every literal,
-regardless of any edge -- and treat every hit as a candidate to update, the
-same way an `orphan_check` hint is a candidate rather than a finding. Only
+it. Follow up with `store_check` (`checks=["ORPHAN"]`) and `trace_matrix`
+if the change touched links (`usesTerm`, `realises`, actor/role
+references). A rename or wording change needs one more step
+`impact_analysis` cannot cover: it only walks edges, so a prose mention of
+the old wording with no `usesTerm`/`realises` edge behind it stays
+invisible to it. Run `text_search` for the old wording across the whole
+project -- a substring match over every literal, regardless of any edge --
+and treat every hit as a candidate to update, the same way a `store_check`
+`ORPHAN` hint is a candidate rather than a finding. Only
 fall back to re-reading `req_list`/`uc_list`/`term_list` from memory for
 aspects neither tool covers (e.g. wording conflicts between two requirements that
 share no explicit link) -- do not use manual re-reading as the primary
