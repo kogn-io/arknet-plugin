@@ -1,7 +1,7 @@
 {
   "serverInfo": {
     "name": "arknet",
-    "version": "v0.10.0"
+    "version": "v0.11.0"
   },
   "tools": {
     "actor_add": ["description","language","name","projectAnchor","type"],
@@ -19,6 +19,7 @@
     "adr_unsupersede": ["id","projectAnchor"],
     "adr_update": ["addressesRequirements","adrContext","affectsContexts","consequenceCorrections","consideredOptionCorrections","decision","id","language","name","newConsequences","newConsideredOptions","projectAnchor","relatedTo","removeConsequencePositions","removeConsideredOptionPositions","usesTerms"],
     "bc_add": ["domainVision","language","name","ownedBy","projectAnchor","subdomain"],
+    "bc_delete": ["id","projectAnchor"],
     "bc_get": ["displayLocale","id","projectAnchor"],
     "bc_link_context": ["downstreamBcId","projectAnchor","relationshipType","upstreamBcId"],
     "bc_link_term": ["bcId","projectAnchor","termId"],
@@ -41,6 +42,7 @@
     "project_rename": ["callerAnchor","label"],
     "project_update": ["callerAnchor","defaultLanguage","description","language","languages"],
     "req_add": ["acceptanceCriteria","description","language","priority","projectAnchor","qualityCategory","rationale","title","type","usesTermCodes"],
+    "req_delete": ["id","projectAnchor"],
     "req_get": ["displayLocale","id","projectAnchor"],
     "req_link_constraint": ["constraintIds","projectAnchor","reqId"],
     "req_link_term": ["projectAnchor","reqId","termIds"],
@@ -71,6 +73,7 @@
     "text_search": ["projectAnchor","query"],
     "trace_matrix": ["projectAnchor"],
     "uc_add": ["extensions","goal","language","postcondition","precondition","primaryRole","projectAnchor","scope","steps","supportingRoles","title","trigger","usesTermCodes"],
+    "uc_delete": ["id","projectAnchor"],
     "uc_get": ["displayLocale","id","projectAnchor"],
     "uc_link_constraint": ["constraintIds","id","projectAnchor"],
     "uc_link_term": ["id","projectAnchor","termIds"],
