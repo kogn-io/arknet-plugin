@@ -1,12 +1,12 @@
 ---
-description: "Runs every review rule a project's store has in one pass and returns a single report: first the mechanical checks (adr_check, orphan_check, store_check, trace_matrix), whose findings are carried over as facts rather than re-derived, then the reader-level review of each resource type in the review mode of its specialist skill -- always as a table with one row per resource, where an empty cell means 'not checked' and never 'fine'. The reader level runs in one subagent per resource type, without the writing context of this session, so the reviewer is never the author of what it reviews. Writes nothing at all -- no resource, no status, no link; the report goes to the user as a file or an issue comment, and every consequence is the user's to draw. Trigger (also DE, since the user may phrase it in German): /arknet:store-review, 'review the whole store', 'full review of the model', 'review everything before we accept it', 'has this model actually been reviewed', 'run all the review rules'; DE: 'review den ganzen Store', 'vollstaendiger Review des Modells', 'pruefe das ganze Modell durch', 'Gesamtreview', 'ist das Modell wirklich reviewt'. NOT a status overview -- a vague 'is everything okay?' is /arknet:health-check, which reads the fact tools and routes here when a real review is what is wanted. NOT an elicitation -- this skill never interviews, never drafts text and never writes; /arknet:req-interview, /arknet:adr, /arknet:bc-audit and /arknet:context-map own every write. NOT the place for one named resource -- a question about a single ADR, requirement or context boundary goes straight to the matching specialist skill."
+description: "Runs every review rule a project's store has in one pass and returns a single report: first the mechanical checks (adr_check, store_check, trace_matrix), whose findings are carried over as facts rather than re-derived, then the reader-level review of each resource type in the review mode of its specialist skill -- always as a table with one row per resource, where an empty cell means 'not checked' and never 'fine'. The reader level runs in one subagent per resource type, without the writing context of this session, so the reviewer is never the author of what it reviews. Writes nothing at all -- no resource, no status, no link; the report goes to the user as a file or an issue comment, and every consequence is the user's to draw. Trigger (also DE, since the user may phrase it in German): /arknet:store-review, 'review the whole store', 'full review of the model', 'review everything before we accept it', 'has this model actually been reviewed', 'run all the review rules'; DE: 'review den ganzen Store', 'vollstaendiger Review des Modells', 'pruefe das ganze Modell durch', 'Gesamtreview', 'ist das Modell wirklich reviewt'. NOT a status overview -- a vague 'is everything okay?' is /arknet:health-check, which reads the fact tools and routes here when a real review is what is wanted. NOT an elicitation -- this skill never interviews, never drafts text and never writes; /arknet:req-interview, /arknet:adr, /arknet:bc-audit and /arknet:context-map own every write. NOT the place for one named resource -- a question about a single ADR, requirement or context boundary goes straight to the matching specialist skill."
 ---
 
 # /arknet:store-review -- One Full Review Pass over a Project's Store
 
 The review rules of a store live on two levels, and only one of them runs on a
 single call. The **mechanical** level sits in the tools (`adr_check`,
-`orphan_check`, `store_check`, `trace_matrix`): one call each, result complete,
+`store_check`, `trace_matrix`): one call each, result complete,
 no judgement. The **reader** level sits in the specialist skills -- the rule
 table of `/arknet:adr`, the full-set audit of `/arknet:req-interview`, the
 language-break test of `/arknet:bc-audit`, the relationship reading of
@@ -15,7 +15,7 @@ skill, for that one resource type.
 
 This skill is the pass that runs **both levels over the whole store in one go**
 and returns one report. It exists because a review that has to be assembled from
-four separate invocations is a review that is quietly skipped in parts, and a
+three separate invocations is a review that is quietly skipped in parts, and a
 prose verdict cannot be seen to be incomplete -- only a table can.
 
 ## Is this the right skill?
@@ -43,7 +43,7 @@ checked later.
 ## The five rules
 
 1. **The mechanical level runs first, and its findings are facts.** Call
-   `adr_check`, `orphan_check`, `store_check` and `trace_matrix` before any
+   `adr_check`, `store_check` and `trace_matrix` before any
    reading. Carry their findings into the report as they came -- do not re-read
    the corpus looking for the same patterns, and do not restate a tool finding
    as your own observation. Where a tool names in its own output what it does
@@ -81,8 +81,7 @@ checked later.
 |---|---|---|
 | `project_list` | -- | Which projects and anchors exist -- only needed when the review targets a project other than the current directory's. |
 | `adr_check` | Mechanical | The whole decision corpus, checked for what is mechanically decidable: `Facts` (a date on a decision not taken, no consequence or considered option recorded, nothing `CHOSEN` on a taken decision, a decision addressing no requirement and affecting no context, an `ADR-n` in the prose the project does not hold or no edge backs) and `Suspicions` (tracker references, address/port literals, status prose, near-identical titles). Names its own not-checked list in its output. |
-| `orphan_check` | Mechanical | Requirements no use case realises; glossary terms never referenced; a term named in text without the backing edge; constraints nothing is bound by. |
-| `store_check` | Mechanical | The stored model against what the project declares about itself -- today the maintained-language set, role/term name duplicates, and main-flow use-case steps no acceptance criterion stands behind (extension steps out of scope). |
+| `store_check` | Mechanical | The stored model against what the project declares about itself, across four checks: the maintained-language set, role/term name duplicates, main-flow use-case steps no acceptance criterion stands behind (extension steps out of scope), and orphaned artifacts (`ORPHAN`) -- requirements no use case realises, glossary terms never referenced, a term named in text without the backing edge, and constraints nothing is bound by. The mention check inside `ORPHAN` matches on word boundaries without stemming, so it also surfaces an everyday word used in its ordinary sense; read those hits as candidates, not findings on par with the rest. |
 | `trace_matrix` | Mechanical | Per requirement: which terms it uses, which use case(s) realise it. |
 | `adr_list`, `adr_get` | Reader | The decision corpus for the ADR reviewer -- the list for the overview, `adr_get` for each record's full text. |
 | `req_list`, `req_get`, `constraint_list`, `constraint_get`, `uc_list`, `uc_get`, `term_list`, `term_get` | Reader | Requirements, constraints, use cases and glossary terms, in full, for their reviewers. The use-case reviewer reads each record through `uc_get` -- the only call carrying the trigger, pre-/postcondition, role and per-step `realises` fields its checklist asks about, so the listing does not replace it. `uc_list`'s `withSteps` serves the readers that work from use cases as *material* rather than as the resource under review: the Bounded Context and context-relationship ones, which call no `uc_get` at all. |
@@ -90,7 +89,7 @@ checked later.
 | `actor_list`, `actor_get`, `role_list`, `role_get` | Reader | Every actor and role in full, for their reviewers. |
 | `role_usecase_matrix`, `term_cooccurrence` | Reader | Raw bipartite/co-occurrence data. The Bounded Context reader works from both; the role reviewer works from the matrix, which also reports per actor which roles it occupies. |
 | `impact_analysis` | Reader | What a resource pulls with it -- used to weigh a finding, never to act on one. |
-| `text_search` | Reader | Substring search over every literal in the project, regardless of any edge -- finds a prose mention `orphan_check`'s hint list or `impact_analysis`'s edge-walk cannot see (e.g. a term or requirement named in an ADR's consequences, or a use case's extensions, with no backing link). Use it to check a suspicious wording (a near-identical title `adr_check` flagged, a renamed term) against the rest of the store; a hit is a candidate for the relevant reviewer, not a finding of its own. |
+| `text_search` | Reader | Substring search over every literal in the project, regardless of any edge -- finds a prose mention `store_check`'s `ORPHAN` hint list or `impact_analysis`'s edge-walk cannot see (e.g. a term or requirement named in an ADR's consequences, or a use case's extensions, with no backing link). Use it to check a suspicious wording (a near-identical title `adr_check` flagged, a renamed term) against the rest of the store; a hit is a candidate for the relevant reviewer, not a finding of its own. |
 
 Read-only, all of them. No tool this skill calls changes anything.
 
@@ -109,7 +108,7 @@ An empty store is not a finding. Say so plainly and point at
 
 ### 2. Run the mechanical level
 
-`adr_check`, `orphan_check`, `store_check`, `trace_matrix`. Keep their output --
+`adr_check`, `store_check`, `trace_matrix`. Keep their output --
 the reader-level subagents get the part that concerns their type, so that they
 do not spend their pass re-finding what a tool already reported, and so that
 their judgement lands on what the tool explicitly does not check.

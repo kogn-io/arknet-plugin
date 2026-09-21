@@ -46,7 +46,7 @@ the greenfield BDUF this skill is designed not to do.
 
 `role_usecase_matrix` and `term_cooccurrence` are raw-data read tools by
 design (see `kogn-io/arknet#108`) -- they never propose a boundary
-themselves, matching how `orphan_check`/`trace_matrix` already work in
+themselves, matching how `store_check`/`trace_matrix` already work in
 `/arknet:req-interview`: facts in, judgement stays with the interviewing
 agent and the user.
 
@@ -166,8 +166,8 @@ set -- report them separately:
   boundary between them is not where the store says it is.
 - **A term in no context at all.** With contexts recorded, a term outside
   every one of them is either an oversight or evidence that the recorded
-  set does not cover the domain. `orphan_check` reports unreferenced terms;
-  this is a different question and no tool asks it.
+  set does not cover the domain. `store_check`'s `ORPHAN` check reports
+  unreferenced terms; this is a different question and no tool asks it.
 
 Review mode **writes nothing** -- no `bc_add`, no `bc_update`, no
 `bc_link_term`. A confirmed finding is a candidate-mode conversation or a
