@@ -6,8 +6,8 @@ description: "Runs every review rule a project's store has in one pass and retur
 
 The review rules of a store live on two levels, and only one of them runs on a
 single call. The **mechanical** level sits in the tools (`adr_check`,
-`store_check`, `trace_matrix`): one call each, result complete,
-no judgement. The **reader** level sits in the specialist skills -- the rule
+`store_check`, `trace_matrix`): one call each, result complete, no
+judgement. The **reader** level sits in the specialist skills -- the rule
 table of `/arknet:adr`, the full-set audit of `/arknet:req-interview`, the
 language-break test of `/arknet:bc-audit`, the relationship reading of
 `/arknet:context-map`. That level only ever runs when somebody invokes that one
@@ -43,11 +43,11 @@ checked later.
 ## The five rules
 
 1. **The mechanical level runs first, and its findings are facts.** Call
-   `adr_check`, `store_check` and `trace_matrix` before any
-   reading. Carry their findings into the report as they came -- do not re-read
-   the corpus looking for the same patterns, and do not restate a tool finding
-   as your own observation. Where a tool names in its own output what it does
-   *not* check, that boundary is part of the report too: it is exactly the part
+   `adr_check`, `store_check` and `trace_matrix` before any reading. Carry
+   their findings into the report as they came -- do not re-read the corpus
+   looking for the same patterns, and do not restate a tool finding as your
+   own observation. Where a tool names in its own output what it does *not*
+   check, that boundary is part of the report too: it is exactly the part
    the reader level has to cover.
 2. **The reader level runs per resource type, and always ends in a table.** One
    row per resource, one column per rule of that type's review mode. `ok` or a

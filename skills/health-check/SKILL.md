@@ -33,12 +33,12 @@ approximating it here.
 
 | Tool | Role | Category |
 |---|---|---|
-| `store_check` (`checks=["ORPHAN"]`) | Requirements no use case realises; glossary terms never referenced; constraints no requirement or use case is bound by. Report these three lists as-is. Its fourth list -- terms named in text without a backing edge (including a use case's prose fields, not just its `goal`, and an ADR's context, decision, consequences, and options) -- matches on word boundaries without stemming, so it also surfaces an everyday word used in its ordinary sense (e.g. a common noun that happens to coincide with a glossary term) alongside real gaps; read it as a candidate list for a human, not a finding on par with the other three. | Hard fact (mentions list: hint) |
+| `store_check` (`checks=["ORPHAN"]`) | Requirements no use case realises; glossary terms never referenced; constraints no requirement or use case is bound by. Report these three lists as-is. Its mentions list -- terms named in text without a backing edge (including a use case's prose fields, not just its `goal`, and an ADR's context, decision, consequences, and options) -- matches on word boundaries without stemming, so it also surfaces an everyday word used in its ordinary sense (e.g. a common noun that happens to coincide with a glossary term) alongside real gaps; read it as a candidate list for a human, not a finding on par with the other three. | Hard fact (mentions list: hint) |
 | `trace_matrix` | Per requirement: which terms it uses, which use case(s) realise it. | Hard fact |
 | `adr_list` | Every recorded decision with its status; filter the result to `PROPOSED` yourself -- the tool has no status parameter. | Hard fact |
 | `adr_check` | Every recorded decision, checked for what is mechanically decidable and reported as `Facts`/`Suspicions` plus a not-checked list -- reads only, changes nothing. Report the `Facts` block as-is; a `Suspicion` or a not-checked entry is a candidate for `/arknet:adr`, not a finding on par with a `Fact` -- do not phrase either as a defect, and never propose a status change from either block. | Hard fact |
 | `bc_list` | Every registered Bounded Context, with its recorded `ContextRelationship` edges (see `/arknet:context-map`) shown inline -- the pool to check for missing relationships. | Judgement candidate |
-| `text_search` | Substring search over every literal in the project, regardless of any edge. Reaches further than `store_check`'s `ORPHAN` fourth list (which matches on word boundaries): a hit here is the same kind of candidate, never a finding on its own -- route it to the specialist skill for the resource it names. | Judgement candidate |
+| `text_search` | Substring search over every literal in the project, regardless of any edge. Reaches further than `store_check`'s `ORPHAN` mentions list (which matches on word boundaries): a hit here is the same kind of candidate, never a finding on its own -- route it to the specialist skill for the resource it names. | Judgement candidate |
 
 No new MCP tools -- all six already exist and are used the same way their
 owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
@@ -48,7 +48,7 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
 
 1. **Hard structural facts, no interpretation needed.**
    - `store_check` (`checks=["ORPHAN"]`) -- report the orphaned-requirements,
-     unreferenced-terms, and unbound-constraints lists as-is. Its fourth
+     unreferenced-terms, and unbound-constraints lists as-is. Its mentions
      list -- terms named in text without a backing edge -- is not a hard
      fact; it matches on word boundaries without stemming and routinely
      names an everyday word used in its ordinary sense alongside a real gap,
@@ -71,7 +71,7 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
      not-checked list are not hard facts -- route them to `/arknet:adr` as a
      hint in step 2 instead of listing them here, and never propose a status
      change from either block.
-2. **Judgement candidates, hint only.** `ORPHAN`'s fourth list from
+2. **Judgement candidates, hint only.** `ORPHAN`'s mentions list from
    step 1 lands here too. `text_search` is the same category by nature, not
    by default use -- reach for it when a specific wording is in question
    (e.g. before answering "is X still called that anywhere?"), not as a
@@ -83,7 +83,7 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
    `/arknet:context-map`?", never as a finding on par with an orphaned
    requirement. Likewise, `adr_check`'s `Suspicions` and its not-checked list
    are hints, one per entry -- "worth a look with `/arknet:adr`?", never a
-   finding on par with a `Fact`. And `ORPHAN`'s fourth list -- terms
+   finding on par with a `Fact`. And `ORPHAN`'s mentions list -- terms
    named in text without a backing edge -- is a hint, one per entry: the
    word-boundary match is deliberately left unsharpened, because a wrong edge
    costs more than a missed one, so one false-positive class recurs in

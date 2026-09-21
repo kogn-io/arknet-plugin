@@ -728,7 +728,7 @@ entry points (see above), same protocol:
   that a content read of the requirement text will not, no matter how careful.
   Treat every finding from these three `ORPHAN` lists, and from
   `trace_matrix`, as a mandatory interrogation point, not an optional
-  footnote. `ORPHAN` also returns a fourth list -- text mentions of a term
+  footnote. `ORPHAN` also returns a mentions list -- text mentions of a term
   missing its backing edge, including a use case's prose beyond its `goal` --
   but its word-boundary match is deliberately left unsharpened, so it recurs
   on an everyday word used in its ordinary sense as often as on a real gap:
