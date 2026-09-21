@@ -360,29 +360,29 @@ itself; it reads the existing fact-tools and routes on to the pass that
 actually reviews what the findings point at.
 
 Reports two kinds of finding, always visibly separated: **hard facts** --
-`store_check`'s `ORPHAN` check (`checks=["ORPHAN"]`) for its orphaned-
-requirements, unreferenced-terms and unbound-constraints lists, `trace_matrix`
-(untraced requirements), `adr_list` filtered to `PROPOSED` (decisions still
-open -- open, not waiting to be accepted: `/arknet:adr` weighs a record's right
-to exist before its status, and deleting one is a legitimate outcome while it
-is still `PROPOSED`), and `adr_check`'s `Facts` block (what is mechanically
-decidable about the ADR corpus) -- stated plainly, no judgement needed; and
-**hints** -- a Bounded Context with no `bc_link_context` edge recorded
-(`bc_list` alone, which shows each context's edges inline), `ORPHAN`'s mentions
-list (terms named in text without a backing edge -- its word-boundary match is
-deliberately left unsharpened, because a wrong edge costs more than a missed
-one, so it recurs on an everyday word used in its ordinary sense as often as on
-a real gap), and `adr_check`'s `Suspicions`/not-checked list, each phrased as a
-question ("worth a look?"), never as a defect on par with an orphaned
-requirement or a `Fact` -- and never as a proposed status change.
-`text_search` (a project-wide substring search over every literal) is the
-same kind of hint, reached for on demand to check a specific wording rather
-than run on every pass.
-Every finding then names the same next step -- `/arknet:store-review`, the
-pass that applies each resource type's reader-level rules -- rather than a
-different specialist skill per finding; only a single resource the user wants
-dealt with now, or a write, goes straight to the owning skill. The triage
-never starts that pass or any dialogue itself.
+`store_check`'s `ORPHAN` check (`checks=["ORPHAN"]`) for its
+orphaned-requirements, unreferenced-terms and unbound-constraints lists,
+`trace_matrix` (untraced requirements), `adr_list` filtered to `PROPOSED`
+(decisions still open -- open, not waiting to be accepted: `/arknet:adr`
+weighs a record's right to exist before its status, and deleting one is a
+legitimate outcome while it is still `PROPOSED`), and `adr_check`'s `Facts`
+block (what is mechanically decidable about the ADR corpus) -- stated
+plainly, no judgement needed; and **hints** -- a Bounded Context with no
+`bc_link_context` edge recorded (`bc_list` alone, which shows each context's
+edges inline), `ORPHAN`'s mentions list (terms named in text without a
+backing edge -- its word-boundary match is deliberately left unsharpened,
+because a wrong edge costs more than a missed one, so it recurs on an
+everyday word used in its ordinary sense as often as on a real gap), and
+`adr_check`'s `Suspicions`/not-checked list, each phrased as a question
+("worth a look?"), never as a defect on par with an orphaned requirement or
+a `Fact` -- and never as a proposed status change. `text_search` (a
+project-wide substring search over every literal) is the same kind of hint,
+reached for on demand to check a specific wording rather than run on every
+pass. Every finding then names the same next step -- `/arknet:store-review`,
+the pass that applies each resource type's reader-level rules -- rather than
+a different specialist skill per finding; only a single resource the user
+wants dealt with now, or a write, goes straight to the owning skill. The
+triage never starts that pass or any dialogue itself.
 
 Deliberately out of scope for now: a staleness signal for `/arknet:bc-audit`
 (reading `role_usecase_matrix`/`term_cooccurrence` for collisions that
