@@ -953,7 +953,8 @@ it). A use case binds to a role, never directly to an actor.
 ### Generic store access
 
 - `store_overview` -- workspace-wide digest (resource/triple/type counts, one
-  line per resource) plus a self-contained HTML report written to disk.
+  line per resource) plus two self-contained HTML pages written to disk: the
+  developer report and a specification-style report for business readers.
 - `store_check` -- check this project's stored model against what it
   declares about itself; read-only, changes and refuses nothing. `checks`
   selects which checks to run (a list of names, omit or pass an empty list
