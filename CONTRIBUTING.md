@@ -59,11 +59,15 @@ Things to raise in an issue first:
 - **A subagent this plugin ships (under an `agents/` directory) cannot declare
   its own `mcpServers` at all** -- Claude Code silently ignores that
   frontmatter field for plugin-bundled agents. Give such a subagent arknet
-  access by listing the tool names (`mcp__arknet__req_add`, etc.) in its
-  `tools:` field; that always resolves to the shared HTTP daemon already
-  registered in the root `.mcp.json`, so there is no separate rule to apply
-  here and no risk of a second local instance colliding with the daemon's
-  file lock.
+  access by listing the tool names in its `tools:` field. Claude Code
+  prefixes a server from a plugin's `.mcp.json` with the plugin name, so
+  the server this plugin ships surfaces as `mcp__plugin_arknet_arknet__req_add`,
+  not `mcp__arknet__req_add` -- the shorter form only exists when a user
+  registered the daemon themselves under the name `arknet`. Listing only the
+  short form leaves the subagent of a plugin user with no arknet tool at
+  all, and no error says so; list both forms for every tool. Either form
+  reaches the same shared HTTP daemon, so there is no risk of a second
+  local instance colliding with the daemon's file lock.
 - Bump the `version` in `.claude-plugin/plugin.json` when a skill's shipped text
   changes **and the version currently on `main` has already been released**.
   Claude Code caches skill content by version, so a bump only buys anything for
