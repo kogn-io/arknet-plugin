@@ -66,8 +66,8 @@ Things to raise in an issue first:
   registered the daemon themselves under the name `arknet`. Listing only the
   short form leaves the subagent of a plugin user with no arknet tool at
   all, and no error says so; list both forms for every tool. Either form
-  reaches the same shared HTTP daemon, so there is no risk of a second local instance colliding with the daemon's
-  file lock.
+  reaches the same shared HTTP daemon, so there is no risk of a second
+  local instance colliding with the daemon's file lock.
 - Bump the `version` in `.claude-plugin/plugin.json` when a skill's shipped text
   changes **and the version currently on `main` has already been released**.
   Claude Code caches skill content by version, so a bump only buys anything for
