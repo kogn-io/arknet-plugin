@@ -69,9 +69,9 @@ already holds data but no registration. The wrong one does not fail --
 `project_add` from a worktree silently creates a *second* project, which
 only `project_delete` from another directory removes again -- while the
 right one, called naively, does: `project_attach_anchor` resolves the
-project through the caller's own anchor and needs `callerAnchor` from a directory that is not
-registered yet. The skill proposes the case it reads from
-`project_list` and lets the user confirm it before writing. For a project that
+project through the caller's own anchor and needs `callerAnchor` from a
+directory that is not registered yet. The skill proposes the case it reads
+from `project_list` and lets the user confirm it before writing. For a project that
 already resolves, it shows the state and offers `project_update` -- in
 particular for an absent `languages` set, without which `store_check`'s
 language check reports `LANGUAGE: not checked` and is silently off.
@@ -225,9 +225,9 @@ its word-boundary match also catches an everyday word used in its ordinary
 sense, so the interviewer weighs each source on a term's line instead of
 treating the line as a fact. `ROLE_TERM_DUPLICATE`, run in the same call,
 reports every role carrying the same name as a glossary term, a report and
-never a rejection, since the two resource types stay independent. It then walks the entire store
-(requirements, use cases, glossary, actors, roles) one item
-at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
+never a rejection, since the two resource types stay independent. It then
+walks the entire store (requirements, use cases, glossary, actors, roles) one
+item at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
 filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the
 ISO/IEC/IEEE 29148 quality attributes (completeness, unambiguity,
