@@ -315,7 +315,10 @@ proposing anything; the classification judgement stays with the user, same
 discipline as `/arknet:bc-audit`. For the five asymmetric relationship types
 (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`,
 `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`) it also confirms which context is
-upstream and which is downstream before writing; for the three symmetric
+upstream and which is downstream before writing -- upstream being the
+context whose model changes the other has to absorb, never decided by data
+flow alone (for Customer-Supplier: the supplier, even though it plans
+around the customer's needs); for the three symmetric
 ones (`PARTNERSHIP`, `SHARED_KERNEL`, `SEPARATE_WAYS`) it says plainly that
 the tool's upstream/downstream fields are bookkeeping only, not a real
 asymmetry. `bc_link_context` is idempotent over the exact (upstream,

@@ -74,10 +74,9 @@ either tool infers.
    `/arknet:bc-audit`.
 4. **Resolve direction, but only where the type has one.**
    `CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`,
-   `OPEN_HOST_SERVICE`, and `PUBLISHED_LANGUAGE` are asymmetric --
-   `upstreamBcId` is the context whose model prevails, `downstreamBcId`
-   the one that adapts to it -- so confirm which side is which before
-   calling the tool. `PARTNERSHIP`, `SHARED_KERNEL`, and `SEPARATE_WAYS`
+   `OPEN_HOST_SERVICE`, and `PUBLISHED_LANGUAGE` are asymmetric, so
+   confirm which side is which before calling the tool, using the
+   direction test below. `PARTNERSHIP`, `SHARED_KERNEL`, and `SEPARATE_WAYS`
    are symmetric in DDD terms; the tool still requires an
    `upstreamBcId`/`downstreamBcId` pair for these, so say so plainly to
    the user ("the tool needs an order for bookkeeping, but neither side
@@ -86,6 +85,42 @@ either tool infers.
    type and direction. Report back the resulting edge in plain language
    (e.g. "recorded: OrderManagement is upstream of Billing via Open Host
    Service"), not the raw tool call.
+
+## Direction test: which side is upstream
+
+`upstreamBcId` is the context whose model the other one depends on:
+when it changes its model, the downstream context has to absorb the
+change, and the reverse does not hold. `downstreamBcId` is the one that
+depends -- its success hangs on what upstream does. This one definition
+holds for all five asymmetric types; what differs between them is how
+much leverage downstream has over upstream:
+
+| Type | Upstream | Downstream's leverage over upstream's model |
+|---|---|---|
+| `CUSTOMER_SUPPLIER` | the supplier | Real but negotiated: the customer's needs enter upstream's planning and priorities, and upstream commits to meeting them. Upstream adapting its plans *to* downstream is what makes this type -- it does not reverse the direction. |
+| `CONFORMIST` | the context whose model is adopted | None: downstream takes the model as is. |
+| `ANTICORRUPTION_LAYER` | the context whose model is translated | None it relies on: downstream protects its own model with a translation layer. |
+| `OPEN_HOST_SERVICE` | the context offering the protocol | Only as one of many consumers of a protocol upstream defines. |
+| `PUBLISHED_LANGUAGE` | the context publishing the language | Same: downstream reads a documented model upstream owns. |
+
+Ask the change question, not the flow question: "if A changes how it
+models this, does B have to change? And the other way round?" The side
+that does not have to follow is upstream. Who hands data to whom, who
+calls whom, and whose deadline comes first are *not* direction evidence
+on their own -- data can flow either way along an upstream/downstream
+edge (a downstream context pushing commands to upstream, upstream pulling
+from downstream), so a direction justified by data flow alone is
+unfounded. Use flow only as a lead for the change question, never as its
+answer.
+
+Where the answer is "B has to follow A, but A plans around what B needs",
+that is `CUSTOMER_SUPPLIER` with A upstream. Where A has to follow B,
+B is upstream, whatever the data flow says. Where both have to follow
+each other, the pair is not asymmetric -- look at `PARTNERSHIP` or
+`SHARED_KERNEL` instead of picking a direction. Never record an edge
+whose stated justification contradicts this definition (e.g. "upstream
+here only means 'supplies to'") -- either the justification or the
+direction is wrong, and the mismatch is a question for the user.
 
 ## Review mode: the edges the store already holds
 
@@ -110,7 +145,7 @@ column per rule. The table below defines the rules, it is not the output.
 | # | Rule | A finding reads |
 |---|---|---|
 | C1 | **The type is re-derivable.** Can you name, from the two contexts' domain visions and terms, what makes *this* type fit rather than a neighbouring one? Say which neighbour you ruled out and why. | The type cannot be grounded in the material -- report which type the material *does* suggest, as an observation, not as a correction to apply. A cell reading `ok` with no ruled-out neighbour behind it is not evidence the rule ran. |
-| C2 | **Direction matches the type.** For the five asymmetric types (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`, `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`): is `upstreamBcId` genuinely the context whose model prevails? | Direction reversed -- the map then reads the power relationship backwards, which is the one thing a context map exists to show. For the three symmetric types the cell states that the order is bookkeeping and stops there; a reversal is not a finding for them. |
+| C2 | **Direction matches the type.** For the five asymmetric types (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`, `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`): is `upstreamBcId` genuinely the context the other depends on, by the direction test above (whose model change does the other have to absorb)? A direction whose only grounding is data flow fails the rule. | Direction reversed, or grounded only in data flow -- the map then reads the power relationship backwards, which is the one thing a context map exists to show. For the three symmetric types the cell states that the order is bookkeeping and stops there; a reversal is not a finding for them. |
 | C3 | **The type carries its own obligation.** Each type implies work: `ANTICORRUPTION_LAYER` an actual translation layer, `SHARED_KERNEL` a jointly-owned model and the coordination it takes, `PUBLISHED_LANGUAGE` a published, documented model the downstream reads. Does anything in the store carry that obligation? | The type is recorded but nothing in the store backs what it commits the project to -- an aspiration filed as a fact. |
 | C4 | **Not a restatement of "they talk to each other".** Does the recorded type distinguish this pair from any other pair, or would it fit every pair equally? | A type chosen because two contexts exchange data at all, rather than because of how their models relate. Usually shows up with the corpus-wide finding below. |
 

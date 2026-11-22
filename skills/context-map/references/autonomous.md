@@ -18,8 +18,11 @@ that mechanic does not apply here.
   regardless of how plausible a type looks without it.
 - Direction: for the five asymmetric types (`CUSTOMER_SUPPLIER`,
   `CONFORMIST`, `ANTICORRUPTION_LAYER`, `OPEN_HOST_SERVICE`,
-  `PUBLISHED_LANGUAGE`), `upstreamBcId` is still the side whose model
-  prevails; for the three symmetric ones the tool's upstream/downstream
+  `PUBLISHED_LANGUAGE`), `upstreamBcId` is still the side the other
+  depends on, decided by `SKILL.md`'s direction test (whose model change
+  the other has to absorb), never by data flow alone -- for
+  `CUSTOMER_SUPPLIER` that is the supplier, even where it plans around the
+  customer's needs; for the three symmetric ones the tool's upstream/downstream
   pair is still bookkeeping, never a real asymmetry to report.
 - `bc_link_context` itself: same idempotent write, same triple.
 
@@ -30,8 +33,9 @@ instead of after it:
 - Re-derivable (C1) -- name, from the two contexts' material, what makes
   this type fit rather than a neighbour, and which neighbour was ruled
   out.
-- Direction (C2) -- for an asymmetric type, which side's model the other
-  clearly adapts to.
+- Direction (C2) -- for an asymmetric type, which side has to absorb the
+  other's model changes (the downstream one); who hands data to whom does
+  not answer this.
 - Obligation (C3) -- does anything in the material already carry what the
   type commits the pair to (a translation layer, a jointly-owned model, a
   published, documented model)?
