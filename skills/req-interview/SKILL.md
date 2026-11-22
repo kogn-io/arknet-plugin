@@ -1088,34 +1088,40 @@ method now that the tools exist.
 A repeated enumeration (see "Enumeration lives once, in a term" in the
 requirement checklist) has no edge for `impact_analysis` to follow, so it
 needs its own handling on both sides of the write. The first step belongs
-to drafting, before the write this section otherwise follows:
+to drafting: run it before the draft is shown for confirmation, so the
+text the user confirms already names the term instead of the list.
 
-- **Before the write:** if the draft lists three or more values, fields or
-  states, `text_search` each value across the project (one call per value -- the
-  query is a single substring). A hit in a term -> link the term and remove
-  the bare list from the draft; any rule about the values (a value-to-target
-  table, transitions, mandatory-field consequences) stays in the draft. Hits
-  only in other requirements or use cases and no term -> the term is
-  missing: settle it as its own item and `term_add` it first, then link it
-  from the draft. Every other place that repeats the list is a ripple
-  finding, not something to rewrite on the side: name it under "Ripple
-  found" below. Replacing the list there changes that resource and goes
-  through the same settle-then-write as any other change, with the same
-  vocabulary/rule boundary -- only the bare list gives way to the term. Link
-  with
-  `usesTermCodes` on `req_add`/`uc_add`; on an existing resource use
-  `req_link_term`/`uc_link_term` -- `usesTermCodes` on `req_update`/
-  `uc_update` replaces the whole link set and drops the links not repeated.
+- **Before the write:** if the draft lists three or more values, fields
+  or states, `text_search` each value across the project (one call per
+  value -- the query is a single substring).
+  - A hit in a term -> link the term and remove the bare list from the
+    draft; any rule about the values (a value-to-target table,
+    transitions, mandatory-field consequences) stays in the draft.
+  - No term carries the list, whether other requirements or use cases
+    repeat it or nothing does -> the term is missing: settle it as its own
+    item and `term_add` it first, then link it from the draft.
+  - Every other requirement or use case that repeats the list is a ripple
+    finding, not something to rewrite on the side: name it under "Ripple
+    found" below. Replacing the list there changes that resource and goes
+    through the same settle-then-write as any other change, with the same
+    vocabulary/rule boundary -- only the bare list gives way to the term.
+
+  Link with `usesTermCodes` on `req_add`/`uc_add`; on an existing resource
+  use `req_link_term`/`uc_link_term` -- `usesTermCodes` on `req_update`/
+  `uc_update` replaces the whole link set and drops the links not
+  repeated.
 - **After the write:** in the `ORPHAN` result, read the mention findings
   that concern the resource just written -- every write, not only in a
-  full-set audit. For a requirement or use case, those are the findings
-  naming it as their source: a term named in its text without the
-  `usesTerm` edge behind it. For a term, it is the term's own finding line:
-  existing requirements and use cases that name the new term without the
-  edge, each a ripple candidate. It does not detect a repeated list of values -- only the
-  `text_search` before the write does. Weigh each mention the same way as in
-  the full-set audit (an everyday word in its ordinary sense is discarded
-  without a question).
+  full-set audit. Those are the findings naming it as their source (a term
+  named in its text without the edge behind it -- for a requirement or use
+  case a missing `usesTerm`, for a term no `broader` link in either
+  direction and no `related` link),
+  and, for a term, also the term's own finding line: every resource that
+  names the new term without the edge, each a ripple candidate. This does
+  not detect a repeated list of values -- only the `text_search` before
+  the write does. Weigh each mention the same way as in the full-set audit
+  (an everyday word in its ordinary sense is discarded without a
+  question).
 
 Then report the outcome:
 
