@@ -116,8 +116,8 @@ customer's order deadline, or adds a field the customer requested, still
 sets the model the customer works with. Who hands data to whom, who
 calls whom, and whose deadline comes first are *not* direction evidence
 on their own -- data can flow either way along an upstream/downstream
-edge (a downstream context pushing commands to upstream, upstream pulling
-from downstream), so a direction justified by data flow alone is
+edge (a downstream context pushing commands to upstream through an
+interface upstream defines), so a direction justified by data flow alone is
 unfounded. Use flow only as a lead for the change question, never as its
 answer.
 
@@ -194,7 +194,8 @@ material (C1) is not written at all, never defaulted to `PARTNERSHIP` to
 have something on record; the same holds for direction -- where the
 material answers the change question (C2) only weakly, the direction is
 decided from that signal and marked, but where data flow is the only
-signal, or there is none at all, the edge is not written and the pair is reported as unresolved.
+signal, or there is none at all, the edge is not written and the pair is
+reported as unresolved.
 
 `bc_link_context` carries no prose field, so the assumption behind a type
 choice cannot live on the edge itself -- and it does not belong in either

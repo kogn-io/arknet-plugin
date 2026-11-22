@@ -22,8 +22,9 @@ that mechanic does not apply here.
   depends on, decided by `SKILL.md`'s direction test (whose model change
   the other has to absorb), never by data flow alone -- for
   `CUSTOMER_SUPPLIER` that is the supplier, even where it plans around the
-  customer's needs; for the three symmetric ones the tool's upstream/downstream
-  pair is still bookkeeping, never a real asymmetry to report.
+  customer's needs; for the three symmetric ones the tool's
+  upstream/downstream pair is still bookkeeping, never a real asymmetry
+  to report.
 - `bc_link_context` itself: same idempotent write, same triple.
 
 **The one substitution:** the review mode's own four rules (see
@@ -50,10 +51,10 @@ material is missing, the same way elicitation mode would surface an open
 question rather than guess. Where C1 does clear, but C2's direction is
 only weakly answered by the material, decide from the signal that bears on
 the change question (whose model the other has to absorb) and mark it.
-Data flow alone is not such a signal: where it is all the material offers,
-or the material offers no direction signal at all,
-do not write the edge -- report the pair as unresolved, naming the change
-question nobody answered, exactly as for a "no" on C1.
+Data flow alone is not such a signal: where it is all the material
+offers, or the material offers no direction signal at all, do not write
+the edge -- report the pair as unresolved, naming the change question
+nobody answered, exactly as for a "no" on C1.
 
 ## Marking an assumption
 
