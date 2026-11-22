@@ -105,8 +105,8 @@ much leverage downstream has over upstream:
 
 Ask the change question, not the flow question: "if A changes how it
 models this, does B have to change? And the other way round?" The side
-that does not have to follow is upstream. "Follow" means changing the
-own *model* -- its terms, rules and structure. Adjusting plans,
+that does not have to follow is upstream. "Follow" means a context
+changing its own *model* -- its terms, rules and structure. Adjusting plans,
 priorities or deadlines to the other side is not following in this
 sense, and neither is a supplier extending its own model because the
 customer asked for it -- that negotiated extension is the supplier still
@@ -121,12 +121,16 @@ from downstream), so a direction justified by data flow alone is
 unfounded. Use flow only as a lead for the change question, never as its
 answer.
 
-Where the answer is "B has to follow A, but A plans around or extends its
-model for what B needs",
-that is `CUSTOMER_SUPPLIER` with A upstream. Where A has to follow B,
-B is upstream, whatever the data flow says. Where both have to follow
-each other, the pair is not asymmetric -- look at `PARTNERSHIP` or
-`SHARED_KERNEL` instead of picking a direction. Never record an edge
+Where the answer is "B has to follow A, but A plans around or extends
+its model for what B needs", that is `CUSTOMER_SUPPLIER` with A upstream.
+Where A has to follow B, B is upstream, whatever the data flow says.
+Where both have to follow each other, the pair is not asymmetric -- look
+at `SHARED_KERNEL` (a jointly owned model part) or `PARTNERSHIP` instead
+of picking a direction. Where neither has to follow, but the two
+coordinate their changes and succeed or fail together, that is
+`PARTNERSHIP` too -- not a `CUSTOMER_SUPPLIER` with an arbitrary
+direction. Where neither has to follow and neither depends on the other
+at all, that is `SEPARATE_WAYS`, or no edge. Never record an edge
 whose stated justification contradicts this definition (e.g. "upstream
 here only means 'supplies to'") -- either the justification or the
 direction is wrong, and the mismatch is a question for the user.
@@ -197,7 +201,8 @@ choice cannot live on the edge itself -- and it does not belong in either
 context's `domainVision` either, which is exactly the component-description
 failure `/arknet:bc-audit`'s review mode (rule B6) already rules out for
 that field. It is marked instead in the run's own report back to whoever
-invoked it, one line per edge, naming the type, the direction, and the
+invoked it, one line per edge, naming the type, the direction with the
+answer to the change question behind it (never data flow alone), and the
 neighbour ruled out. See `references/autonomous.md` for the compact test
 and the marking form.
 

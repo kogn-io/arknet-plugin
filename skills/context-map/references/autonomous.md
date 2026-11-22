@@ -66,8 +66,10 @@ domain meaning" failure `/arknet:bc-audit`'s review mode (rule B6) already
 flags, autonomous or not.
 
 Instead, mark every autonomous classification in the run's own report back
-to whoever invoked it -- one line per edge written, in the same form as
-elsewhere:
+to whoever invoked it -- one line per edge written, naming the type, for
+an asymmetric type the direction together with what answers the change
+question (whose model the other has to absorb -- data flow alone does
+not), and the neighbour ruled out, in the same form as elsewhere:
 
 > ASSUMPTION: OrderManagement / Billing recorded as
 > `CUSTOMER_SUPPLIER` (OrderManagement upstream) -- Billing's glossary
