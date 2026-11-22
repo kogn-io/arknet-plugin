@@ -232,9 +232,12 @@ filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the
 ISO/IEC/IEEE 29148 quality attributes (completeness, unambiguity,
 consistency, testability, dependencies, priority differentiation), and --
-for glossary terms -- implementation-free, architecture-decision-free and
-config-free definitions. Actors and roles are elicited here, so their review
-checklists live here too rather than in a skill of their own: an actor is
+for glossary terms -- implementation-free, architecture-decision-free,
+rule-free and config-free definitions; an enumeration of values, fields or
+states lives in exactly one term, which requirements and use cases
+reference instead of repeating it. Actors and roles are elicited here, so
+their review checklists live here too rather than in a skill of their own:
+an actor is
 read as a *carrier* (is its `type` right -- and `actor_update` cannot change
 one, so correcting it means `actor_delete` plus a fresh `actor_add` under a
 new code, once every `filledBy` naming it is cleared and with those

@@ -834,6 +834,26 @@ Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
 - **Type classification** -- correctly FR vs. NFR vs. Constraint (see
   "Deciding FR vs. NFR vs. Constraint" above)? A non-negotiable, externally
   imposed rule filed as NFR under-signals that it cannot be traded off.
+- **Enumeration lives once, in a term** -- does the text list values,
+  fields or states (three or more) that a glossary term already names, or
+  should name? The list and what each entry *means* live exactly once, in
+  the term; the requirement names the term and links it via `usesTerm`
+  instead of repeating the list. Before writing, `text_search` the listed
+  values: a hit in a term -> link it; no term yet -> `term_add` first.
+  This moves the *vocabulary*, never the *rule*: what a value allows,
+  forbids or triggers -- mandatory fields and what happens when one is
+  missing, value-to-target mappings (a table in the requirement is fine),
+  state transitions, invariants, configurable values -- stays in the
+  requirement, with its acceptance criteria. Test: if a tester can write an
+  example "the system rejects / books ..." against the statement, it is a
+  rule and belongs here (see **Rule-free** in the term checklist).
+- **Prose reference to another requirement** -- "as in FR-3", "per FR-3".
+  arknet writes no requirement-to-requirement edge, so a prose reference is
+  the second-best form available, not a link: nothing tracks it, and a
+  rename or delete of FR-3 leaves it dangling unseen. Name it as such when
+  you find one; prefer restating the dependency through a shared term
+  (`usesTerm` on both) where the two requirements share vocabulary rather
+  than a rule.
 
 ### Checklist per use case
 
@@ -857,6 +877,14 @@ Cockburn completeness:
   identical title against a linked FR/NFR/Constraint is a signal the
   goal-in-context was never actually restated -- go back and ask what the
   role is really trying to accomplish.
+- **Enumeration lives once, in a term** -- does a step, an extension or a
+  pre-/postcondition list values, fields or states (three or more) that a
+  glossary term names or should name? Same rule as in the requirement
+  checklist: the use case (the flow) names the term and links it via
+  `usesTerm`; it does not repeat the list. A postcondition reading "the
+  contribution is in one of the states A, B, C, D, E" is the give-away --
+  "the contribution has a *Contribution status*" plus the `usesTerm` edge is
+  the fix.
 
 ### Checklist per glossary term
 
@@ -893,7 +921,23 @@ Cockburn completeness:
   (a list of resource types, a set of responsibilities) that already lives
   in another existing, or concurrently-drafted, related term definition?
   Cross-reference instead of re-enumerating -- two lists of the same facts
-  are two places that must be kept in sync by hand.
+  are two places that must be kept in sync by hand. The same holds against
+  requirements and use cases: an enumeration lives in exactly one term, and
+  they reference it (see "Enumeration lives once, in a term" in the
+  requirement checklist).
+- **Rule-free** -- does the definition stay with what the values / fields /
+  states *are* and what each one *means*, or does it state what they allow,
+  forbid or trigger? Mandatory fields and what happens if one is missing,
+  value-to-target mappings, state transitions, invariants ("all items in
+  the same period") and configurable values are rules: they belong in a
+  requirement, where they carry acceptance criteria. The term may point at
+  that requirement; the requirement never defers its rule to the term.
+  Give-away pattern: a definition that declares itself the single place of
+  a rule ("the validation steps live only here; requirements reference
+  this term") -- the result is a rule with no acceptance criteria, and
+  usually a second term restating it incompletely. Rule of thumb: if a
+  tester can write an example "the system rejects / books ..." against the
+  sentence, it is a rule.
 - **Implementation-free** -- does the definition avoid naming the
   system/software/storage technology (the same WHAT-not-HOW discipline
   requirements are held to)?
@@ -901,7 +945,10 @@ Cockburn completeness:
   *meaning* only, without smuggling in an architecture/design decision --
   source-of-record, persistence choice, tenancy/multi-user model, who
   triggers or owns an action? Those decisions belong in an ADR (`adr_add`),
-  not in what a term *means*. Give-away pattern: a definition sentence
+  not in what a term *means*. Not every system-behaviour sentence is an
+  architecture decision, though: *how the system is built* -> ADR, *what
+  the system does* -> requirement (see **Rule-free** above). Give-away
+  pattern: a definition sentence
   reads like a system-behaviour statement ("X is the authoritative source
   for Y", "the system holds no own record of Z", "X is triggered by Y, not
   by the system") instead of "X is a ...". Catch this even when no
@@ -1036,6 +1083,21 @@ fall back to re-reading `req_list`/`uc_list`/`term_list` from memory for
 aspects neither tool covers (e.g. wording conflicts between two requirements that
 share no explicit link) -- do not use manual re-reading as the primary
 method now that the tools exist.
+
+Two more steps catch a repeated enumeration (see "Enumeration lives once,
+in a term" in the requirement checklist), which `impact_analysis` cannot
+see because the duplicate has no edge to follow:
+
+- **Before the write:** if the draft lists values, fields or states,
+  `text_search` those values across the project. A hit in a term -> link
+  the term (`usesTermCodes`) and drop the list from the draft; hits only in
+  other requirements or use cases and no term -> the term is missing,
+  `term_add` it first and link it from every place that repeats the list.
+- **After the write:** run `store_check` (`checks=["ORPHAN"]`) and read the
+  mentions lines for the resource just written -- every write, not only in a
+  full-set audit. A mention there is a term named in the text without the
+  `usesTerm` edge behind it; weigh it the same way as in the full-set audit
+  (an everyday word in its ordinary sense is discarded without a question).
 
 - **No ripple** -> state it in one line, continue the walk.
 - **Ripple found** -> name the affected codes and the nature of the impact,
