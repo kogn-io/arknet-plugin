@@ -48,9 +48,11 @@ is not a safe default): if no material lets you name a fit, do not write
 the relationship at all -- report the pair as unresolved and name what
 material is missing, the same way elicitation mode would surface an open
 question rather than guess. Where C1 does clear, but C2's direction is
-genuinely unreadable from the material, decide from whatever signal
-exists and mark it, rather than leave direction unresolved for a type that
-requires one.
+only weakly answered by the material, decide from the signal that bears on
+the change question (whose model the other has to absorb) and mark it.
+Data flow alone is not such a signal: where it is all the material offers,
+do not write the edge -- report the pair as unresolved, naming the change
+question nobody answered, exactly as for a "no" on C1.
 
 ## Marking an assumption
 

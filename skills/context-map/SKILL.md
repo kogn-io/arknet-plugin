@@ -101,11 +101,15 @@ much leverage downstream has over upstream:
 | `CONFORMIST` | the context whose model is adopted | None: downstream takes the model as is. |
 | `ANTICORRUPTION_LAYER` | the context whose model is translated | None it relies on: downstream protects its own model with a translation layer. |
 | `OPEN_HOST_SERVICE` | the context offering the protocol | Only as one of many consumers of a protocol upstream defines. |
-| `PUBLISHED_LANGUAGE` | the context publishing the language | Same: downstream reads a documented model upstream owns. |
+| `PUBLISHED_LANGUAGE` | the context whose model is expressed in the published language | Only as one of many readers: downstream reads a documented language it does not shape. Where the language is an external standard neither context owns, upstream is the side that translates its own model into the language, downstream the side that reads it. |
 
 Ask the change question, not the flow question: "if A changes how it
 models this, does B have to change? And the other way round?" The side
-that does not have to follow is upstream. Who hands data to whom, who
+that does not have to follow is upstream. "Follow" means changing the
+own *model* -- its terms, rules and structure. Adjusting plans,
+priorities or deadlines to the other side is not following in this
+sense: a supplier that schedules around its customer's order deadline
+still sets the model the customer works with. Who hands data to whom, who
 calls whom, and whose deadline comes first are *not* direction evidence
 on their own -- data can flow either way along an upstream/downstream
 edge (a downstream context pushing commands to upstream, upstream pulling
@@ -145,7 +149,7 @@ column per rule. The table below defines the rules, it is not the output.
 | # | Rule | A finding reads |
 |---|---|---|
 | C1 | **The type is re-derivable.** Can you name, from the two contexts' domain visions and terms, what makes *this* type fit rather than a neighbouring one? Say which neighbour you ruled out and why. | The type cannot be grounded in the material -- report which type the material *does* suggest, as an observation, not as a correction to apply. A cell reading `ok` with no ruled-out neighbour behind it is not evidence the rule ran. |
-| C2 | **Direction matches the type.** For the five asymmetric types (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`, `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`): is `upstreamBcId` genuinely the context the other depends on, by the direction test above (whose model change does the other have to absorb)? A direction whose only grounding is data flow fails the rule. | Direction reversed, or grounded only in data flow -- the map then reads the power relationship backwards, which is the one thing a context map exists to show. For the three symmetric types the cell states that the order is bookkeeping and stops there; a reversal is not a finding for them. |
+| C2 | **Direction matches the type.** For the five asymmetric types (`CUSTOMER_SUPPLIER`, `CONFORMIST`, `ANTICORRUPTION_LAYER`, `OPEN_HOST_SERVICE`, `PUBLISHED_LANGUAGE`): is `upstreamBcId` genuinely the context the other depends on, by the direction test above (whose model change does the other have to absorb)? A direction whose only grounding is data flow fails the rule. | Direction reversed -- the map then reads the power relationship backwards, which is the one thing a context map exists to show. Or direction unfounded: nothing in the material answers the change question, only data flow does -- report it as unresolved, not as reversed, since the recorded side may still turn out right. For the three symmetric types the cell states that the order is bookkeeping and stops there; a reversal is not a finding for them. |
 | C3 | **The type carries its own obligation.** Each type implies work: `ANTICORRUPTION_LAYER` an actual translation layer, `SHARED_KERNEL` a jointly-owned model and the coordination it takes, `PUBLISHED_LANGUAGE` a published, documented model the downstream reads. Does anything in the store carry that obligation? | The type is recorded but nothing in the store backs what it commits the project to -- an aspiration filed as a fact. |
 | C4 | **Not a restatement of "they talk to each other".** Does the recorded type distinguish this pair from any other pair, or would it fit every pair equally? | A type chosen because two contexts exchange data at all, rather than because of how their models relate. Usually shows up with the corpus-wide finding below. |
 
@@ -178,9 +182,10 @@ the pacing is gone, because there is nobody to pace with. Run review
 mode's four rules (C1-C4, see above) as the decision test before writing
 instead of after: a type that cannot be re-derived from the two contexts'
 material (C1) is not written at all, never defaulted to `PARTNERSHIP` to
-have something on record; a direction that cannot be read from the
-material (C2) is decided from whatever signal exists and marked, not left
-for a type that requires one.
+have something on record; the same holds for direction -- where the
+material answers the change question (C2) only weakly, the direction is
+decided from that signal and marked, but where data flow is the only
+signal, the edge is not written and the pair is reported as unresolved.
 
 `bc_link_context` carries no prose field, so the assumption behind a type
 choice cannot live on the edge itself -- and it does not belong in either
