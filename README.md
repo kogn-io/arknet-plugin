@@ -684,7 +684,10 @@ a wrong `project_attach_anchor` or `project_adopt` has no undo tool, and
   the server version, build time, export time and every shipped ontology
   module's version) into the server's export directory. Exports every
   registered project by default; `projectOnly` narrows it to the project
-  this call addresses. No matching import/restore tool yet.
+  this call addresses. `projectAnchor` selects that project explicitly but
+  is only accepted together with `projectOnly=true` -- a full export
+  addresses no single project, so the call is rejected rather than the
+  anchor ignored. No matching import/restore tool yet.
 
 ### Requirements
 
@@ -953,7 +956,12 @@ it). A use case binds to a role, never directly to an actor.
   `Suspicions` (tracker references, address/port literals, status prose,
   near-identical titles -- each a hint, not a defect). Names, in its own
   output, what it does not check: bundled decisions, contradiction between
-  records, whether a consequence has substance.
+  records, whether a consequence has substance, whether the other language
+  variant carries the same pattern. It reads one language variant per field
+  (`displayLocale`, falling back to the project's default language): a
+  pattern present only in a variant this run did not read is not found, so
+  in a store kept in more than one language the check has to be run for
+  each language separately.
 - `adr_delete` -- remove a decision entered by mistake: `PROPOSED`, or
   `ACCEPTED` with no other decision pointing at it; `REJECTED`,
   `DEPRECATED` and `SUPERSEDED` are explicitly not deletable, nor is a
@@ -1027,6 +1035,12 @@ it). A use case binds to a role, never directly to an actor.
   `checks=["ORPHAN"]` alone; kept only so an existing caller keeps working.
 - `resource_get` -- fetch all statements (outgoing and incoming) of a single
   resource.
+- `resource_history` -- list the change history of a single resource: every
+  revision the write path shared by the writing tools has recorded for it,
+  oldest first, with the current one marked. An empty history is not an error and does not
+  mean the resource was never changed -- a resource only ever written
+  directly to the store, or created before the history was recorded, has
+  none.
 
 ## Contributing
 

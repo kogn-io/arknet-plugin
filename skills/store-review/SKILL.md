@@ -48,7 +48,11 @@ checked later.
    looking for the same patterns, and do not restate a tool finding as your
    own observation. Where a tool names in its own output what it does *not*
    check, that boundary is part of the report too: it is exactly the part
-   the reader level has to cover.
+   the reader level has to cover. `adr_check` reads one language variant per
+   field (`displayLocale`, default: the project's language) and its output
+   does not name that language; in a store that keeps more than one
+   language, pass `displayLocale` explicitly, run it once per language, and
+   name the tag each run used -- "no finding" holds for that variant only.
 2. **The reader level runs per resource type, and always ends in a table.** One
    row per resource, one column per rule of that type's review mode. `ok` or a
    short finding per cell. **An empty cell means "not checked", never "fine"**
