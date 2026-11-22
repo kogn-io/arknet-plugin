@@ -76,8 +76,8 @@ not), and the neighbour ruled out, in the same form as elsewhere:
 > `CUSTOMER_SUPPLIER` (OrderManagement upstream) -- direction: Billing's
 > use cases build on OrderManagement's order model and must follow when it
 > changes, never the reverse; type: a requirement records Billing's needs
-> (invoice-relevant order fields) as an input to OrderManagement's
-> planning, which rules out `CONFORMIST` (a conformist downstream has no
+> (invoice-relevant order fields) as an input OrderManagement's planning
+> commits to meeting, which rules out `CONFORMIST` (a conformist downstream has no
 > say in the upstream model), and no shared-ownership or translation-layer
 > evidence points to `SHARED_KERNEL` or `ANTICORRUPTION_LAYER`.
 
