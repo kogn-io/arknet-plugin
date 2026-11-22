@@ -1070,9 +1070,10 @@ another FR/NFR/UC/term?
 **Use `impact_analysis(resource)`** on the just-written/just-changed
 requirement/use-case/term as the first, automated step -- it walks
 references backwards and returns everything that transitively depends on
-it. Follow up with `store_check` (`checks=["ORPHAN"]`) and `trace_matrix`
-if the change touched links (`usesTerm`, `realises`, actor/role
-references). A rename or wording change needs one more step
+it. Follow up with `store_check` (`checks=["ORPHAN"]`) after every write
+(see the enumeration steps below for what to read in it), and with
+`trace_matrix` if the change touched links (`usesTerm`, `realises`,
+actor/role references). A rename or wording change needs one more step
 `impact_analysis` cannot cover: it only walks edges, so a prose mention of
 the old wording with no `usesTerm`/`realises` edge behind it stays
 invisible to it. Run `text_search` for the old wording across the whole
@@ -1084,20 +1085,32 @@ aspects neither tool covers (e.g. wording conflicts between two requirements tha
 share no explicit link) -- do not use manual re-reading as the primary
 method now that the tools exist.
 
-Two more steps catch a repeated enumeration (see "Enumeration lives once,
-in a term" in the requirement checklist), which `impact_analysis` cannot
-see because the duplicate has no edge to follow:
+A repeated enumeration (see "Enumeration lives once, in a term" in the
+requirement checklist) has no edge for `impact_analysis` to follow, so it
+needs its own handling on both sides of the write. The first step belongs
+to drafting, before the write this section otherwise follows:
 
 - **Before the write:** if the draft lists values, fields or states,
-  `text_search` those values across the project. A hit in a term -> link
-  the term (`usesTermCodes`) and drop the list from the draft; hits only in
-  other requirements or use cases and no term -> the term is missing,
-  `term_add` it first and link it from every place that repeats the list.
-- **After the write:** run `store_check` (`checks=["ORPHAN"]`) and read the
-  mentions lines for the resource just written -- every write, not only in a
-  full-set audit. A mention there is a term named in the text without the
-  `usesTerm` edge behind it; weigh it the same way as in the full-set audit
-  (an everyday word in its ordinary sense is discarded without a question).
+  `text_search` each value across the project (one call per value -- the
+  query is a single substring). A hit in a term -> link the term and remove
+  the bare list from the draft; any rule about the values (a value-to-target
+  table, transitions, mandatory-field consequences) stays in the draft. Hits
+  only in other requirements or use cases and no term -> the term is
+  missing: `term_add` it first, link it, and in every place that repeats the
+  list replace the list with the term name and add the link. Link with
+  `usesTermCodes` on `req_add`/`uc_add`; on an existing resource use
+  `req_link_term`/`uc_link_term` -- `usesTermCodes` on `req_update`/
+  `uc_update` replaces the whole link set and drops the links not repeated.
+- **After the write:** in the `ORPHAN` result, read the mention findings
+  that name the resource just written as their source -- every write, not
+  only in a full-set audit. This catches what the before-step left behind on
+  the term side: a term named in the text without the `usesTerm` edge
+  behind it. It does not detect a repeated list of values -- only the
+  `text_search` before the write does. Weigh each mention the same way as in
+  the full-set audit (an everyday word in its ordinary sense is discarded
+  without a question).
+
+Then report the outcome:
 
 - **No ripple** -> state it in one line, continue the walk.
 - **Ripple found** -> name the affected codes and the nature of the impact,

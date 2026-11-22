@@ -26,7 +26,7 @@ a return channel does.
   cases -- dependency order, not elicitation order. Held onto without a
   dialogue partner, this is the one rule already shown to carry on its own.
 - The ripple check after every written change (`impact_analysis`, then
-  `text_search` for a wording change; `text_search` on any listed values
+  `text_search` for a wording change; `text_search` on each listed value
   before the write and the `ORPHAN` mentions of the written resource after
   it) -- unaffected by the absence of dialogue.
 
@@ -100,15 +100,18 @@ Then the quality attributes (ISO/IEC/IEEE 29148):
   is `MUST_HAVE` a placeholder? What breaks if this is cut?
 - Type classification -- FR vs. NFR vs. Constraint, see the test below.
 - Enumeration lives once, in a term -- a list of three or more values,
-  fields or states is named via a term and linked (`usesTermCodes`), not
-  repeated; `text_search` the values before writing, `term_add` first if no
-  term carries them. The rule about the values (what they allow, forbid or
+  fields or states is named via a term and linked (`usesTermCodes` at
+  creation, `req_link_term`/`uc_link_term` on an existing resource --
+  `usesTermCodes` on an update replaces every link), not repeated;
+  `text_search` each value before writing, `term_add` first if no term
+  carries them. The rule about the values (what they allow, forbid or
   trigger, mappings, transitions, invariants) stays in the requirement with
   its acceptance criteria -- only the vocabulary moves.
 - Prose reference to another requirement ("as in FR-3") -- the
   second-best form, since arknet writes no requirement-to-requirement edge;
-  prefer a shared term where the two share vocabulary, and record any
-  remaining prose reference as such in an `ASSUMPTION:` note, not silently.
+  prefer a shared term where the two share vocabulary, and name any
+  remaining prose reference as such in the run's report, not silently. It is
+  not an assumption, so it carries no `ASSUMPTION:` marker.
 
 **FR vs. NFR vs. Constraint, one test:** could the project decide
 otherwise? No, and the statement names who/what imposes it (law, contract,
