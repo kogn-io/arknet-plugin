@@ -105,9 +105,10 @@ Then the quality attributes (ISO/IEC/IEEE 29148):
   creation, `req_link_term`/`uc_link_term` on an existing resource --
   `usesTermCodes` on an update replaces every link), not repeated;
   `text_search` each value before writing; link only a term whose
-  definition names the values, `term_add` first if none does. The rule about the values (what they allow, forbid or
-  trigger, mappings, transitions, invariants) stays in the requirement with
-  its acceptance criteria -- only the vocabulary moves.
+  definition names the values, `term_add` first if none does. The rule
+  about the values (what they allow, forbid or trigger, mappings,
+  transitions, invariants) stays in the requirement with its acceptance
+  criteria -- only the vocabulary moves.
 - Prose reference to another requirement ("as in FR-3") -- the
   second-best form, since arknet writes no requirement-to-requirement edge;
   prefer a shared term where the two share vocabulary, and name any

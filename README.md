@@ -237,15 +237,15 @@ rule-free and config-free definitions; an enumeration of values, fields or
 states lives in exactly one term, which requirements and use cases
 reference instead of repeating it. Actors and roles are elicited here, so
 their review checklists live here too rather than in a skill of their own:
-an actor is read as a *carrier* (is its `type` right -- and `actor_update` cannot change
-one, so correcting it means `actor_delete` plus a fresh `actor_add` under a
-new code, once every `filledBy` naming it is cleared and with those
-occupancies restored afterwards; does a role occupy it; is it distinct from
-the other actors, which no tool checks), a role as an anti-rigid *function*
-(does the name survive a change of occupant; does any use case name it, per
-`role_usecase_matrix`; is it distinct from the other roles; is its occupancy
-deliberately open rather than simply never asked about). It interrogates the
-user on every gap it finds.
+an actor is read as a *carrier* (is its `type` right -- and `actor_update`
+cannot change one, so correcting it means `actor_delete` plus a fresh
+`actor_add` under a new code, once every `filledBy` naming it is cleared and
+with those occupancies restored afterwards; does a role occupy it; is it
+distinct from the other actors, which no tool checks), a role as an
+anti-rigid *function* (does the name survive a change of occupant; does any
+use case name it, per `role_usecase_matrix`; is it distinct from the other
+roles; is its occupancy deliberately open rather than simply never asked
+about). It interrogates the user on every gap it finds.
 
 A third mode, **autonomous**, is for exactly the case dialogue cannot cover:
 a finished document (a spec, a ticket, a change notice) and nobody to ask.

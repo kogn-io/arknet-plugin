@@ -932,7 +932,10 @@ Cockburn completeness:
   value-to-target mappings, state transitions, invariants ("all items in
   the same period") and configurable values are rules: they belong in a
   requirement, where they carry acceptance criteria. The term may point at
-  that requirement; the requirement never defers its rule to the term.
+  that requirement -- in prose only, since a term carries no edge to a
+  requirement, so the same second-best caveat as for a prose reference
+  between requirements applies; the requirement never defers its rule to
+  the term.
   Give-away pattern: a definition that declares itself the single place of
   a rule ("the validation steps live only here; requirements reference
   this term") -- the result is a rule with no acceptance criteria, and
@@ -1119,11 +1122,10 @@ text the user confirms already names the term instead of the list.
   case a missing `usesTerm`, for a term no `broader` link in either
   direction and no `related` link), and, for a term, also the term's own
   finding line: every resource that names the new term without the edge,
-  each a ripple candidate. This does
-  not detect a repeated list of values -- only the `text_search` before
-  the write does. Weigh each mention the same way as in the full-set audit
-  (an everyday word in its ordinary sense is discarded without a
-  question).
+  each a ripple candidate. This does not detect a repeated list of values
+  -- only the `text_search` before the write does. Weigh each mention the
+  same way as in the full-set audit (an everyday word in its ordinary
+  sense is discarded without a question).
 
 Then report the outcome:
 
