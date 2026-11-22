@@ -108,8 +108,12 @@ models this, does B have to change? And the other way round?" The side
 that does not have to follow is upstream. "Follow" means changing the
 own *model* -- its terms, rules and structure. Adjusting plans,
 priorities or deadlines to the other side is not following in this
-sense: a supplier that schedules around its customer's order deadline
-still sets the model the customer works with. Who hands data to whom, who
+sense, and neither is a supplier extending its own model because the
+customer asked for it -- that negotiated extension is the supplier still
+setting the model, now with the customer's needs in it, and it is exactly
+what `CUSTOMER_SUPPLIER` describes. A supplier that schedules around its
+customer's order deadline, or adds a field the customer requested, still
+sets the model the customer works with. Who hands data to whom, who
 calls whom, and whose deadline comes first are *not* direction evidence
 on their own -- data can flow either way along an upstream/downstream
 edge (a downstream context pushing commands to upstream, upstream pulling
@@ -117,7 +121,8 @@ from downstream), so a direction justified by data flow alone is
 unfounded. Use flow only as a lead for the change question, never as its
 answer.
 
-Where the answer is "B has to follow A, but A plans around what B needs",
+Where the answer is "B has to follow A, but A plans around or extends its
+model for what B needs",
 that is `CUSTOMER_SUPPLIER` with A upstream. Where A has to follow B,
 B is upstream, whatever the data flow says. Where both have to follow
 each other, the pair is not asymmetric -- look at `PARTNERSHIP` or
@@ -185,7 +190,7 @@ material (C1) is not written at all, never defaulted to `PARTNERSHIP` to
 have something on record; the same holds for direction -- where the
 material answers the change question (C2) only weakly, the direction is
 decided from that signal and marked, but where data flow is the only
-signal, the edge is not written and the pair is reported as unresolved.
+signal, or there is none at all, the edge is not written and the pair is reported as unresolved.
 
 `bc_link_context` carries no prose field, so the assumption behind a type
 choice cannot live on the edge itself -- and it does not belong in either

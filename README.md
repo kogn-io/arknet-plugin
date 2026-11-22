@@ -347,8 +347,10 @@ A third mode, **autonomous**, runs the review mode's own four rules as a
 decision instead of a question, for a relationship arriving via a document
 with nobody to confirm it: a type that cannot be re-derived from the
 material is not written at all rather than defaulted to `PARTNERSHIP`, and
-a direction that cannot be read from the material is decided and marked
-rather than left open for a type that requires one. `bc_link_context`
+a direction is decided and marked where the material answers, even weakly,
+which side has to absorb the other's model changes -- where only data flow
+or nothing at all points a way, the edge is not written and the pair is
+reported as unresolved. `bc_link_context`
 carries no prose field, so the assumption is marked in the run's own report
 back, never smuggled into a context's `domainVision`. Compact test and
 marking form in `skills/context-map/references/autonomous.md`.
