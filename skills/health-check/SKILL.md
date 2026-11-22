@@ -71,8 +71,9 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
      not-checked list are not hard facts -- route them to `/arknet:adr` as a
      hint in step 2 instead of listing them here, and never propose a status
      change from either block. The run reads one language variant per field
-     (`displayLocale`, default: the project's language), so in a store that
-     keeps more than one language name the language it covered, or run it
+     (`displayLocale`, default: the project's language) and its output does
+     not name that language, so in a store that keeps more than one language
+     pass `displayLocale` explicitly, name that tag in the report, and run it
      once per language -- a `Facts` block without a finding holds for that
      variant only.
 2. **Judgement candidates, hint only.** `ORPHAN`'s mentions list from
