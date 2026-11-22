@@ -419,10 +419,12 @@ pays off only once the listing has narrowed it to one candidate.
   `actor_add`/`role_add`).
   Rejected while anything still references it: a requirement's or use
   case's `arkreq:usesTerm`, an architecture decision's `arkarch:usesTerm`,
-  a bounded context's `ubiquitousLanguageTerm` or `delimitsTerm`, or another term's `broader`
-  or `related`. Remove those edges first (`req_update`/`uc_update`,
-  `adr_update`, `bc_update`'s `terms` list for a language term or `bc_unlink_term` with `relation` `DELIMITS` for a delimitation, or `term_update` on the *other*
-  term to clear its `broader`/`related`). The `TERM-n` code stays taken, so
+  a bounded context's `ubiquitousLanguageTerm` or `delimitsTerm`, or
+  another term's `broader` or `related`. Remove those edges first
+  (`req_update`/`uc_update`, `adr_update`, `bc_update`'s `terms` list for
+  a language term or `bc_unlink_term` with `relation` `DELIMITS` for a
+  delimitation, or `term_update` on the *other* term to clear its
+  `broader`/`related`). The `TERM-n` code stays taken, so
   it never later names a different term. A term found wanting is corrected
   with `term_update`, not deleted and re-created -- re-creating loses the
   code and every link into it.
