@@ -66,9 +66,9 @@ genuinely new project, `project_attach_anchor` when the same project is
 already registered under another directory (a git worktree, a second
 checkout, another IDE workspace), and `project_adopt` for a dataset that
 already holds data but no registration. The wrong one does not fail --
-`project_add` from a worktree silently creates a *second* project, which only
-`project_delete` from another directory removes again -- while the right one, called
-naively, does: `project_attach_anchor` resolves the project through the
+`project_add` from a worktree silently creates a *second* project, which
+only `project_delete` from another directory removes again -- while the
+right one, called naively, does: `project_attach_anchor` resolves the project through the
 caller's own anchor and needs `callerAnchor` from a directory that is not
 registered yet. The skill proposes the case it reads from
 `project_list` and lets the user confirm it before writing. For a project that
@@ -223,8 +223,8 @@ orphaned terms that a content read alone would miss. `ORPHAN`'s mentions
 list -- text naming a term without its backing edge -- is the exception:
 its word-boundary match also catches an everyday word used in its ordinary
 sense, so the interviewer weighs each source on a term's line instead of
-treating the line as a fact. `ROLE_TERM_DUPLICATE`, run in the same call, reports every role
-carrying the same name as a glossary term, a report and never a rejection,
+treating the line as a fact. `ROLE_TERM_DUPLICATE`, run in the same call,
+reports every role carrying the same name as a glossary term, a report and never a rejection,
 since the two resource types stay independent. It then walks the entire store
 (requirements, use cases, glossary, actors, roles) one item
 at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
@@ -493,8 +493,8 @@ probably started in a subdirectory of it). This matters because a git
 worktree or a second checkout of an already-registered project is not
 itself a registered anchor, and a plain `project_add` from there would
 silently create a second project that only `project_delete`, called
-from another directory, removes again. Seeing the resolved label (or its absence) makes the missing anchor
-visible before that mistake happens.
+from another directory, removes again. Seeing the resolved label (or its
+absence) makes the missing anchor visible before that mistake happens.
 
 It runs on startup, on `--resume`, after `/clear` and after context
 compaction -- one point more than the compatibility check above, because
@@ -998,10 +998,11 @@ it). A use case binds to a role, never directly to an actor.
   `ORPHAN` does not see: the text-mention match is literal and whole-word,
   not stem-based, so it also flags an everyday word used in its ordinary
   sense -- a hit there is a reading hint for a human, not a finding that
-  demands an edge. The mention lists read one line per term, with its
-  sources grouped by field set; `withMentions=false` replaces both lists with
-  one sentence and keeps every count. A future check joins this same list rather than arriving
-  as a new tool, so `checks` is where to look for one later.
+  demands an edge. Its text-mention hits come as two lists -- gaps, and
+  weak hits downgraded to hints -- each one line per term with its sources
+  grouped by field set; `withMentions=false` replaces both with one sentence
+  and keeps every count. A future check joins this same list rather than
+  arriving as a new tool, so `checks` is where to look for one later.
 - `orphan_check` -- deprecated alias for `store_check` with
   `checks=["ORPHAN"]` alone; kept only so an existing caller keeps working.
 - `resource_get` -- fetch all statements (outgoing and incoming) of a single
