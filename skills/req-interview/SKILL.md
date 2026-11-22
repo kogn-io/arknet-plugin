@@ -735,7 +735,9 @@ entry points (see above), same protocol:
   It reads one line per term, with every resource that mentions it grouped by
   field: judge each source on a line yourself, not the line as a whole, and
   discard a source without a question when it uses the word in its ordinary
-  sense; open one only for a genuine gap. `ROLE_TERM_DUPLICATE`, run in the
+  sense; open one only for a genuine gap. A second list carries the weak hits
+  the service already downgraded to hints: read it, but open a question there
+  only when the source clearly names the term in its glossary sense. `ROLE_TERM_DUPLICATE`, run in the
   same call, reports every role carrying the same name as a glossary term
   (case-insensitive, across every language variant) -- a report, never a
   rejection, since the two resource types stay independent. It is the one
