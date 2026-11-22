@@ -281,14 +281,16 @@ not presented for confirmation. Candidates that do clear the test are
 presented one at a time, own assessment first naming the language break;
 the skill then asks whether it is a deliberate boundary or a coincidental
 clustering, and only on confirmation does it write a Bounded Context
-(`bc_add`) and link its glossary terms (`bc_link_term`), followed by an
-`impact_analysis` ripple check.
+(`bc_add`) and link its glossary terms (`bc_link_term`; a term the context
+only delimits itself against is linked with `relation` `DELIMITS`),
+followed by an `impact_analysis` ripple check.
 
 That is **candidate mode**. The skill carries a second, write-free **review
 mode** for a boundary the store already holds -- the mode
 `/arknet:store-review` invokes, and the one a phrasing like "review the
 recorded contexts" selects. Three of its rules are decidable from the store
-alone: does the context carry any `bc_link_term` edge at all (without one,
+alone: does the context carry any language term -- a `bc_link_term` edge of
+the default relation, not a `DELIMITS` one (without one,
 nothing says which language falls inside the boundary), does any
 `ContextRelationship` touch it, and is its `subdomain`
 (`CORE_DOMAIN`/`SUPPORTING_DOMAIN`/`GENERIC_DOMAIN`) consistent with what its
@@ -853,10 +855,11 @@ it). A use case binds to a role, never directly to an actor.
 - `term_delete` -- remove the whole term resource (label and definition in
   every language), not just a correction; rejected while anything still
   references it: a requirement's, use case's or architecture decision's
-  `usesTerm`, a bounded context's ubiquitous-language link, or another
-  term's `broader`/`related`. Remove those edges first (`req_update`/
-  `uc_update`, `adr_update`, `bc_update`, `term_update` on the other
-  term). The `TERM-n` code stays taken.
+  `usesTerm`, a bounded context's ubiquitous-language link or delimitation,
+  or another term's `broader`/`related`. Remove those edges first
+  (`req_update`/`uc_update`, `adr_update`, `bc_update` for a language link,
+  `bc_unlink_term` with `relation` `DELIMITS` for a delimitation,
+  `term_update` on the other term). The `TERM-n` code stays taken.
 
 ### Bounded contexts
 
@@ -872,16 +875,25 @@ it). A use case binds to a role, never directly to an actor.
   fallen-back entry as described under `req_list`.
 - `bc_update` -- correct an already-registered context's name or domain
   vision in place, or state either in a further language, keeping its
-  identity unchanged. Also replaces the context's glossary-term links
+  identity unchanged. Also replaces the context's language-term links
   wholesale via `terms`: omitted leaves them untouched, an empty list
-  clears them all, a non-empty list is the full set going forward. Use it
-  to replace the whole set at once; to remove a single term without
-  restating the rest, use `bc_unlink_term` instead.
+  clears them all, a non-empty list is the full set going forward. Terms
+  the context delimits itself against are left untouched, and naming one
+  of them in `terms` is rejected. Use it to replace the whole set at
+  once; to remove a single term without restating the rest, use
+  `bc_unlink_term` instead.
 - `bc_link_term` / `bc_unlink_term` -- link or remove a bounded context's
   link to one glossary term of its ubiquitous language, one code per call
   -- unlike the requirement/use-case term-link tools, these have not moved
-  to a list. Unlinking a term that is not currently linked is rejected
-  rather than a silent no-op.
+  to a list. The optional `relation` is `USES` (the default: the term is
+  part of the context's language) or `DELIMITS` (the context names the term
+  only to draw its boundary against it; the term is deliberately not part of
+  its language). A term carries at most one of the two per context: linking
+  it under the other relation is rejected, so switching is unlink, then
+  link. `bc_unlink_term` without `relation` removes the language edge only;
+  unlinking a term that does not carry the named relation is rejected rather
+  than a silent no-op. `bc_get`/`bc_list` show delimited terms apart as
+  `[delimits: ...]`, and `bc_update`'s `terms` never touches them.
 - `bc_delete` -- remove the whole bounded context resource, not just a
   correction; the intended use is a boundary that turned out not to be one,
   drawn before the language break was understood. Rejected while anything
