@@ -26,8 +26,10 @@ a return channel does.
   cases -- dependency order, not elicitation order. Held onto without a
   dialogue partner, this is the one rule already shown to carry on its own.
 - The ripple check after every written change (`impact_analysis`, then
-  `text_search` for a wording change) -- unaffected by the absence of
-  dialogue.
+  `text_search` for a wording change; `text_search` on each listed value
+  before the write and the `ORPHAN` mentions of the written resource after
+  it -- for a term also its own line, the resources that name it without
+  the edge) -- unaffected by the absence of dialogue.
 
 **The one substitution:** wherever the interrogation protocol says *ask the
 user*, this mode makes a reasoned decision instead and marks it as an
@@ -98,6 +100,20 @@ Then the quality attributes (ISO/IEC/IEEE 29148):
 - Priority differentiation -- does it genuinely differ from the rest, or
   is `MUST_HAVE` a placeholder? What breaks if this is cut?
 - Type classification -- FR vs. NFR vs. Constraint, see the test below.
+- Enumeration lives once, in a term -- a list of three or more values,
+  fields or states is named via a term and linked (`usesTermCodes` at
+  creation, `req_link_term`/`uc_link_term` on an existing resource --
+  `usesTermCodes` on an update replaces every link), not repeated;
+  `text_search` each value before writing; link only a term whose
+  definition names the values, `term_add` first if none does. The rule
+  about the values (what they allow, forbid or trigger, mappings,
+  transitions, invariants) stays in the requirement with its acceptance
+  criteria -- only the vocabulary moves.
+- Prose reference to another requirement ("as in FR-3") -- the
+  second-best form, since arknet writes no requirement-to-requirement edge;
+  prefer a shared term where the two share vocabulary, and name any
+  remaining prose reference as such in the run's report, not silently. It is
+  not an assumption, so it carries no `ASSUMPTION:` marker.
 
 **FR vs. NFR vs. Constraint, one test:** could the project decide
 otherwise? No, and the statement names who/what imposes it (law, contract,
@@ -124,6 +140,9 @@ Cockburn completeness:
   invented to avoid the gap.
 - Title differentiation -- reads as the role's broader goal, not the
   linked requirement's title carried over verbatim.
+- Enumeration lives once, in a term -- steps, extensions and pre-/post-
+  conditions name the term and link it via `usesTerm`; they do not repeat
+  its list of values, fields or states.
 
 ## Checklist per glossary term
 
@@ -136,11 +155,17 @@ Cockburn completeness:
   same thing?
 - Actually an actor or a role, not a term (see the actor/role checklist)?
 - Duplication against a related term -- re-derive a shared fact via
-  cross-reference rather than re-enumerating it in a second definition.
+  cross-reference rather than re-enumerating it in a second definition (or
+  in a requirement or use case: the enumeration lives in one term only).
+- Rule-free -- the definition says what the values / fields / states are
+  and mean, not what they allow, forbid or trigger; those rules go into a
+  requirement with acceptance criteria. A definition declaring itself the
+  only home of a rule ("the steps live only here") is the give-away.
 - Implementation-free -- no system/software/storage technology named.
 - Architecture-decision-free -- no source-of-record, persistence choice,
   tenancy model, or trigger/ownership statement smuggled into what the
-  word *means*.
+  word *means*. How it is built -> ADR; what the system does ->
+  requirement.
 - Config-free -- no concrete, dated value the document elsewhere marks as
   changeable.
 
