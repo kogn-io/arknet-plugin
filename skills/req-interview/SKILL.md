@@ -731,9 +731,11 @@ entry points (see above), same protocol:
   footnote. `ORPHAN` also returns a mentions list -- text mentions of a term
   missing its backing edge, including a use case's prose beyond its `goal` --
   but its word-boundary match is deliberately left unsharpened, so it recurs
-  on an everyday word used in its ordinary sense as often as on a real gap:
-  read each entry yourself and discard it without a question when that is what
-  it is; open one only for a genuine gap. `ROLE_TERM_DUPLICATE`, run in the
+  on an everyday word used in its ordinary sense as often as on a real gap.
+  It reads one line per term, with every resource that mentions it grouped by
+  field: judge each source on a line yourself, not the line as a whole, and
+  discard a source without a question when it uses the word in its ordinary
+  sense; open one only for a genuine gap. `ROLE_TERM_DUPLICATE`, run in the
   same call, reports every role carrying the same name as a glossary term
   (case-insensitive, across every language variant) -- a report, never a
   rejection, since the two resource types stay independent. It is the one

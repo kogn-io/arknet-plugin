@@ -66,8 +66,8 @@ genuinely new project, `project_attach_anchor` when the same project is
 already registered under another directory (a git worktree, a second
 checkout, another IDE workspace), and `project_adopt` for a dataset that
 already holds data but no registration. The wrong one does not fail --
-`project_add` from a worktree silently creates a *second* project, and the
-tool surface has no `project_delete` to undo it -- while the right one, called
+`project_add` from a worktree silently creates a *second* project, which only
+`project_delete` from another directory removes again -- while the right one, called
 naively, does: `project_attach_anchor` resolves the project through the
 caller's own anchor and needs `callerAnchor` from a directory that is not
 registered yet. The skill proposes the case it reads from
@@ -492,8 +492,8 @@ hint if a parent directory is a registered anchor of some project (you
 probably started in a subdirectory of it). This matters because a git
 worktree or a second checkout of an already-registered project is not
 itself a registered anchor, and a plain `project_add` from there would
-silently create a second project -- there is no `project_delete` to undo
-that. Seeing the resolved label (or its absence) makes the missing anchor
+silently create a second project that only `project_delete`, called from
+another directory, removes again. Seeing the resolved label (or its absence) makes the missing anchor
 visible before that mistake happens.
 
 It runs on startup, on `--resume`, after `/clear` and after context
@@ -630,7 +630,8 @@ A project is what an anchor -- your session's start directory, sent as the
 `X-Arknet-Project-Anchor` header -- resolves to; every other tool below
 operates inside the project the call comes from. Prefer `/arknet:init` over
 calling these directly: three of them can register a project, only one of
-them is right in a given situation, and there is no `project_delete`.
+them is right in a given situation, and undoing a wrong one takes
+`project_delete`.
 
 - `project_list` -- every registered project with its anchors, default
   language, maintained languages and description, plus the datasets in the
@@ -658,6 +659,14 @@ them is right in a given situation, and there is no `project_delete`.
   untouched.
 - `project_rename` -- change the project's human-readable `label`. Identity
   and anchors are unaffected.
+- `project_delete` -- remove a registered project completely: registry entry,
+  all its anchors and its dataset with the whole model and revision history.
+  Named explicitly by id or label (`project`) as `project_list` shows them;
+  the project the call itself comes from is refused, so a stray project is
+  removed from a session in another directory. A project that still holds
+  model resources or revisions needs `confirm=true` -- without it the call is
+  refused and names what would be lost. Also removes an unregistered dataset
+  by its id. Cannot be undone.
 - `project_export` -- back up the store as a timestamped `.trig` file (with
   provenance, self-description and a trailing export-metadata graph naming
   the server version, build time, export time and every shipped ontology

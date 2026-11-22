@@ -1,5 +1,5 @@
 ---
-description: "One-time onboarding of the project you are working in to arknet. Two jobs: it appends a short routing block to that project's CLAUDE.md, so every later session learns that the architecture model lives in the arknet store and not in files; and it makes the current directory resolve to the right project in the store, choosing between project_add, project_adopt and project_attach_anchor before anything is written -- a wrong choice silently creates a second project and there is no project_delete to undo it. Trigger (also DE, since the user may phrase it in German): /arknet:init, 'attach this project to arknet', 'set up arknet for this project', 'onboard this project', 'register this project with arknet', 'is this directory registered with arknet'; DE: 'dieses Projekt an arknet anbinden', 'arknet fuer dieses Projekt einrichten', 'Projekt registrieren', 'ist dieses Verzeichnis registriert'. NOT the brownfield requirements interview -- interrogating an existing codebase for requirements, use cases and glossary terms is /arknet:req-interview ('interrogate the existing codebase'), which runs after this skill. NOT a status report on what the store already holds (use /arknet:health-check). NOT a per-session step -- this runs once per project, and re-running it is safe."
+description: "One-time onboarding of the project you are working in to arknet. Two jobs: it appends a short routing block to that project's CLAUDE.md, so every later session learns that the architecture model lives in the arknet store and not in files; and it makes the current directory resolve to the right project in the store, choosing between project_add, project_adopt and project_attach_anchor before anything is written -- a wrong choice silently creates a second project that only project_delete, called from another directory, removes again. Trigger (also DE, since the user may phrase it in German): /arknet:init, 'attach this project to arknet', 'set up arknet for this project', 'onboard this project', 'register this project with arknet', 'is this directory registered with arknet'; DE: 'dieses Projekt an arknet anbinden', 'arknet fuer dieses Projekt einrichten', 'Projekt registrieren', 'ist dieses Verzeichnis registriert'. NOT the brownfield requirements interview -- interrogating an existing codebase for requirements, use cases and glossary terms is /arknet:req-interview ('interrogate the existing codebase'), which runs after this skill. NOT a status report on what the store already holds (use /arknet:health-check). NOT a per-session step -- this runs once per project, and re-running it is safe."
 ---
 
 # /arknet:init -- Onboard a Project to arknet
@@ -15,9 +15,11 @@ second:
    closes that gap.
 2. **The anchor.** The directory the session starts in has to resolve to the
    right project in the store -- and there are three different tools for
-   getting there. Picking the wrong one is not correctable: `project_add`
+   getting there. Picking the wrong one does not fail: `project_add`
    called from a second checkout silently creates a **second project**, and
-   the tool surface has no `project_delete`.
+   the session writes into it until someone notices. `project_delete` removes
+   it again, but only from a session whose directory is not one of its anchors
+   -- it refuses the caller's own project.
 
 Dialogue discipline is `/arknet:req-interview`'s: **one question at a time,
 each with your own proposal attached**, derived from what the repository
@@ -47,9 +49,9 @@ second row would not warn -- it would create a second, empty project
 alongside the real one, and the session would then write its model into the
 wrong one. `project_attach_anchor` called without `callerAnchor` from that
 same directory fails instead, with an error that names `project_add` as one
-remedy -- which is exactly how the wrong call gets made. There is no
-`project_delete`, so say this out loud before proposing a call, rather than
-after.
+remedy -- which is exactly how the wrong call gets made. Undoing it takes
+`project_delete` from another directory and a second, correct call from this
+one, so say this out loud before proposing a call, rather than after.
 
 **Already registered:** report the project's state as `project_list` gives
 it -- label, `defaultLanguage`, `languages`, description -- and offer

@@ -1,7 +1,7 @@
 {
   "serverInfo": {
     "name": "arknet",
-    "version": "v0.11.0"
+    "version": "v0.12.0"
   },
   "tools": {
     "actor_add": ["description","language","name","projectAnchor","type"],
@@ -22,10 +22,10 @@
     "bc_delete": ["id","projectAnchor"],
     "bc_get": ["displayLocale","id","projectAnchor"],
     "bc_link_context": ["downstreamBcId","projectAnchor","relationshipType","upstreamBcId"],
-    "bc_link_term": ["bcId","projectAnchor","termId"],
+    "bc_link_term": ["bcId","projectAnchor","relation","termId"],
     "bc_list": ["displayLocale","projectAnchor"],
     "bc_unlink_context": ["downstreamBcId","projectAnchor","relationshipType","upstreamBcId"],
-    "bc_unlink_term": ["bcId","projectAnchor","termId"],
+    "bc_unlink_term": ["bcId","projectAnchor","relation","termId"],
     "bc_update": ["domainVision","id","language","name","projectAnchor","terms"],
     "constraint_add": ["language","projectAnchor","statement","title","type"],
     "constraint_delete": ["id","projectAnchor"],
@@ -37,6 +37,7 @@
     "project_add": ["anchor","anchorType","defaultLanguage","description","label","language","languages"],
     "project_adopt": ["anchor","anchorType","datasetId","label"],
     "project_attach_anchor": ["anchor","anchorType","callerAnchor"],
+    "project_delete": ["confirm","project","projectAnchor"],
     "project_export": ["projectAnchor","projectOnly"],
     "project_list": [],
     "project_rename": ["callerAnchor","label"],
@@ -60,7 +61,7 @@
     "role_list": ["displayLocale","projectAnchor"],
     "role_update": ["description","filledBy","id","language","name","projectAnchor"],
     "role_usecase_matrix": ["projectAnchor"],
-    "store_check": ["checks","projectAnchor"],
+    "store_check": ["checks","projectAnchor","withMentions"],
     "store_overview": ["projectAnchor"],
     "term_add": ["broader","definition","label","language","projectAnchor","related"],
     "term_cooccurrence": ["projectAnchor"],
@@ -71,7 +72,7 @@
     "term_unlink_related": ["id","projectAnchor","relatedIds"],
     "term_update": ["broader","definition","id","label","language","projectAnchor","related"],
     "text_search": ["projectAnchor","query"],
-    "trace_matrix": ["projectAnchor"],
+    "trace_matrix": ["projectAnchor","withTerms"],
     "uc_add": ["extensions","goal","language","postcondition","precondition","primaryRole","projectAnchor","scope","steps","supportingRoles","title","trigger","usesTermCodes"],
     "uc_delete": ["id","projectAnchor"],
     "uc_get": ["displayLocale","id","projectAnchor"],
