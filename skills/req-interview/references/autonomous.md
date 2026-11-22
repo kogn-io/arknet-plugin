@@ -28,7 +28,8 @@ a return channel does.
 - The ripple check after every written change (`impact_analysis`, then
   `text_search` for a wording change; `text_search` on each listed value
   before the write and the `ORPHAN` mentions of the written resource after
-  it) -- unaffected by the absence of dialogue.
+  it -- for a term, the resources that name it without the edge) --
+  unaffected by the absence of dialogue.
 
 **The one substitution:** wherever the interrogation protocol says *ask the
 user*, this mode makes a reasoned decision instead and marks it as an
