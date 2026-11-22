@@ -18,9 +18,13 @@ that mechanic does not apply here.
   regardless of how plausible a type looks without it.
 - Direction: for the five asymmetric types (`CUSTOMER_SUPPLIER`,
   `CONFORMIST`, `ANTICORRUPTION_LAYER`, `OPEN_HOST_SERVICE`,
-  `PUBLISHED_LANGUAGE`), `upstreamBcId` is still the side whose model
-  prevails; for the three symmetric ones the tool's upstream/downstream
-  pair is still bookkeeping, never a real asymmetry to report.
+  `PUBLISHED_LANGUAGE`), `upstreamBcId` is still the side the other
+  depends on, decided by `SKILL.md`'s direction test (whose model change
+  the other has to absorb), never by data flow alone -- for
+  `CUSTOMER_SUPPLIER` that is the supplier, even where it plans around the
+  customer's needs; for the three symmetric ones the tool's
+  upstream/downstream pair is still bookkeeping, never a real asymmetry
+  to report.
 - `bc_link_context` itself: same idempotent write, same triple.
 
 **The one substitution:** the review mode's own four rules (see
@@ -30,8 +34,9 @@ instead of after it:
 - Re-derivable (C1) -- name, from the two contexts' material, what makes
   this type fit rather than a neighbour, and which neighbour was ruled
   out.
-- Direction (C2) -- for an asymmetric type, which side's model the other
-  clearly adapts to.
+- Direction (C2) -- for an asymmetric type, which side has to absorb the
+  other's model changes (the downstream one); who hands data to whom does
+  not answer this.
 - Obligation (C3) -- does anything in the material already carry what the
   type commits the pair to (a translation layer, a jointly-owned model, a
   published, documented model)?
@@ -44,9 +49,12 @@ is not a safe default): if no material lets you name a fit, do not write
 the relationship at all -- report the pair as unresolved and name what
 material is missing, the same way elicitation mode would surface an open
 question rather than guess. Where C1 does clear, but C2's direction is
-genuinely unreadable from the material, decide from whatever signal
-exists and mark it, rather than leave direction unresolved for a type that
-requires one.
+only weakly answered by the material, decide from the signal that bears on
+the change question (whose model the other has to absorb) and mark it.
+Data flow alone is not such a signal: where it is all the material
+offers, or the material offers no direction signal at all, do not write
+the edge -- report the pair as unresolved, naming the change question
+nobody answered, exactly as for a "no" on C1.
 
 ## Marking an assumption
 
@@ -59,8 +67,10 @@ domain meaning" failure `/arknet:bc-audit`'s review mode (rule B6) already
 flags, autonomous or not.
 
 Instead, mark every autonomous classification in the run's own report back
-to whoever invoked it -- one line per edge written, in the same form as
-elsewhere:
+to whoever invoked it -- one line per edge written, naming the type, for
+an asymmetric type the direction together with what answers the change
+question (whose model the other has to absorb -- data flow alone does
+not), and the neighbour ruled out, in the same form as elsewhere:
 
 > ASSUMPTION: OrderManagement / Billing recorded as
 > `CUSTOMER_SUPPLIER` (OrderManagement upstream) -- Billing's glossary
