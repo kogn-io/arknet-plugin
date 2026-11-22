@@ -19,7 +19,8 @@ second:
    called from a second checkout silently creates a **second project**, and
    the session writes into it until someone notices. `project_delete` removes
    it again, but only from a session whose directory is not one of its anchors
-   -- it refuses the caller's own project.
+   -- it refuses the caller's own project -- and everything written into it
+   goes with it: there is no tool that moves resources into another project.
 
 Dialogue discipline is `/arknet:req-interview`'s: **one question at a time,
 each with your own proposal attached**, derived from what the repository
@@ -50,8 +51,9 @@ alongside the real one, and the session would then write its model into the
 wrong one. `project_attach_anchor` called without `callerAnchor` from that
 same directory fails instead, with an error that names `project_add` as one
 remedy -- which is exactly how the wrong call gets made. Undoing it takes
-`project_delete` from another directory and a second, correct call from this
-one, so say this out loud before proposing a call, rather than after.
+`project_delete` from another directory, losing whatever the session wrote
+there, and a second, correct call from this one, so say this out loud before
+proposing a call, rather than after.
 
 **Already registered:** report the project's state as `project_list` gives
 it -- label, `defaultLanguage`, `languages`, description -- and offer

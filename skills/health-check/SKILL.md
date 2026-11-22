@@ -91,8 +91,9 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
    word-boundary match is deliberately left unsharpened, because a wrong edge
    costs more than a missed one, so one false-positive class recurs in
    particular -- an everyday word used in its ordinary sense that happens to
-   coincide with a glossary term. Phrase each source worth a look as "worth a look with
-   `/arknet:req-interview`?", never as a finding on par with an orphaned
+   coincide with a glossary term. Report the sources worth a look bundled
+   under their term, one hint per term -- "worth a look with
+   `/arknet:req-interview`?" -- never as a finding on par with an orphaned
    requirement or an unreferenced term.
 3. **Report, hard facts and hints visibly separated.** Two headed sections,
    never merged into one list:
