@@ -70,7 +70,11 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
      way `store_check`/`trace_matrix` findings are. Its `Suspicions` and
      not-checked list are not hard facts -- route them to `/arknet:adr` as a
      hint in step 2 instead of listing them here, and never propose a status
-     change from either block.
+     change from either block. The run reads one language variant per field
+     (`displayLocale`, default: the project's language), so in a store that
+     keeps more than one language name the language it covered, or run it
+     once per language -- a `Facts` block without a finding holds for that
+     variant only.
 2. **Judgement candidates, hint only.** `ORPHAN`'s mentions list from
    step 1 lands here too. `text_search` is the same category by nature, not
    by default use -- reach for it when a specific wording is in question
