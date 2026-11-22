@@ -71,10 +71,10 @@ only `project_delete` from another directory removes again -- while the
 right one, called naively, does: `project_attach_anchor` resolves the
 project through the caller's own anchor and needs `callerAnchor` from a
 directory that is not registered yet. The skill proposes the case it reads
-from `project_list` and lets the user confirm it before writing. For a project that
-already resolves, it shows the state and offers `project_update` -- in
-particular for an absent `languages` set, without which `store_check`'s
-language check reports `LANGUAGE: not checked` and is silently off.
+from `project_list` and lets the user confirm it before writing. For a
+project that already resolves, it shows the state and offers
+`project_update` -- in particular for an absent `languages` set, without
+which `store_check`'s language check reports `LANGUAGE: not checked` and is silently off.
 
 Same dialogue discipline as `/arknet:req-interview`: one question at a time,
 each with the skill's own proposal attached (label from the repository name,
