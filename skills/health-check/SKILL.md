@@ -34,7 +34,7 @@ approximating it here.
 | Tool | Role | Category |
 |---|---|---|
 | `store_check` (`checks=["ORPHAN"]`) | Requirements no use case realises; glossary terms never referenced; constraints no requirement or use case is bound by. Report these three lists as-is. Its mentions list -- terms named in text without a backing edge (including a use case's prose fields, not just its `goal`, and an ADR's context, decision, consequences, and options) -- matches on word boundaries without stemming, so it also surfaces an everyday word used in its ordinary sense (e.g. a common noun that happens to coincide with a glossary term) alongside real gaps; read it as a candidate list for a human, not a finding on par with the other three. | Hard fact (mentions list: hint) |
-| `trace_matrix` | Per requirement: which terms it uses, which use case(s) realise it. | Hard fact |
+| `trace_matrix` (`withTerms=false`) | Per requirement: which use case(s) realise it. `withTerms=false` drops the per-requirement term lines, which this skill does not use and which are about half of the answer. | Hard fact |
 | `adr_list` | Every recorded decision with its status; filter the result to `PROPOSED` yourself -- the tool has no status parameter. | Hard fact |
 | `adr_check` | Every recorded decision, checked for what is mechanically decidable and reported as `Facts`/`Suspicions` plus a not-checked list -- reads only, changes nothing. Report the `Facts` block as-is; a `Suspicion` or a not-checked entry is a candidate for `/arknet:adr`, not a finding on par with a `Fact` -- do not phrase either as a defect, and never propose a status change from either block. | Hard fact |
 | `bc_list` | Every registered Bounded Context, with its recorded `ContextRelationship` edges (see `/arknet:context-map`) shown inline -- the pool to check for missing relationships. | Judgement candidate |
@@ -53,8 +53,9 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
      fact; it matches on word boundaries without stemming and routinely
      names an everyday word used in its ordinary sense alongside a real gap,
      so it moves to step 2 instead of being listed here.
-   - `trace_matrix` -- report any requirement with no realising use case; a
-     requirement `ORPHAN` already flagged does not need repeating here,
+   - `trace_matrix` (`withTerms=false`) -- report any requirement with no
+     realising use case; a requirement `ORPHAN` already flagged does not
+     need repeating here,
      but a requirement `trace_matrix` shows with an empty `realises` list and
      `ORPHAN` missed (e.g. because a use case references it in prose
      without the `realises` edge) is a separate, additional finding.
@@ -84,12 +85,16 @@ owning skills (`/arknet:req-interview`, `/arknet:adr`, `/arknet:context-map`,
    requirement. Likewise, `adr_check`'s `Suspicions` and its not-checked list
    are hints, one per entry -- "worth a look with `/arknet:adr`?", never a
    finding on par with a `Fact`. And `ORPHAN`'s mentions list -- terms
-   named in text without a backing edge -- is a hint, one per entry: the
+   named in text without a backing edge, plus the separate list of weak hits
+   the service already downgraded to hints -- is a hint. It reads one line per
+   term, with every resource that mentions it grouped by field; a line is not
+   one hint about one resource, so judge its sources individually: the
    word-boundary match is deliberately left unsharpened, because a wrong edge
    costs more than a missed one, so one false-positive class recurs in
    particular -- an everyday word used in its ordinary sense that happens to
-   coincide with a glossary term. Phrase each entry as "worth a look with
-   `/arknet:req-interview`?", never as a finding on par with an orphaned
+   coincide with a glossary term. Report the sources worth a look bundled
+   under their term, one hint per term -- "worth a look with
+   `/arknet:req-interview`?" -- never as a finding on par with an orphaned
    requirement or an unreferenced term.
 3. **Report, hard facts and hints visibly separated.** Two headed sections,
    never merged into one list:

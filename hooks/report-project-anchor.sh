@@ -135,7 +135,7 @@ EOF
 if [ -n "$resolved_label" ]; then
   context="arknet project anchor: this directory $cwd resolves to project \"$resolved_label\" -- arknet tool calls from this session read and write that project's model."
 else
-  context="arknet project anchor: no registered arknet project has $cwd as an anchor, so arknet tool calls from this session have no project and will be rejected. If this is a git worktree or a second checkout of a project that is already registered, do NOT call project_add (it would silently create a second project and there is no project_delete) -- run /arknet:init, which picks between project_attach_anchor, project_adopt and project_add."
+  context="arknet project anchor: no registered arknet project has $cwd as an anchor, so arknet tool calls from this session have no project and will be rejected. If this is a git worktree or a second checkout of a project that is already registered, do NOT call project_add (it would silently create a second project, which only project_delete from another directory removes again) -- run /arknet:init, which picks between project_attach_anchor, project_adopt and project_add."
   if [ -n "$parent_anchor" ]; then
     context="$context
 A parent directory, $parent_anchor, is registered as an anchor of project \"$parent_label\" -- you may have started in a subdirectory of it."

@@ -66,15 +66,16 @@ genuinely new project, `project_attach_anchor` when the same project is
 already registered under another directory (a git worktree, a second
 checkout, another IDE workspace), and `project_adopt` for a dataset that
 already holds data but no registration. The wrong one does not fail --
-`project_add` from a worktree silently creates a *second* project, and the
-tool surface has no `project_delete` to undo it -- while the right one, called
-naively, does: `project_attach_anchor` resolves the project through the
-caller's own anchor and needs `callerAnchor` from a directory that is not
-registered yet. The skill proposes the case it reads from
-`project_list` and lets the user confirm it before writing. For a project that
-already resolves, it shows the state and offers `project_update` -- in
-particular for an absent `languages` set, without which `store_check`'s
-language check reports `LANGUAGE: not checked` and is silently off.
+`project_add` from a worktree silently creates a *second* project, which
+only `project_delete` from another directory removes again -- while the
+right one, called naively, does: `project_attach_anchor` resolves the
+project through the caller's own anchor and needs `callerAnchor` from a
+directory that is not registered yet. The skill proposes the case it reads
+from `project_list` and lets the user confirm it before writing. For a
+project that already resolves, it shows the state and offers
+`project_update` -- in particular for an absent `languages` set, without
+which `store_check`'s language check reports `LANGUAGE: not checked` and is
+silently off.
 
 Same dialogue discipline as `/arknet:req-interview`: one question at a time,
 each with the skill's own proposal attached (label from the repository name,
@@ -222,12 +223,12 @@ requirements relentlessly" or "are they complete/consistent", it first runs
 orphaned terms that a content read alone would miss. `ORPHAN`'s mentions
 list -- text naming a term without its backing edge -- is the exception:
 its word-boundary match also catches an everyday word used in its ordinary
-sense, so the interviewer weighs each entry instead of treating it as a
-fact. `ROLE_TERM_DUPLICATE`, run in the same call, reports every role
-carrying the same name as a glossary term, a report and never a rejection,
-since the two resource types stay independent. It then walks the entire store
-(requirements, use cases, glossary, actors, roles) one item
-at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
+sense, so the interviewer weighs each source on a term's line instead of
+treating the line as a fact. `ROLE_TERM_DUPLICATE`, run in the same call,
+reports every role carrying the same name as a glossary term, a report and
+never a rejection, since the two resource types stay independent. It then
+walks the entire store (requirements, use cases, glossary, actors, roles) one
+item at a time against a fixed checklist: the SOPHIST/Rupp linguistic-defect
 filter (passive voice without an actor, nominalisation, incomplete
 comparatives, universal quantifiers, underspecified conditions), the
 ISO/IEC/IEEE 29148 quality attributes (completeness, unambiguity,
@@ -497,9 +498,9 @@ hint if a parent directory is a registered anchor of some project (you
 probably started in a subdirectory of it). This matters because a git
 worktree or a second checkout of an already-registered project is not
 itself a registered anchor, and a plain `project_add` from there would
-silently create a second project -- there is no `project_delete` to undo
-that. Seeing the resolved label (or its absence) makes the missing anchor
-visible before that mistake happens.
+silently create a second project that only `project_delete`, called
+from another directory, removes again. Seeing the resolved label (or its
+absence) makes the missing anchor visible before that mistake happens.
 
 It runs on startup, on `--resume`, after `/clear` and after context
 compaction -- one point more than the compatibility check above, because
@@ -635,7 +636,10 @@ A project is what an anchor -- your session's start directory, sent as the
 `X-Arknet-Project-Anchor` header -- resolves to; every other tool below
 operates inside the project the call comes from. Prefer `/arknet:init` over
 calling these directly: three of them can register a project, only one of
-them is right in a given situation, and there is no `project_delete`.
+them is right in a given situation. A stray project from a wrong
+`project_add` can be removed with `project_delete` (from another directory);
+a wrong `project_attach_anchor` or `project_adopt` has no undo tool, and
+`project_delete` there would remove the real project or the adopted data.
 
 - `project_list` -- every registered project with its anchors, default
   language, maintained languages and description, plus the datasets in the
@@ -663,6 +667,14 @@ them is right in a given situation, and there is no `project_delete`.
   untouched.
 - `project_rename` -- change the project's human-readable `label`. Identity
   and anchors are unaffected.
+- `project_delete` -- remove a registered project completely: registry entry,
+  all its anchors and its dataset with the whole model and revision history.
+  Named explicitly by id or label (`project`) as `project_list` shows them;
+  the project the call itself comes from is refused, so a stray project is
+  removed from a session in another directory. A project that still holds
+  model resources or revisions needs `confirm=true` -- without it the call is
+  refused and names what would be lost. Also removes an unregistered dataset
+  by its id. Cannot be undone.
 - `project_export` -- back up the store as a timestamped `.trig` file (with
   provenance, self-description and a trailing export-metadata graph naming
   the server version, build time, export time and every shipped ontology
@@ -936,7 +948,8 @@ it). A use case binds to a role, never directly to an actor.
 ### Traceability and analysis
 
 - `trace_matrix` -- for every requirement: which glossary terms it uses and
-  which use case(s) realise it.
+  which use case(s) realise it. `withTerms=false` drops the term lines and
+  keeps the realising use cases -- much shorter on a large store.
 - `impact_analysis` -- what is transitively affected if a given requirement,
   term, use case or architecture decision changes.
 - `role_usecase_matrix` -- raw bipartite view: which use cases each role
@@ -991,8 +1004,11 @@ it). A use case binds to a role, never directly to an actor.
   `ORPHAN` does not see: the text-mention match is literal and whole-word,
   not stem-based, so it also flags an everyday word used in its ordinary
   sense -- a hit there is a reading hint for a human, not a finding that
-  demands an edge. A future check joins this same list rather than arriving
-  as a new tool, so `checks` is where to look for one later.
+  demands an edge. Its text-mention hits come as two lists -- gaps, and
+  weak hits downgraded to hints -- each one line per term with its sources
+  grouped by field set; `withMentions=false` replaces both with one sentence
+  and keeps every count. A future check joins this same list rather than
+  arriving as a new tool, so `checks` is where to look for one later.
 - `orphan_check` -- deprecated alias for `store_check` with
   `checks=["ORPHAN"]` alone; kept only so an existing caller keeps working.
 - `resource_get` -- fetch all statements (outgoing and incoming) of a single
