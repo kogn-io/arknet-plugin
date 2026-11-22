@@ -738,7 +738,8 @@ entry points (see above), same protocol:
   sense; open one only for a genuine gap. A second list carries the weak hits
   the service already downgraded to hints: read it, but open a question there
   only when the source clearly names the term in its glossary sense.
-  `ROLE_TERM_DUPLICATE`, run in the same call, reports every role carrying the same name as a glossary term
+  `ROLE_TERM_DUPLICATE`, run in the same call, reports every role carrying
+  the same name as a glossary term
   (case-insensitive, across every language variant) -- a report, never a
   rejection, since the two resource types stay independent. It is the one
   mechanical reading the role set gets; note what it does *not* compare -- two
