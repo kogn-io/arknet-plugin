@@ -29,8 +29,7 @@ a return channel does.
   `text_search` for a wording change; `text_search` on each listed value
   before the write and the `ORPHAN` mentions of the written resource after
   it -- for a term also its own line, the resources that name it without
-  the edge) --
-  unaffected by the absence of dialogue.
+  the edge) -- unaffected by the absence of dialogue.
 
 **The one substitution:** wherever the interrogation protocol says *ask the
 user*, this mode makes a reasoned decision instead and marks it as an
@@ -105,8 +104,8 @@ Then the quality attributes (ISO/IEC/IEEE 29148):
   fields or states is named via a term and linked (`usesTermCodes` at
   creation, `req_link_term`/`uc_link_term` on an existing resource --
   `usesTermCodes` on an update replaces every link), not repeated;
-  `text_search` each value before writing, `term_add` first if no term
-  carries them. The rule about the values (what they allow, forbid or
+  `text_search` each value before writing; link only a term whose
+  definition names the values, `term_add` first if none does. The rule about the values (what they allow, forbid or
   trigger, mappings, transitions, invariants) stays in the requirement with
   its acceptance criteria -- only the vocabulary moves.
 - Prose reference to another requirement ("as in FR-3") -- the

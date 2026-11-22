@@ -839,7 +839,8 @@ Then the requirement-quality attributes (ISO/IEC/IEEE 29148):
   should name? The list and what each entry *means* live exactly once, in
   the term; the requirement names the term and links it via `usesTerm`
   instead of repeating the list. Before writing, `text_search` the listed
-  values: a hit in a term -> link it; no term yet -> `term_add` first.
+  values: a term carries the list (its definition names the values) ->
+  link it; no such term -> `term_add` first.
   This moves the *vocabulary*, never the *rule*: what a value allows,
   forbids or triggers -- mandatory fields and what happens when one is
   missing, value-to-target mappings (a table in the requirement is fine),
@@ -1094,8 +1095,9 @@ text the user confirms already names the term instead of the list.
 - **Before the write:** if the draft lists three or more values, fields
   or states, `text_search` each value across the project (one call per
   value -- the query is a single substring).
-  - A hit in a term -> link the term and remove the bare list from the
-    draft; any rule about the values (a value-to-target table,
+  - A term carries the list (its definition names the values, not just
+    one of them in passing) -> link the term and remove the bare list
+    from the draft; any rule about the values (a value-to-target table,
     transitions, mandatory-field consequences) stays in the draft.
   - No term carries the list, whether other requirements or use cases
     repeat it or nothing does -> the term is missing: settle it as its own
@@ -1115,9 +1117,9 @@ text the user confirms already names the term instead of the list.
   full-set audit. Those are the findings naming it as their source (a term
   named in its text without the edge behind it -- for a requirement or use
   case a missing `usesTerm`, for a term no `broader` link in either
-  direction and no `related` link),
-  and, for a term, also the term's own finding line: every resource that
-  names the new term without the edge, each a ripple candidate. This does
+  direction and no `related` link), and, for a term, also the term's own
+  finding line: every resource that names the new term without the edge,
+  each a ripple candidate. This does
   not detect a repeated list of values -- only the `text_search` before
   the write does. Weigh each mention the same way as in the full-set audit
   (an everyday word in its ordinary sense is discarded without a
